@@ -4,125 +4,155 @@ USE travel_buddy;
 -- =======================
 -- user rows
 -- =======================
-INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES (1, 'Allison Hill', 'jillrhodes@miller.com', 'af738b28e0a93deae4483d186d93ab0ae1300f80dbd1bf73b8b367a58cb3cb4b', '1995-09-05');
-INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES (2, 'Cristian Santos', 'shaneramirez@gmail.com', 'f3293232dc4f6f82f27fcb1f5bdf4517cd40e79a4f79ddd795c7d117d36557f3', '1965-07-29');
-INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES (3, 'Gina Moore', 'daviscolin@yahoo.com', '33e3f996588677ce376555d9705c6a4e0783924ef7b0f92b335fa735c429b4a7', '1957-08-31');
-INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES (4, 'Kimberly Dudley', 'arnoldmaria@hotmail.com', '40f162b663df0eb38e907f235ea9e432809a00d97a969444ef4cc84eb3e16927', '1979-04-27');
-INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES (5, 'Michele Williams', 'tracie31@ramirez-reid.com', 'd4b196b5cd9f19ce309caa8db9b07a56eec5076a3728092d52d18e7b58de0d78', '1978-11-20');
-INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES (6, 'Derek Zuniga', 'amandasanchez@gray-mayo.net', '06b21c08138098ffadc9fcfa075f38a7e9e4372e0d3cb8674dc8a32d352ace05', '1976-10-11');
-INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES (7, 'Patty Perez', 'richard13@walter.biz', '8bab06b75ea1b6d9d5d6ebb813d2ee54e55dee4cc38f4f7a33c32438ad4086f9', '1998-06-16');
-INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES (8, 'Derek Wright', 'zhurst@yahoo.com', '528a0ba6937407022a0b6ab2b585d67c2d34910b599f40a76b083229b39904be', '1964-02-15');
-INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES (9, 'Ann Williams', 'courtneyconner@carlson-cruz.org', '561f847647774cc1bf4a600d5f412a15ecb011a5ea830076e96a78acada469e1', '1990-09-19');
-INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES (10, 'Juan Dunlap', 'kayla51@graham-chavez.com', '869f59ba80f7ddebc5e783f2031b0921e505a7810ee71c9d27ac63b46eda8227', '2006-07-24');
-INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES (11, 'Thomas Harrell', 'ericfarmer@hotmail.com', 'beae37ac789535f7cee792493bc81f78c9400a22f73183e6c8e5cca9ce50cfdd', '1990-10-20');
-INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES (12, 'Linda Burns', 'natasha43@allen.com', '0dd2b3752d462dc54fd19c5d455f191db04c757a7abf0401213f49600ec0a8d1', '1987-10-13');
-INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES (13, 'Vanessa Patel', 'donnaarroyo@baker.biz', 'ee812f64f9dfc12ca46bb74d063aeefa350a914638c212e8580f0e96f0a403d7', '1991-05-30');
-INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES (14, 'Melissa Marquez', 'samuel87@gmail.com', '0df9731ff6cf9f9e8f6ef50977663da4e1346d9c019d8f3ad75ef9d8c8ceb5b0', '1959-01-25');
-INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES (15, 'Kevin Hall', 'jonescrystal@jones.com', '3436965836d671702082f5d5b210d3c0613393dd22099438136f964356534c05', '1970-11-27');
-INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES (16, 'John Ryan', 'kristenaguirre@gmail.com', 'd1535114f0f71fea4592fbab95dcd6c0759257684b89e0c8bc80859454312ad3', '1999-07-22');
-INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES (17, 'Jeff Owens', 'brownjessica@wright.net', '20a872b8c9b0db8dce86954f4d9357d44e1910fba621feeaf2544f39dfe8a25c', '1983-06-02');
-INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES (18, 'Joel Baxter', 'jmorton@williams.com', 'c7851c0f1530640d469066362549c79ff9663512e68519975f1389a37198061e', '2005-12-27');
-INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES (19, 'Carol Tucker', 'kbarrera@smith-myers.info', '7b308ffa1ed446a0ed87fe1a06770e0a1c8231fca309d82603740e5e551c63a1', '2002-02-10');
-INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES (20, 'Whitney Peters', 'jamesrobinson@gmail.com', '3ef7ffcd0f61dfe0952cff46d4213565733ab109e96129b272a6c3cc7a355f4a', '1991-08-10');
-INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES (21, 'Erik Williams', 'brianromero@gmail.com', '1f08483864cf95da973af5c9f9050fa2b7bb0c15d730dcfb6d070d8e5e563214', '1959-05-03');
-INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES (22, 'Cynthia Wilson', 'harveyrobert@cunningham.com', '73ed167b935c625b233b952c37a7806e36be9a6a96f6048455436b3953143033', '1981-08-23');
-INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES (23, 'Matthew Bryant', 'ellisyolanda@jones.net', '8b124a42d3eeb70314712b3e1cd4bb408059dce0dc3e35c34b552b69d04e9512', '1978-06-17');
-INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES (24, 'Sherry Wood', 'tbass@carr-archer.net', '18b3cfa4df9d496a842ad93ed7bf7e95d659ef5915efd4d51626e1aad5f9e5f3', '1992-06-13');
-INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES (25, 'Matthew Mcmillan', 'darrell18@nelson.com', 'ce9a588574674e0e04b212eeeeb95d0f7af041f87c85c1117057f3ab506317e8', '1968-07-25');
-INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES (26, 'Sarah Wagner', 'davisrodney@yahoo.com', '5941a74f3096328368f9fb45e014298c1d8858b034b2488831d5a3a08057b149', '1977-05-29');
-INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES (27, 'Mandy Green', 'hhoffman@gmail.com', '7d4ac77986d3a2c66a605ea641d231e8cfc3edca864dcdf0e4521ae7eedf19af', '2001-09-25');
-INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES (28, 'Kimberly Davenport', 'tanderson@nolan-flynn.com', '9eb243cb4f34c9b60fe0bab9ce4c7c23cf3627ddfccf28cb0cacaa601fb16003', '1969-01-02');
-INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES (29, 'Mary Gomez', 'sarayoung@gmail.com', 'e84303888d739510bf26246c32123cbb12854ef01511d54360615518a1526720', '1966-10-04');
-INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES (30, 'Allison Doyle', 'vpham@gmail.com', '9f945d9f0b5f0d334f915932aef318a81eca9828a238189e1d62a5b9b2e95380', '2002-06-07');
+INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES
+(1, 'Allison Hill', 'allyhill95@gmail.com', 'af738b28e0a93deae4483d186d93ab0ae1300f80dbd1bf73b8b367a58cb3cb4b', '1995-09-05'),
+(2, 'Cristian Santos', 'santos.cris65@yahoo.com', 'f3293232dc4f6f82f27fcb1f5bdf4517cd40e79a4f79ddd795c7d117d36557f3', '1965-07-29'),
+(3, 'Gina Moore', 'gmoore1957@hotmail.com', '33e3f996588677ce376555d9705c6a4e0783924ef7b0f92b335fa735c429b4a7', '1957-08-31'),
+(4, 'Kimberly Dudley', 'kim.dudley@outlook.com', '40f162b663df0eb38e907f235ea9e432809a00d97a969444ef4cc84eb3e16927', '1979-04-27'),
+(5, 'Michele Williams', 'michelew78@gmail.com', 'd4b196b5cd9f19ce309caa8db9b07a56eec5076a3728092d52d18e7b58de0d78', '1978-11-20'),
+(6, 'Derek Zuniga', 'derekzuniga76@protonmail.com', '06b21c08138098ffadc9fcfa075f38a7e9e4372e0d3cb8674dc8a32d352ace05', '1976-10-11'),
+(7, 'Patty Perez', 'pattyperez98@gmail.com', '8bab06b75ea1b6d9d5d6ebb813d2ee54e55dee4cc38f4f7a33c32438ad4086f9', '1998-06-16'),
+(8, 'Derek Wright', 'wright.derek64@yahoo.com', '528a0ba6937407022a0b6ab2b585d67c2d34910b599f40a76b083229b39904be', '1964-02-15'),
+(9, 'Ann Williams', 'annw_1990@wmail.org', '561f847647774cc1bf4a600d5f412a15ecb011a5ea830076e96a78acada469e1', '1990-09-19'),
+(10, 'Juan Dunlap', 'juandunlap06@fastmail.com', '869f59ba80f7ddebc5e783f2031b0921e505a7810ee71c9d27ac63b46eda8227', '2006-07-24'),
+(11, 'Thomas Harrell', 'tommyh90@harrellmail.org', 'beae37ac789535f7cee792493bc81f78c9400a22f73183e6c8e5cca9ce50cfdd', '1990-10-20'),
+(12, 'Linda Burns', 'lindaburns87@gmail.com', '0dd2b3752d462dc54fd19c5d455f191db04c757a7abf0401213f49600ec0a8d1', '1987-10-13'),
+(13, 'Vanessa Patel', 'vanessa.patel@breezemail.net', 'ee812f64f9dfc12ca46bb74d063aeefa350a914638c212e8580f0e96f0a403d7', '1991-05-30'),
+(14, 'Melissa Marquez', 'melmarquez59@gmail.com', '0df9731ff6cf9f9e8f6ef50977663da4e1346d9c019d8f3ad75ef9d8c8ceb5b0', '1959-01-25'),
+(15, 'Kevin Hall', 'kevinhall70@outlook.com', '3436965836d671702082f5d5b210d3c0613393dd22099438136f964356534c05', '1970-11-27'),
+(16, 'John Ryan', 'johnryan99@gmail.com', 'd1535114f0f71fea4592fbab95dcd6c0759257684b89e0c8bc80859454312ad3', '1999-07-22'),
+(17, 'Jeff Owens', 'jeff.owens83@live.com', '20a872b8c9b0db8dce86954f4d9357d44e1910fba621feeaf2544f39dfe8a25c', '1983-06-02'),
+(18, 'Joel Baxter', 'joelbaxter05@wmail.org', 'c7851c0f1530640d469066362549c79ff9663512e68519975f1389a37198061e', '2005-12-27'),
+(19, 'Carol Tucker', 'caroltucker02@protonmail.com', '7b308ffa1ed446a0ed87fe1a06770e0a1c8231fca309d82603740e5e551c63a1', '2002-02-10'),
+(20, 'Whitney Peters', 'whitneyp91@gmail.com', '3ef7ffcd0f61dfe0952cff46d4213565733ab109e96129b272a6c3cc7a355f4a', '1991-08-10'),
+(21, 'Erik Williams', 'erikw59@yahoo.com', '1f08483864cf95da973af5c9f9050fa2b7bb0c15d730dcfb6d070d8e5e563214', '1959-05-03'),
+(22, 'Cynthia Wilson', 'cynthiawilson81@outlook.com', '73ed167b935c625b233b952c37a7806e36be9a6a96f6048455436b3953143033', '1981-08-23'),
+(23, 'Matthew Bryant', 'mattb78@gmail.com', '8b124a42d3eeb70314712b3e1cd4bb408059dce0dc3e35c34b552b69d04e9512', '1978-06-17'),
+(24, 'Sherry Wood', 'sherrywood92@archernet.io', '18b3cfa4df9d496a842ad93ed7bf7e95d659ef5915efd4d51626e1aad5f9e5f3', '1992-06-13'),
+(25, 'Matthew Mcmillan', 'mattmcmillan68@fastmail.com', 'ce9a588574674e0e04b212eeeeb95d0f7af041f87c85c1117057f3ab506317e8', '1968-07-25'),
+(26, 'Sarah Wagner', 'sarahwagner77@yahoo.com', '5941a74f3096328368f9fb45e014298c1d8858b034b2488831d5a3a08057b149', '1977-05-29'),
+(27, 'Mandy Green', 'mandyg01@gmail.com', '7d4ac77986d3a2c66a605ea641d231e8cfc3edca864dcdf0e4521ae7eedf19af', '2001-09-25'),
+(28, 'Kimberly Davenport', 'kimdavenport69@outlook.com', '9eb243cb4f34c9b60fe0bab9ce4c7c23cf3627ddfccf28cb0cacaa601fb16003', '1969-01-02'),
+(29, 'Mary Gomez', 'marygomez66@gmail.com', 'e84303888d739510bf26246c32123cbb12854ef01511d54360615518a1526720', '1966-10-04'),
+(30, 'Allison Doyle', 'allydoyle02@doyledesigns.net', '9f945d9f0b5f0d334f915932aef318a81eca9828a238189e1d62a5b9b2e95380', '2002-06-07');
 
 -- =======================
 -- destination rows
 -- =======================
-INSERT INTO destination (destination_id, name, address, zip_code, city, state, country, longitude, latitude) VALUES (1, 'Eiffel Tower', 'Champ de Mars', '75007', 'Paris', '', 'France', NULL, NULL);
-INSERT INTO destination (destination_id, name, address, zip_code, city, state, country, longitude, latitude) VALUES (2, 'Statue of Liberty', 'Liberty Island', '10004', 'New York', 'NY', 'USA', NULL, NULL);
-INSERT INTO destination (destination_id, name, address, zip_code, city, state, country, longitude, latitude) VALUES (3, 'Great Wall', 'Huairou', '', 'Beijing', '', 'China', NULL, NULL);
-INSERT INTO destination (destination_id, name, address, zip_code, city, state, country, longitude, latitude) VALUES (4, 'Sydney Opera House', 'Bennelong Point', '2000', 'Sydney', 'NSW', 'Australia', NULL, NULL);
-INSERT INTO destination (destination_id, name, address, zip_code, city, state, country, longitude, latitude) VALUES (5, 'Christ the Redeemer', 'Parque Nacional da Tijuca', '22241-125', 'Rio de Janeiro', 'RJ', 'Brazil', NULL, NULL);
-INSERT INTO destination (destination_id, name, address, zip_code, city, state, country, longitude, latitude) VALUES (6, 'Machu Picchu', '', '', 'Cusco Region', '', 'Peru', NULL, NULL);
-INSERT INTO destination (destination_id, name, address, zip_code, city, state, country, longitude, latitude) VALUES (7, 'Pyramids of Giza', '', '', 'Giza', '', 'Egypt', NULL, NULL);
-INSERT INTO destination (destination_id, name, address, zip_code, city, state, country, longitude, latitude) VALUES (8, 'Mount Fuji', '', '403-0005', 'Fujiyoshida', 'Yamanashi', 'Japan', NULL, NULL);
-INSERT INTO destination (destination_id, name, address, zip_code, city, state, country, longitude, latitude) VALUES (9, 'Santorini', '', '84700', 'Santorini', 'Cyclades', 'Greece', NULL, NULL);
-INSERT INTO destination (destination_id, name, address, zip_code, city, state, country, longitude, latitude) VALUES (10, 'Banff National Park', '', 'T1L', 'Banff', 'Alberta', 'Canada', NULL, NULL);
-INSERT INTO destination (destination_id, name, address, zip_code, city, state, country, longitude, latitude) VALUES (11, 'Table Mountain', '', '8001', 'Cape Town', 'Western Cape', 'South Africa', NULL, NULL);
-INSERT INTO destination (destination_id, name, address, zip_code, city, state, country, longitude, latitude) VALUES (12, 'Taj Mahal', '', '282001', 'Agra', 'Uttar Pradesh', 'India', NULL, NULL);
-INSERT INTO destination (destination_id, name, address, zip_code, city, state, country, longitude, latitude) VALUES (13, 'Angkor Wat', '', '17252', 'Siem Reap', '', 'Cambodia', NULL, NULL);
-INSERT INTO destination (destination_id, name, address, zip_code, city, state, country, longitude, latitude) VALUES (14, 'Uluru', '', '0872', 'Uluru', 'NT', 'Australia', NULL, NULL);
-INSERT INTO destination (destination_id, name, address, zip_code, city, state, country, longitude, latitude) VALUES (15, 'Petra', '', '', 'Wadi Musa', '', 'Jordan', NULL, NULL);
-INSERT INTO destination (destination_id, name, address, zip_code, city, state, country, longitude, latitude) VALUES (16, 'Grand Canyon', '', '86023', 'Grand Canyon', 'AZ', 'USA', NULL, NULL);
-INSERT INTO destination (destination_id, name, address, zip_code, city, state, country, longitude, latitude) VALUES (17, 'Iguazu Falls', '', '', 'Foz do Iguaçu', 'PR', 'Brazil', NULL, NULL);
-INSERT INTO destination (destination_id, name, address, zip_code, city, state, country, longitude, latitude) VALUES (18, 'Salar de Uyuni', '', '', 'Uyuni', 'Potosí', 'Bolivia', NULL, NULL);
-INSERT INTO destination (destination_id, name, address, zip_code, city, state, country, longitude, latitude) VALUES (19, 'Hallstatt', '', '4830', 'Hallstatt', 'Upper Austria', 'Austria', NULL, NULL);
-INSERT INTO destination (destination_id, name, address, zip_code, city, state, country, longitude, latitude) VALUES (20, 'Cinque Terre', '', '19017', 'Riomaggiore', 'Liguria', 'Italy', NULL, NULL);
-INSERT INTO destination (destination_id, name, address, zip_code, city, state, country, longitude, latitude) VALUES (21, 'Reykjavík Blue Lagoon', '', '240', 'Grindavík', '', 'Iceland', NULL, NULL);
-INSERT INTO destination (destination_id, name, address, zip_code, city, state, country, longitude, latitude) VALUES (22, 'Bali Ubud', '', '80571', 'Ubud', 'Bali', 'Indonesia', NULL, NULL);
-INSERT INTO destination (destination_id, name, address, zip_code, city, state, country, longitude, latitude) VALUES (23, 'Phuket Old Town', '', '83000', 'Phuket', '', 'Thailand', NULL, NULL);
-INSERT INTO destination (destination_id, name, address, zip_code, city, state, country, longitude, latitude) VALUES (24, 'Queenstown', '', '9300', 'Queenstown', 'Otago', 'New Zealand', NULL, NULL);
-INSERT INTO destination (destination_id, name, address, zip_code, city, state, country, longitude, latitude) VALUES (25, 'Zermatt', '', '3920', 'Zermatt', 'Valais', 'Switzerland', NULL, NULL);
-INSERT INTO destination (destination_id, name, address, zip_code, city, state, country, longitude, latitude) VALUES (26, 'Dubai Burj Khalifa', '1 Sheikh Mohammed bin Rashid Blvd', '00000', 'Dubai', '', 'UAE', NULL, NULL);
-INSERT INTO destination (destination_id, name, address, zip_code, city, state, country, longitude, latitude) VALUES (27, 'Hanoi Old Quarter', '', '100000', 'Hanoi', '', 'Vietnam', NULL, NULL);
-INSERT INTO destination (destination_id, name, address, zip_code, city, state, country, longitude, latitude) VALUES (28, 'Lisbon Alfama', '', '1100-585', 'Lisbon', '', 'Portugal', NULL, NULL);
+INSERT INTO destination (destination_id, name, address, zip_code, city, state, country, longitude, latitude) VALUES
+(1, 'Eiffel Tower', 'Champ de Mars', '75007', 'Paris', '', 'France', NULL, NULL),
+(2, 'Statue of Liberty', 'Liberty Island', '10004', 'New York', 'NY', 'USA', NULL, NULL),
+(3, 'Great Wall', 'Huairou', '', 'Beijing', '', 'China', NULL, NULL),
+(4, 'Sydney Opera House', 'Bennelong Point', '2000', 'Sydney', 'NSW', 'Australia', NULL, NULL),
+(5, 'Christ the Redeemer', 'Parque Nacional da Tijuca', '22241-125', 'Rio de Janeiro', 'RJ', 'Brazil', NULL, NULL),
+(6, 'Machu Picchu', '', '', 'Cusco Region', '', 'Peru', NULL, NULL),
+(7, 'Pyramids of Giza', '', '', 'Giza', '', 'Egypt', NULL, NULL),
+(8, 'Mount Fuji', '', '403-0005', 'Fujiyoshida', 'Yamanashi', 'Japan', NULL, NULL),
+(9, 'Santorini', '', '84700', 'Santorini', 'Cyclades', 'Greece', NULL, NULL),
+(10, 'Banff National Park', '', 'T1L', 'Banff', 'Alberta', 'Canada', NULL, NULL),
+(11, 'Table Mountain', '', '8001', 'Cape Town', 'Western Cape', 'South Africa', NULL, NULL),
+(12, 'Taj Mahal', '', '282001', 'Agra', 'Uttar Pradesh', 'India', NULL, NULL),
+(13, 'Angkor Wat', '', '17252', 'Siem Reap', '', 'Cambodia', NULL, NULL),
+(14, 'Uluru', '', '0872', 'Uluru', 'NT', 'Australia', NULL, NULL),
+(15, 'Petra', '', '', 'Wadi Musa', '', 'Jordan', NULL, NULL),
+(16, 'Grand Canyon', '', '86023', 'Grand Canyon', 'AZ', 'USA', NULL, NULL),
+(17, 'Iguazu Falls', '', '', 'Foz do Iguaçu', 'PR', 'Brazil', NULL, NULL),
+(18, 'Salar de Uyuni', '', '', 'Uyuni', 'Potosí', 'Bolivia', NULL, NULL),
+(19, 'Hallstatt', '', '4830', 'Hallstatt', 'Upper Austria', 'Austria', NULL, NULL),
+(20, 'Cinque Terre', '', '19017', 'Riomaggiore', 'Liguria', 'Italy', NULL, NULL),
+(21, 'Reykjavík Blue Lagoon', '', '240', 'Grindavík', '', 'Iceland', NULL, NULL),
+(22, 'Bali Ubud', '', '80571', 'Ubud', 'Bali', 'Indonesia', NULL, NULL),
+(23, 'Phuket Old Town', '', '83000', 'Phuket', '', 'Thailand', NULL, NULL),
+(24, 'Queenstown', '', '9300', 'Queenstown', 'Otago', 'New Zealand', NULL, NULL),
+(25, 'Zermatt', '', '3920', 'Zermatt', 'Valais', 'Switzerland', NULL, NULL),
+(26, 'Dubai Burj Khalifa', '1 Sheikh Mohammed bin Rashid Blvd', '00000', 'Dubai', '', 'UAE', NULL, NULL),
+(27, 'Hanoi Old Quarter', '', '100000', 'Hanoi', '', 'Vietnam', NULL, NULL),
+(28, 'Lisbon Alfama', '', '1100-585', 'Lisbon', '', 'Portugal', NULL, NULL),
+(29, 'Louvre Museum', 'Rue de Rivoli', '75001', 'Paris', '', 'France', NULL, NULL),
+(30, 'Mont Saint-Michel', '', '50170', 'Normandy', '', 'France', NULL, NULL),
+(31, 'Versailles Palace', '', '78000', 'Versailles', '', 'France', NULL, NULL),
+(32, 'Times Square', '', '10036', 'New York', 'NY', 'USA', NULL, NULL),
+(33, 'Yosemite National Park', '', '95389', 'Yosemite Valley', 'CA', 'USA', NULL, NULL),
+(34, 'Golden Gate Bridge', '', '94129', 'San Francisco', 'CA', 'USA', NULL, NULL),
+(35, 'Kyoto Fushimi Inari Shrine', '', '612-0882', 'Kyoto', 'Kyoto', 'Japan', NULL, NULL),
+(36, 'Tokyo Shibuya Crossing', '', '150-0042', 'Tokyo', 'Tokyo', 'Japan', NULL, NULL),
+(37, 'Nara Deer Park', '', '630-8211', 'Nara', 'Nara', 'Japan', NULL, NULL),
+(38, 'Bondi Beach', '', '2026', 'Sydney', 'NSW', 'Australia', NULL, NULL),
+(39, 'Great Barrier Reef', '', '4870', 'Cairns', 'QLD', 'Australia', NULL, NULL),
+(40, 'Blue Mountains', '', '2780', 'Katoomba', 'NSW', 'Australia', NULL, NULL),
+(41, 'Sugarloaf Mountain', '', '22290-270', 'Rio de Janeiro', 'RJ', 'Brazil', NULL, NULL),
+(42, 'Pelourinho Historic Center', '', '40026-280', 'Salvador', 'BA', 'Brazil', NULL, NULL),
+(43, 'Amazon Rainforest Gateway', '', '69000-000', 'Manaus', 'AM', 'Brazil', NULL, NULL),
+(44, 'Florence Duomo', '', '50122', 'Florence', 'Tuscany', 'Italy', NULL, NULL),
+(45, 'Venice Grand Canal', '', '30100', 'Venice', 'Veneto', 'Italy', NULL, NULL),
+(46, 'Colosseum', '', '00184', 'Rome', 'Lazio', 'Italy', NULL, NULL),
+(47, 'Jaipur Amber Fort', '', '302001', 'Jaipur', 'Rajasthan', 'India', NULL, NULL),
+(48, 'Kerala Backwaters', '', '688001', 'Alleppey', 'Kerala', 'India', NULL, NULL),
+(49, 'Varanasi Ghats', '', '221001', 'Varanasi', 'Uttar Pradesh', 'India', NULL, NULL),
+(50, 'Mykonos Windmills', '', '84600', 'Mykonos', 'Cyclades', 'Greece', NULL, NULL),
+(51, 'Delphi Archaeological Site', '', '33054', 'Delphi', 'Phocis', 'Greece', NULL, NULL),
+(52, 'Niagara Falls', '', 'L2G', 'Niagara Falls', 'Ontario', 'Canada', NULL, NULL),
+(53, 'Whistler Blackcomb', '', 'V0N', 'Whistler', 'British Columbia', 'Canada', NULL, NULL),
+(54, 'Cape Point', '', '7975', 'Cape Town', 'Western Cape', 'South Africa', NULL, NULL),
+(55, 'Robben Island', '', '7400', 'Cape Town', 'Western Cape', 'South Africa', NULL, NULL);
 
 -- =======================
 -- trip rows
 -- =======================
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (1, 1, 1, '2025-06-17', '2025-06-25', 'Group of friends planning a cultural trip.');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (2, 1, 4, '2026-08-18', '2026-08-30', 'Backpacking trip, anyone interested to share costs?');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (3, 1, 9, '2025-03-02', '2025-03-10', 'Solo traveler seeking adventure buddies!');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (4, 2, 1, '2027-01-02', '2027-01-20', 'we are a family of 5, looking for travel companions...');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (5, 2, 4, '2025-12-12', '2025-12-19', 'Couple exploring new destinations, happy to meet fellow travelers.');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (6, 2, 9, '2025-11-07', '2025-11-12', 'Couple exploring new destinations, happy to meet fellow travelers.');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (7, 3, 4, '2026-12-17', '2027-01-04', 'Hiking and nature, moderate pace, friendly vibes.');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (8, 3, 1, '2026-06-28', '2026-07-11', 'Backpacking trip, anyone interested to share costs?');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (9, 3, 6, '2026-04-20', '2026-05-08', 'Group of friends planning a cultural trip.');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (10, 4, 6, '2025-12-20', '2025-12-31', 'Solo traveler seeking adventure buddies!');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (11, 5, 2, '2025-12-13', '2025-12-30', 'Foodie tour—street food and local markets, join us!');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (12, 6, 1, '2025-02-06', '2025-02-19', 'Hiking and nature, moderate pace, friendly vibes.');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (13, 6, 7, '2027-10-23', '2027-10-31', 'Solo traveler seeking adventure buddies!');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (14, 7, 10, '2025-10-28', '2025-11-11', 'Foodie tour—street food and local markets, join us!');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (15, 7, 2, '2026-09-11', '2026-09-22', 'we are a family of 5, looking for travel companions...');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (16, 7, 5, '2026-05-25', '2026-06-06', 'Solo traveler seeking adventure buddies!');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (17, 8, 7, '2026-03-09', '2026-03-17', 'Group of friends planning a cultural trip.');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (18, 9, 3, '2025-04-18', '2025-05-04', 'Foodie tour—street food and local markets, join us!');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (19, 9, 4, '2026-03-10', '2026-03-26', 'Group of friends planning a cultural trip.');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (20, 10, 10, '2026-06-30', '2026-07-07', 'Backpacking trip, anyone interested to share costs?');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (21, 10, 3, '2027-09-24', '2027-10-06', 'Hiking and nature, moderate pace, friendly vibes.');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (22, 10, 5, '2027-03-03', '2027-03-20', 'Remote work & travel month—co-working welcome.');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (23, 11, 1, '2026-09-13', '2026-09-28', 'Couple exploring new destinations, happy to meet fellow travelers.');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (24, 12, 7, '2027-11-22', '2027-12-07', 'Group of friends planning a cultural trip.');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (25, 13, 10, '2027-04-13', '2027-04-24', 'Foodie tour—street food and local markets, join us!');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (26, 14, 7, '2026-05-30', '2026-06-19', 'Hiking and nature, moderate pace, friendly vibes.');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (27, 15, 3, '2025-02-12', '2025-02-25', 'Couple exploring new destinations, happy to meet fellow travelers.');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (28, 16, 10, '2025-06-29', '2025-07-12', 'Photography-focused trip; early sunrises expected.');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (29, 16, 6, '2026-02-10', '2026-02-27', 'Couple exploring new destinations, happy to meet fellow travelers.');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (30, 16, 9, '2025-10-05', '2025-10-14', 'Hiking and nature, moderate pace, friendly vibes.');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (31, 17, 2, '2027-06-21', '2027-06-27', 'Backpacking trip, anyone interested to share costs?');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (32, 18, 7, '2026-02-17', '2026-02-27', 'First-time visiting, open to tips and companions.');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (33, 18, 7, '2025-03-01', '2025-03-08', 'Photography-focused trip; early sunrises expected.');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (34, 18, 9, '2025-06-18', '2025-07-07', 'Group of friends planning a cultural trip.');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (35, 19, 2, '2027-07-16', '2027-07-21', 'Remote work & travel month—co-working welcome.');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (36, 19, 6, '2026-11-07', '2026-11-20', 'Solo traveler seeking adventure buddies!');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (37, 19, 7, '2026-06-22', '2026-07-06', 'Backpacking trip, anyone interested to share costs?');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (38, 20, 5, '2026-05-03', '2026-05-08', 'Remote work & travel month—co-working welcome.');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (39, 20, 9, '2026-11-09', '2026-11-19', 'Solo traveler seeking adventure buddies!');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (40, 21, 9, '2027-07-31', '2027-08-14', 'First-time visiting, open to tips and companions.');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (41, 21, 3, '2027-03-06', '2027-03-17', 'Foodie tour—street food and local markets, join us!');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (42, 21, 9, '2025-06-29', '2025-07-09', 'Remote work & travel month—co-working welcome.');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (43, 22, 8, '2026-08-22', '2026-09-06', 'we are a family of 5, looking for travel companions...');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (44, 23, 5, '2027-06-15', '2027-07-01', 'Couple exploring new destinations, happy to meet fellow travelers.');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (45, 24, 10, '2025-10-23', '2025-11-04', 'Solo traveler seeking adventure buddies!');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (46, 25, 2, '2026-01-31', '2026-02-20', 'Remote work & travel month—co-working welcome.');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (47, 26, 8, '2025-03-10', '2025-03-19', 'Remote work & travel month—co-working welcome.');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (48, 27, 9, '2026-11-09', '2026-11-22', 'First-time visiting, open to tips and companions.');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (49, 28, 9, '2025-01-03', '2025-01-14', 'Couple exploring new destinations, happy to meet fellow travelers.');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (50, 28, 7, '2027-03-19', '2027-04-02', 'Foodie tour—street food and local markets, join us!');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (51, 29, 2, '2027-04-17', '2027-05-06', 'Couple exploring new destinations, happy to meet fellow travelers.');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (52, 29, 2, '2027-12-03', '2027-12-15', 'Foodie tour—street food and local markets, join us!');
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES (53, 30, 10, '2027-11-08', '2027-11-20', 'Couple exploring new destinations, happy to meet fellow travelers.');
+INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
+(1, 1, 1, '2025-06-17', '2025-06-25', 'Exploring ancient ruins and hidden cafés—solo but open to serendipity.'),
+(2, 1, 4, '2026-08-18', '2026-08-30', 'Budget backpacking across mountain villages—let’s split snacks and stories.'),
+(3, 1, 9, '2025-03-02', '2025-03-10', 'Seeking thrill-seekers for canyon dives and midnight bonfires.'),
+(4, 2, 1, '2027-01-02', '2027-01-20', 'Family road trip with room for one more—must love board games.'),
+(5, 2, 4, '2025-12-12', '2025-12-19', 'Romantic escape with room for fellow sunset chasers.'),
+(6, 2, 9, '2025-11-07', '2025-11-12', 'Spontaneous couple’s getaway—open to group hikes and wine tastings.'),
+(7, 3, 4, '2026-12-17', '2027-01-04', 'Forest trails, campfire chats, and zero Wi-Fi—nature lovers welcome.'),
+(8, 3, 1, '2026-06-28', '2026-07-11', 'Solo trek through coastal towns—sharing costs and laughs encouraged.'),
+(9, 3, 6, '2026-04-20', '2026-05-08', 'Art museums by day, jazz bars by night—culture crew wanted.'),
+(10, 4, 6, '2025-12-20', '2025-12-31', 'Solo traveler chasing northern lights—bring your camera and cocoa.'),
+(11, 5, 2, '2025-12-13', '2025-12-30', 'Street food crawl across three cities—forks optional, fun mandatory.'),
+(12, 6, 1, '2025-02-06', '2025-02-19', 'Mountain meditation and waterfall hikes—peaceful souls preferred.'),
+(13, 6, 7, '2027-10-23', '2027-10-31', 'Solo wanderer seeking spontaneous companions for city-hopping.'),
+(14, 7, 10, '2025-10-28', '2025-11-11', 'Gastronomic adventure through spice markets and rooftop eateries.'),
+(15, 7, 2, '2026-09-11', '2026-09-22', 'Family of five heading south—room for a storyteller or two.'),
+(16, 7, 5, '2026-05-25', '2026-06-06', 'Solo journey through desert landscapes—sunrise hikes and stargazing.'),
+(17, 8, 7, '2026-03-09', '2026-03-17', 'Friends reuniting for a cultural deep dive—open to new faces.'),
+(18, 9, 3, '2025-04-18', '2025-05-04', 'Food tour with a twist—local chefs, secret recipes, and spice.'),
+(19, 9, 4, '2026-03-10', '2026-03-26', 'Cultural immersion trip—temples, textiles, and tea ceremonies.'),
+(20, 10, 10, '2026-06-30', '2026-07-07', 'Backpacking through waterfalls and hostels—let’s keep it light.'),
+(21, 10, 3, '2027-09-24', '2027-10-06', 'Nature retreat with yoga mornings and trail mix afternoons.'),
+(22, 10, 5, '2027-03-03', '2027-03-20', 'Digital nomads unite—co-working by day, exploring by night.'),
+(23, 11, 1, '2026-09-13', '2026-09-28', 'Couple’s escape with room for a fellow dreamer.'),
+(24, 12, 7, '2027-11-22', '2027-12-07', 'Cultural circuit with museum marathons and local dance nights.'),
+(25, 13, 10, '2027-04-13', '2027-04-24', 'Foodie fiesta—tacos, tagines, and taste-testing galore.'),
+(26, 14, 7, '2026-05-30', '2026-06-19', 'Trailblazing through national parks—boots, bugs, and bliss.'),
+(27, 15, 3, '2025-02-12', '2025-02-25', 'Romantic road trip with space for a third wheel (with good vibes).'),
+(28, 16, 10, '2025-06-29', '2025-07-12', 'Photography expedition—golden hours and moody skies guaranteed.'),
+(29, 16, 6, '2026-02-10', '2026-02-27', 'Couple’s retreat with open itinerary—join us for the unexpected.'),
+(30, 16, 9, '2025-10-05', '2025-10-14', 'Nature escape with forest bathing and hammock naps.'),
+(31, 17, 2, '2027-06-21', '2027-06-27', 'Backpacking duo seeking budget-savvy explorers.'),
+(32, 18, 7, '2026-02-17', '2026-02-27', 'First-time traveler—open to tips, tricks, and travel buddies.'),
+(33, 18, 7, '2025-03-01', '2025-03-08', 'Photo safari—sunrises, silhouettes, and shutter clicks.'),
+(34, 18, 9, '2025-06-18', '2025-07-07', 'Cultural caravan—markets, music, and midnight strolls.'),
+(35, 19, 2, '2027-07-16', '2027-07-21', 'Remote work week in paradise—Wi-Fi and waves included.'),
+(36, 19, 6, '2026-11-07', '2026-11-20', 'Solo explorer seeking kindred spirits for shared adventures.'),
+(37, 19, 7, '2026-06-22', '2026-07-06', 'Budget backpacking with beach bonfires and hostel hangs.'),
+(38, 20, 5, '2026-05-03', '2026-05-08', 'Work-from-anywhere crew—bring your laptop and wanderlust.'),
+(39, 20, 9, '2026-11-09', '2026-11-19', 'Solo mission to find the best view and worst coffee.'),
+(40, 21, 9, '2027-07-31', '2027-08-14', 'First-time abroad—open to guidance and good company.'),
+(41, 21, 3, '2027-03-06', '2027-03-17', 'Culinary crawl through three countries—forks up!'),
+(42, 21, 9, '2025-06-29', '2025-07-09', 'Remote work retreat—cozy cafés and quiet corners.'),
+(43, 22, 8, '2026-08-22', '2026-09-06', 'Family adventure with space for storytellers and snack-sharers.'),
+(44, 23, 5, '2027-06-15', '2027-07-01', 'Couple’s journey—open to fellow romantics and wanderers.'),
+(45, 24, 10, '2025-10-23', '2025-11-04', 'Solo trek with a twist—join for the laughs, stay for the views.'),
+(46, 25, 2, '2026-01-31', '2026-02-20', 'Work and wander—co-working by day, wine by night.'),
+(47, 26, 8, '2025-03-10', '2025-03-19', 'Remote work escape—bring your best playlists and productivity.'),
+(48, 27, 9, '2026-11-09', '2026-11-22', 'First-time traveler—curious, cautious, and caffeinated.'),
+(49, 28, 9, '2025-01-03', '2025-01-14', 'Couple’s trip with room for a third adventurer.'),
+(50, 28, 7, '2027-03-19', '2027-04-02', 'Foodie tour through hidden gems—expect spice, stories, and surprises.'),
+(51, 29, 2, '2027-04-17', '2027-05-06', 'Couple’s escape with flexible plans—open to spontaneous detours.'),
+(52, 29, 2, '2027-12-03', '2027-12-15', 'Winter wanderlust—hot drinks, cold air, and cozy company.'),
+(53, 30, 10, '2027-11-08', '2027-11-20', 'Cultural deep dive with local guides and off-the-map adventures.');
 
 -- =======================
 -- itinerary rows

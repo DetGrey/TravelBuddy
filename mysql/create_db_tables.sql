@@ -4,11 +4,15 @@
 CREATE DATABASE IF NOT EXISTS travel_buddy;
 USE travel_buddy;
 
+DROP TABLE IF EXISTS itinerary;
+DROP TABLE IF EXISTS buddy;
+DROP TABLE IF EXISTS destination;
+DROP TABLE IF EXISTS trip;
+DROP TABLE IF EXISTS user;
+
 -- =====================================
 -- User Table
 -- =====================================
-
-DROP TABLE IF EXISTS user;
 CREATE TABLE IF NOT EXISTS user (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -20,7 +24,6 @@ CREATE TABLE IF NOT EXISTS user (
 -- =====================================
 -- Trip Table
 -- =====================================
-DROP TABLE IF EXISTS trip;
 CREATE TABLE IF NOT EXISTS trip (
     trip_id INT AUTO_INCREMENT PRIMARY KEY,
     owner_id INT NOT NULL,
@@ -36,7 +39,6 @@ CREATE TABLE IF NOT EXISTS trip (
 -- =====================================
 -- Destination Table
 -- =====================================
-DROP TABLE IF EXISTS destination;
 CREATE TABLE IF NOT EXISTS destination (
     destination_id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
@@ -52,7 +54,6 @@ CREATE TABLE IF NOT EXISTS destination (
 -- =====================================
 -- Itinerary Table
 -- =====================================
-DROP TABLE IF EXISTS itinerary;
 CREATE TABLE IF NOT EXISTS itinerary (
     trip_destination_id INT AUTO_INCREMENT PRIMARY KEY,
     destination_id INT NOT NULL,
@@ -71,7 +72,6 @@ CREATE TABLE IF NOT EXISTS itinerary (
 -- =====================================
 -- Buddy Table
 -- =====================================
-DROP TABLE IF EXISTS buddy;
 CREATE TABLE IF NOT EXISTS buddy (
     buddy_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
