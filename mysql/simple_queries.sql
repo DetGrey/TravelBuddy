@@ -1,10 +1,17 @@
 USE travel_buddy;
+show tables;
+
+SELECT *
+FROM trip_destination;
 
 SELECT *
 FROM trip_destination
 INNER JOIN destination USING (destination_id)
-WHERE trip_id = 50
+WHERE trip_id = 11
 ORDER BY sequence_number;
 
 SELECT *
-FROM destination;
+FROM trip_destination
+INNER JOIN destination USING (destination_id)
+where trip_id = 45
+ORDER BY sequence_number;
