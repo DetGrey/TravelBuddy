@@ -1,8 +1,8 @@
 -- =====================================
 -- Create Database
 -- =====================================
-CREATE DATABASE IF NOT EXISTS travel_buddy;
-USE travel_buddy;
+CREATE DATABASE IF NOT EXISTS travel_buddy_db;
+USE travel_buddy_db;
 
 DROP TABLE IF EXISTS message;
 DROP TABLE IF EXISTS buddy;
@@ -32,6 +32,18 @@ CREATE TABLE IF NOT EXISTS user (
 );
 
 -- =====================================
+-- Destination Table
+-- =====================================
+CREATE TABLE destination (
+    destination_id INT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    state VARCHAR(255),
+    country VARCHAR(255) NOT NULL,
+    longitude DECIMAL(10, 7),
+    latitude DECIMAL(10, 7)
+);
+
+-- =====================================
 -- Trip Table (preserve trip if owner is deleted)
 -- =====================================
 CREATE TABLE IF NOT EXISTS trip (
@@ -47,22 +59,7 @@ CREATE TABLE IF NOT EXISTS trip (
 );
 
 -- =====================================
--- Destination Table
--- =====================================
-CREATE TABLE IF NOT EXISTS destination (
-    destination_id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(150) NOT NULL,
-    address VARCHAR(255),
-    zip_code VARCHAR(20),
-    city VARCHAR(100),
-    state VARCHAR(100),
-    country VARCHAR(100) NOT NULL,
-    longitude DECIMAL(10, 7),
-    latitude DECIMAL(10, 7)
-);
-
--- =====================================
--- Itinerary Table
+-- Trip destination Table
 -- =====================================
 CREATE TABLE IF NOT EXISTS trip_destination (
     trip_destination_id INT AUTO_INCREMENT PRIMARY KEY,
