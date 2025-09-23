@@ -13,5 +13,4 @@ ORDER BY sequence_number;
 SELECT *
 FROM trip_destination
 INNER JOIN destination USING (destination_id)
-where trip_id = 45
-ORDER BY sequence_number;
+ORDER BY trip_id;
