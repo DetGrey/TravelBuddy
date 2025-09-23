@@ -1,9 +1,9 @@
 USE travel_buddy;
 
 SELECT *
-FROM itinerary
+FROM trip_destination
 INNER JOIN destination USING (destination_id)
-WHERE trip_id = 11
+WHERE trip_id = 50
 ORDER BY sequence_number;
 
 SELECT *

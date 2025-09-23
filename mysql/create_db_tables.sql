@@ -10,13 +10,14 @@ DROP TABLE IF EXISTS conversation_participant;
 DROP TABLE IF EXISTS conversation;
 DROP TABLE IF EXISTS message;
 DROP TABLE IF EXISTS trip_destination;
+DROP TABLE IF EXISTS archived_conversation_participant;
+DROP TABLE IF EXISTS archived_message;
+DROP TABLE IF EXISTS archived_conversation;
+DROP TABLE IF EXISTS archived_trip_destination;
 DROP TABLE IF EXISTS destination;
 DROP TABLE IF EXISTS trip;
 DROP TABLE IF EXISTS user;
-DROP TABLE IF EXISTS archived_conversation;
-DROP TABLE IF EXISTS archived_conversation_participant;
-DROP TABLE IF EXISTS archived_message;
-DROP TABLE IF EXISTS archived_trip_destination;
+
 
 -- =====================================
 -- User Table (with soft delete flag)
@@ -87,12 +88,12 @@ CREATE TABLE IF NOT EXISTS buddy (
     trip_destination_id INT NOT NULL,
     person_count INT DEFAULT 1 CHECK (person_count >= 1),
     note VARCHAR(255),
-    request_status ENUM('pending', 'accepted', 'declined') NOT NULL DEFAULT 'pending',
+    request_status ENUM('pending', 'accepted', 'rejected') NOT NULL DEFAULT 'pending',
     CONSTRAINT fk_buddy_user FOREIGN KEY (user_id) REFERENCES user(user_id)
         ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT fk_buddy_tripDestination FOREIGN KEY (trip_destination_id) REFERENCES trip_destination(trip_destination_id)
         ON DELETE CASCADE ON UPDATE CASCADE
-);
+    );
 
 -- =====================================
 -- Conversation Table
