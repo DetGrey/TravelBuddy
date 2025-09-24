@@ -34,7 +34,7 @@ UPDATE user
 SET name = 'Deleted User',
     email = CONCAT('deleted_', user_id, '@example.com'),
     password_hash = NULL,
-    birthdate = NULL
+    birthdate = NOW()
 WHERE user_id = ?;
 ```
 

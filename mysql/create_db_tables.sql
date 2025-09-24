@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS trip (
     end_date DATE NOT NULL,
     description TEXT,
     CONSTRAINT fk_trip_owner FOREIGN KEY (owner_id) REFERENCES user(user_id)
-        ON DELETE SET NULL ON UPDATE CASCADE,
+        ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT chk_trip_dates CHECK (end_date >= start_date)
 );
 
@@ -128,7 +128,7 @@ CREATE TABLE IF NOT EXISTS message (
     sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     conversation_id INT NOT NULL,
     CONSTRAINT fk_message_sender FOREIGN KEY (sender_id) REFERENCES user(user_id)
-        ON DELETE SET NULL ON UPDATE CASCADE,
+        ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT fk_message_conversation FOREIGN KEY (conversation_id) REFERENCES conversation(conversation_id)
         ON DELETE CASCADE ON UPDATE CASCADE
 );
