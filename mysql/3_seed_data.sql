@@ -190,7 +190,7 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (1, 24, 1, 1, 'accepted'),
 (2, 79, 1, 2, 'accepted'),
 (3, 71, 1, 1, 'rejected'),
-(4, 70, 2, 1, 'accepted'),
+(4, 70, 2, 1, 'pending'),
 (5, 69, 2, 1, 'accepted'),
 (6, 43, 2, 1, 'accepted'),
 (7, 29, 2, 1, 'rejected');
@@ -206,10 +206,10 @@ INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, star
 INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request_status) VALUES
 (8, 8, 3, 1, 'accepted'),
 (9, 78, 3, 1, 'accepted'),
-(10, 72, 3, 1, 'accepted'),
+(10, 72, 3, 1, 'pending'),
 (11, 25, 4, 1, 'accepted'),
 (12, 32, 4, 1, 'accepted'),
-(13, 13, 4, 2, 'accepted'),
+(13, 13, 4, 2, 'pending'),
 (14, 65, 4, 1, 'rejected');
 
 -- Trip 3: A Southern French Getaway
@@ -226,7 +226,7 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (17, 21, 5, 1, 'rejected'),
 (18, 18, 5, 1, 'accepted'),
 (19, 68, 6, 2, 'accepted'),
-(20, 63, 6, 1, 'accepted');
+(20, 63, 6, 1, 'pending');
 
 -- Trip 4: Parisian Romance & Riviera Glamour
 INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
@@ -254,7 +254,7 @@ INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, star
 
 INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request_status) VALUES
 (27, 27, 9, 1, 'accepted'),
-(28, 55, 9, 1, 'accepted'),
+(28, 55, 9, 1, 'pending'),
 (29, 29, 9, 1, 'accepted'),
 (30, 30, 10, 1, 'accepted'),
 (31, 50, 10, 2, 'accepted'),
@@ -289,7 +289,7 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (61, 2, 20, 1, 'accepted'),
 (62, 11, 20, 1, 'rejected'),
 (63, 63, 21, 1, 'accepted'),
-(64, 48, 21, 2, 'accepted'),
+(64, 48, 21, 2, 'pending'),
 (65, 65, 21, 1, 'accepted'),
 (66, 26, 21, 1, 'rejected');
 
@@ -325,7 +325,7 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (75, 75, 25, 1, 'accepted'),
 (76, 2, 26, 1, 'accepted'),
 (77, 11, 26, 2, 'accepted'),
-(78, 38, 27, 1, 'accepted'),
+(78, 38, 27, 1, 'pending'),
 (79, 29, 27, 1, 'accepted'),
 (80, 80, 27, 1, 'accepted');
 
