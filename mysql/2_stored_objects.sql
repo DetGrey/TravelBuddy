@@ -1,4 +1,16 @@
 USE travel_buddy;
+# INDEX
+-- Date + FK'er
+CREATE INDEX idx_td_dates on trip_destination (start_date, end_date);
+CREATE INDEX idx_td_trip on trip_destination (trip_id);
+# Lavet allerede CREATE Index idx_td_destination on trip_destination(destination_id);
+
+-- Location
+CREATE INDEX idx_dest_contry_state ON destination (country,state);
+
+-- Buddies (count)
+CREATE INDEX idx_buddy_seg_status on buddy (trip_destination_id, request_status);
+
 # GLOBAL VIEWS
 
 # GLOBAL FUNCTIONS
