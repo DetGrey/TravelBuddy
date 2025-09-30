@@ -1,26 +1,25 @@
 -- =====================================
 -- Create Database
 -- =====================================
-CREATE DATABASE IF NOT EXISTS travel_buddy_db;
-USE travel_buddy_db;
+CREATE DATABASE IF NOT EXISTS travel_buddy;
+USE travel_buddy;
 
 DROP TABLE IF EXISTS message;
+DROP TABLE IF EXISTS buddy_audit;
 DROP TABLE IF EXISTS buddy;
+DROP TABLE IF EXISTS conversation_audit;
 DROP TABLE IF EXISTS conversation_participant;
 DROP TABLE IF EXISTS conversation;
 DROP TABLE IF EXISTS message;
+DROP TABLE IF EXISTS trip_audit;
 DROP TABLE IF EXISTS trip_destination;
-DROP TABLE IF EXISTS archived_conversation_participant;
-DROP TABLE IF EXISTS archived_message;
-DROP TABLE IF EXISTS archived_conversation;
-DROP TABLE IF EXISTS archived_trip_destination;
 DROP TABLE IF EXISTS destination;
 DROP TABLE IF EXISTS trip;
 DROP TABLE IF EXISTS user;
-
+DROP TABLE IF EXISTS system_event_log;
 
 -- =====================================
--- User Table (with soft delete flag)
+-- User Table
 -- =====================================
 CREATE TABLE IF NOT EXISTS user (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -44,7 +43,7 @@ CREATE TABLE destination (
 );
 
 -- =====================================
--- Trip Table (preserve trip if owner is deleted)
+-- Trip Table
 -- =====================================
 CREATE TABLE IF NOT EXISTS trip (
     trip_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -53,6 +52,7 @@ CREATE TABLE IF NOT EXISTS trip (
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
     description TEXT,
+    is_archived BOOLEAN DEFAULT FALSE,
     CONSTRAINT fk_trip_owner FOREIGN KEY (owner_id) REFERENCES user(user_id)
         ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT chk_trip_dates CHECK (end_date >= start_date)
@@ -69,6 +69,7 @@ CREATE TABLE IF NOT EXISTS trip_destination (
     end_date DATE NOT NULL,
     sequence_number INT NOT NULL,
     description TEXT,
+    is_archived BOOLEAN DEFAULT FALSE,
     CONSTRAINT fk_itinerary_destination FOREIGN KEY (destination_id) REFERENCES destination(destination_id)
         ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT fk_itinerary_trip FOREIGN KEY (trip_id) REFERENCES trip(trip_id)
@@ -85,6 +86,8 @@ CREATE TABLE IF NOT EXISTS buddy (
     trip_destination_id INT NOT NULL,
     person_count INT DEFAULT 1 CHECK (person_count >= 1),
     note VARCHAR(255),
+    is_active BOOLEAN DEFAULT TRUE,
+    departure_reason VARCHAR(255) DEFAULT NULL,
     request_status ENUM('pending', 'accepted', 'rejected') NOT NULL DEFAULT 'pending',
     CONSTRAINT fk_buddy_user FOREIGN KEY (user_id) REFERENCES user(user_id)
         ON DELETE CASCADE ON UPDATE CASCADE,
@@ -100,6 +103,7 @@ CREATE TABLE IF NOT EXISTS conversation (
     trip_destination_id INT,
     is_group BOOLEAN DEFAULT FALSE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    is_archived BOOLEAN DEFAULT FALSE,
     CONSTRAINT fk_conversation_trip FOREIGN KEY (trip_destination_id) REFERENCES trip_destination(trip_destination_id)
         ON DELETE SET NULL ON UPDATE CASCADE
 );
@@ -119,7 +123,7 @@ CREATE TABLE IF NOT EXISTS conversation_participant (
 );
 
 -- =====================================
--- Message Table (preserve messages if sender is deleted)
+-- Message Table
 -- =====================================
 CREATE TABLE IF NOT EXISTS message (
     message_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -133,61 +137,62 @@ CREATE TABLE IF NOT EXISTS message (
         ON DELETE CASCADE ON UPDATE CASCADE
 );
 
--- =====================================
--- Archive Tables
--- This script creates archive tables for trips and their related data
--- =====================================
-
--- Create the archived_trip_destination table
--- This table will store completed trips and their destinations.
-CREATE TABLE IF NOT EXISTS archived_trip_destination (
-    trip_destination_id INT PRIMARY KEY,
-    trip_id INT NOT NULL,
-    destination_id INT NOT NULL,
-    start_date DATE,
-    end_date DATE,
-    description TEXT,
-    -- Add an archived_at timestamp to track when the data was moved
-    archived_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_arch_td_trip FOREIGN KEY (trip_id) REFERENCES trip(trip_id)
+-- Buddy Audit Table
+-- Tracks buddy requests, acceptances, removals, and departures
+CREATE TABLE IF NOT EXISTS buddy_audit (
+    audit_id INT AUTO_INCREMENT PRIMARY KEY,
+    buddy_id INT NOT NULL,
+    action ENUM('requested', 'accepted', 'rejected', 'removed', 'left') NOT NULL,
+    reason VARCHAR(255),
+    changed_by INT,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_buddy_audit_buddy FOREIGN KEY (buddy_id) REFERENCES buddy(buddy_id)
         ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT fk_arch_td_destination FOREIGN KEY (destination_id) REFERENCES destination(destination_id)
-        ON DELETE CASCADE ON UPDATE CASCADE
-);
-
--- Create the archived_conversation table
--- This table will store conversations related to completed trips.
-CREATE TABLE IF NOT EXISTS archived_conversation (
-    conversation_id INT PRIMARY KEY,
-    trip_destination_id INT,
-    is_group BOOLEAN DEFAULT FALSE,
-    created_at DATETIME,
-    archived_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_arch_convo_td FOREIGN KEY (trip_destination_id) REFERENCES archived_trip_destination(trip_destination_id)
+    CONSTRAINT fk_buddy_audit_user FOREIGN KEY (changed_by) REFERENCES user(user_id)
         ON DELETE SET NULL ON UPDATE CASCADE
 );
 
--- Create the archived_conversation_participant table
--- This table will store participants for archived conversations.
-CREATE TABLE IF NOT EXISTS archived_conversation_participant (
-    conversation_id INT NOT NULL,
-    user_id INT NOT NULL,
-    joined_at DATETIME,
-    archived_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (conversation_id, user_id),
-    CONSTRAINT fk_arch_cp_convo FOREIGN KEY (conversation_id) REFERENCES archived_conversation(conversation_id)
-        ON DELETE CASCADE ON UPDATE CASCADE
+-- Trip Audit Table
+-- Tracks changes in trip details like dates, max buddies, and archival status
+CREATE TABLE IF NOT EXISTS trip_audit (
+    audit_id INT AUTO_INCREMENT PRIMARY KEY,
+    trip_id INT NOT NULL,
+    action ENUM('created', 'updated', 'deleted') NOT NULL,
+    field_changed VARCHAR(100), -- e.g., 'start_date', 'end_date', 'max_buddies'
+    old_value TEXT,
+    new_value TEXT,
+    changed_by INT, -- user who made the change
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_trip_audit_trip FOREIGN KEY (trip_id) REFERENCES trip(trip_id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_trip_audit_user FOREIGN KEY (changed_by) REFERENCES user(user_id)
+        ON DELETE SET NULL ON UPDATE CASCADE
 );
 
--- Create the archived_message table
--- This table will store messages from archived conversations.
-CREATE TABLE IF NOT EXISTS archived_message (
-    message_id INT PRIMARY KEY,
-    sender_id INT,
-    content TEXT NOT NULL,
-    sent_at DATETIME,
+-- Conversation Audit Table
+-- Tracks creation and participant changes in conversations
+CREATE TABLE IF NOT EXISTS conversation_audit (
+    audit_id INT AUTO_INCREMENT PRIMARY KEY,
     conversation_id INT NOT NULL,
-    archived_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_arch_msg_convo FOREIGN KEY (conversation_id) REFERENCES archived_conversation(conversation_id)
-        ON DELETE CASCADE ON UPDATE CASCADE
+    affected_user_id INT, -- the user added or removed (if applicable)
+    action ENUM('created', 'user_added', 'user_removed') NOT NULL,
+    triggered_by INT, -- who initiated the action
+    message_sent TEXT, -- E.g. 'Group chat created for trip destination X'
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_convo_audit_convo FOREIGN KEY (conversation_id) REFERENCES conversation(conversation_id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_convo_audit_affected FOREIGN KEY (affected_user_id) REFERENCES user(user_id)
+        ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT fk_convo_audit_triggered FOREIGN KEY (triggered_by) REFERENCES user(user_id)
+        ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+-- System Event Log Table
+-- Tracks automated processes like monthly archiving
+CREATE TABLE IF NOT EXISTS system_event_log (
+    event_id INT AUTO_INCREMENT PRIMARY KEY,
+    event_type VARCHAR(100) NOT NULL,
+    affected_rows INT,
+    triggered_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    details TEXT
 );
