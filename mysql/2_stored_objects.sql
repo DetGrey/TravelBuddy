@@ -54,14 +54,22 @@ END;
 
 # 1. User can search for a trip destination using start/end dates, buddy count and location.
 # Maybe also description – for specific activities.
-WITH accepted_by_trip AS (
-    SELECT td.trip_id,
-           SUM(b.person_count) as accepted_persons
+WITH per_trip_buddy AS (
+    SELECT
+        td.trip_id,
+        b.user_id,
+        MAX(b.person_count) AS persons_once
     FROM buddy b
     JOIN trip_destination td
     ON td.trip_destination_id = b.trip_destination_id
     WHERE b.request_status = 'accepted'
-    GROUP BY td.trip_id
+    GROUP BY td.trip_id, b.user_id
+),
+accepted_by_trip AS (
+    SELECT trip_id,
+           SUM(persons_once) as accepted_persons
+    FROM per_trip_buddy
+    GROUP BY trip_id
 )
 
 SELECT
@@ -123,9 +131,30 @@ ORDER BY td.start_date
 LIMIT 20;
 
 
-SELECT * from trip_destination;
-SELECT * from destination;
-SELECT * FROM buddy;
+-- Overbookede trips
+    WITH accepted_by_trip AS (
+  SELECT td.trip_id, SUM(b.person_count) AS accepted_persons
+  FROM buddy b
+  JOIN trip_destination td ON td.trip_destination_id = b.trip_destination_id
+  WHERE b.request_status = 'accepted'
+  GROUP BY td.trip_id
+)
+SELECT t.trip_id, t.max_buddies,
+       COALESCE(abt.accepted_persons,0) AS accepted_persons,
+       (COALESCE(t.max_buddies,0) - COALESCE(abt.accepted_persons,0)) AS remaining
+FROM trip t
+LEFT JOIN accepted_by_trip abt ON abt.trip_id = t.trip_id
+WHERE (COALESCE(t.max_buddies,0) - COALESCE(abt.accepted_persons,0)) < 0
+ORDER BY remaining;
+
+-- Se overbookede pr trip
+SELECT b.buddy_id, td.trip_id, b.person_count, b.request_status
+FROM buddy b
+JOIN trip_destination td ON td.trip_destination_id = b.trip_destination_id
+WHERE b.request_status = 'accepted'
+  AND td.trip_id = :trip_id
+ORDER BY b.buddy_id;
+
 -- End of Notes
 
 # 3. User should see all conversations they are part of (also archived ones)
