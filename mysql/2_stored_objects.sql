@@ -248,15 +248,20 @@ BEGIN
     WHERE conversation_id = p_conversation_id
       AND is_archived = TRUE;
 END $$
+
 DELIMITER ;
 
 # 10. If a buddy is not active anymore (left or removed) they should be removed from group conversation
 DROP PROCEDURE IF EXISTS remove_buddy_from_conversation;
 DELIMITER $$
-CREATE PROCEDURE remove_buddy_from_conversation(IN p_buddy_id INT)
+CREATE PROCEDURE remove_buddy_from_conversation(
+    IN p_buddy_id INT,
+    IN p_triggered_by INT -- the user who initiated the action
+)
 BEGIN
     DECLARE v_user_id INT;
     DECLARE v_conversation_id INT;
+    DECLARE v_audit_message TEXT;
 
     IF p_buddy_id IS NULL THEN
         SIGNAL SQLSTATE '45000'
@@ -271,6 +276,27 @@ BEGIN
         DELETE FROM conversation_participant
         WHERE user_id = v_user_id
         AND conversation_id = v_conversation_id;
+
+        -- Audit log
+        SET v_audit_message = IF(
+            v_user_id = p_triggered_by,
+            'Buddy left the chat',
+            'Owner removed buddy');
+
+        INSERT INTO conversation_audit (
+            conversation_id,
+            affected_user_id,
+            action,
+            triggered_by,
+            message_sent
+        )
+        VALUES (
+            v_conversation_id,
+            v_user_id,
+            'user_removed',
+            p_triggered_by,
+            v_audit_message
+        );
     END IF;
 END $$
 DELIMITER ;
@@ -280,7 +306,8 @@ DROP PROCEDURE IF EXISTS update_buddy_request;
 DELIMITER $$
 CREATE PROCEDURE update_buddy_request(
     IN p_buddy_id INT,
-    IN p_new_status VARCHAR(10)
+    IN p_new_status VARCHAR(10),
+    IN p_owner_id INT
 )
 BEGIN
     IF p_buddy_id IS NULL THEN
@@ -297,6 +324,15 @@ BEGIN
     UPDATE buddy
     SET request_status = p_new_status
     WHERE buddy_id = p_buddy_id;
+
+    -- Audit log
+    INSERT INTO buddy_audit (buddy_id, action, reason, changed_by)
+    VALUES (
+        p_buddy_id,
+        p_new_status,
+        'Owner answered the request',
+        p_owner_id
+    );
 END $$
 DELIMITER ;
 
@@ -304,7 +340,8 @@ DELIMITER ;
 DROP PROCEDURE IF EXISTS create_group_conversation_for_trip_destination;
 DELIMITER $$
 CREATE PROCEDURE create_group_conversation_for_trip_destination(
-    IN p_trip_destination_id INT
+    IN p_trip_destination_id INT,
+    IN p_owner_id INT
 )
 BEGIN
     DECLARE v_conversation_id INT;
@@ -330,12 +367,31 @@ BEGIN
         -- Step 2: Get the new conversation ID
         SET v_conversation_id = LAST_INSERT_ID();
 
-        -- Step 3: Add all buddies for this trip to the conversation
+        -- Step 3: Add owner to the conversation
+        INSERT INTO conversation_participant (conversation_id, user_id) VALUES (v_conversation_id, p_owner_id);
+
+        -- Step 4: Add all buddies for this trip to the conversation
         INSERT INTO conversation_participant (conversation_id, user_id)
         SELECT v_conversation_id, user_id
         FROM buddy
         WHERE trip_destination_id = p_trip_destination_id
         AND request_status = 'accepted';
+
+        -- Audit log
+        INSERT INTO conversation_audit (
+            conversation_id,
+            affected_user_id,
+            action,
+            triggered_by,
+            message_sent
+        )
+        VALUES (
+            v_conversation_id,
+            NULL,
+            'created',
+            p_owner_id,
+            CONCAT('Group conversation created for trip destination ', p_trip_destination_id)
+        );
     END IF;
 END $$
 DELIMITER ;
@@ -367,60 +423,98 @@ BEGIN
         ) THEN
             INSERT INTO conversation_participant (conversation_id, user_id)
             VALUES (v_conversation_id, v_user_id);
+
+            -- Audit log
+            INSERT INTO conversation_audit (
+                conversation_id,
+                affected_user_id,
+                action,
+                triggered_by,
+                message_sent
+            )
+            VALUES (
+                v_conversation_id,
+                v_user_id,
+                'user_added',
+                NULL,
+                CONCAT('Buddy with id ', p_buddy_id, ' added to conversation')
+            );
         END IF;
     END IF;
 END $$
 DELIMITER ;
 
 # 18. User should be able to make a new convo with a user (optional if it is connected to a trip)
-DROP PROCEDURE IF EXISTS insert_new_conversation;
+DROP PROCEDURE IF EXISTS insert_new_private_conversation;
 DELIMITER $$
-CREATE PROCEDURE insert_new_conversation(
+CREATE PROCEDURE insert_new_private_conversation(
     IN p_trip_destination_id INT,
-    IN p_is_group BOOL)
-BEGIN
-    IF p_is_group IS NULL THEN
-        INSERT INTO conversation (trip_destination_id, is_group)
-        VALUES (p_trip_destination_id, FALSE);
-    ELSE
-        INSERT INTO conversation (trip_destination_id, is_group)
-        VALUES (p_trip_destination_id, is_group);
-    END IF;
-END $$
-DELIMITER ;
-
-DROP PROCEDURE IF EXISTS insert_new_conversation_participants;
-DELIMITER $$
-CREATE PROCEDURE insert_new_conversation_participants(
-    IN p_conversation_id INT,
-    IN p_user_ids_json JSON
+    IN p_owner_id INT,
+    IN p_user_id INT
 )
 BEGIN
-    DECLARE i INT DEFAULT 0;
-    DECLARE user_id_count INT;
+    DECLARE v_conversation_id INT;
 
-    IF p_conversation_id IS NULL THEN
+    IF p_trip_destination_id IS NULL OR p_owner_id IS NULL OR p_user_id IS NULL THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'conversation_id cannot be NULL';
+        SET MESSAGE_TEXT = 'All input parameters must be non-NULL';
     END IF;
 
-    SET user_id_count = JSON_LENGTH(p_user_ids_json);
+    IF p_owner_id = p_user_id THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'User cannot create conversation with themselves';
+    END IF;
 
-    WHILE i < user_id_count DO
-        -- Extract the user ID at position i from the JSON array
-        -- JSON_EXTRACT gets the value at index i (e.g., $[0], $[1], ...)
-        -- JSON_UNQUOTE removes surrounding quotes only if the value is a string (in case the json contains string instead of int)
-        INSERT INTO conversation_participant (conversation_id, user_id)
-        VALUES (
-            p_conversation_id,
-            JSON_UNQUOTE(JSON_EXTRACT(p_user_ids_json, CONCAT('$[', i, ']')))
-        );
+    -- 1. Create conversation
+    INSERT INTO conversation (trip_destination_id, is_group)
+    VALUES (p_trip_destination_id, FALSE);
 
-        -- Move to the next index
-        SET i = i + 1;
-    END WHILE;
+    SET v_conversation_id = LAST_INSERT_ID();
+
+    -- Audit log
+    INSERT INTO conversation_audit (
+        conversation_id,
+        affected_user_id,
+        action,
+        triggered_by,
+        message_sent
+    )
+    VALUES (
+        v_conversation_id,
+        NULL,
+        'created',
+        p_owner_id,
+        'Private conversation added'
+    );
+
+    -- 2. Add participants
+    INSERT INTO conversation_participant (conversation_id, user_id) VALUES
+    (v_conversation_id, p_owner_id),
+    (v_conversation_id, p_user_id);
+
+    -- Audit log
+    INSERT INTO conversation_audit (
+        conversation_id,
+        affected_user_id,
+        action,
+        triggered_by,
+        message_sent
+    ) VALUES
+    (
+        v_conversation_id,
+        p_owner_id,
+        'user_added',
+        p_owner_id,
+        'Owner added to private conversation'
+    ),
+    (
+        v_conversation_id,
+        p_user_id,
+        'user_added',
+        p_owner_id,
+        'User added to private conversation'
+    );
 END $$
-
 DELIMITER ;
 
 # 19. Every month, trip_destination and trip should be archived (is_archived = true)
@@ -437,6 +531,20 @@ DO BEGIN
     WHERE end_date < NOW();
 END $$
 
+DROP TRIGGER IF EXISTS audit_archiving_of_trip_destination;
+CREATE TRIGGER audit_archiving_of_trip_destination
+AFTER UPDATE ON trip_destination
+FOR EACH ROW
+BEGIN
+    IF OLD.is_archived = false AND NEW.is_archived = true THEN
+        INSERT INTO system_event_log (event_type, affected_id, details)
+        VALUES (
+            'ARCHIVE',
+            NEW.trip_destination_id,
+            'Archiving old trip destination' );
+    END IF;
+END;
+
 DROP EVENT IF EXISTS monthly_archive_old_trips $$
 
 CREATE EVENT monthly_archive_old_trips
@@ -449,11 +557,25 @@ DO BEGIN
     WHERE end_date < NOW();
 END $$
 
+DROP TRIGGER IF EXISTS audit_archiving_of_trip;
+CREATE TRIGGER audit_archiving_of_trip
+AFTER UPDATE ON trip
+FOR EACH ROW
+BEGIN
+    IF OLD.is_archived = false AND NEW.is_archived = true THEN
+        INSERT INTO system_event_log (event_type, affected_id, details)
+        VALUES (
+            'ARCHIVE',
+            NEW.trip_id,
+            'Archiving old trip' );
+    END IF;
+END;
+
 DELIMITER ;
 
 # 20. Every two weeks, check if a conversation has not been active for at least a week
 # and make it archived
-DROP EVENT IF EXISTS monthly_archive_old_trips;
+DROP EVENT IF EXISTS archive_due_to_inactivity;
 DELIMITER $$
 
 CREATE EVENT archive_due_to_inactivity
@@ -470,6 +592,29 @@ DO BEGIN
         HAVING MAX(m.sent_at) <= NOW() - INTERVAL 1 WEEK
     );
 END $$
+
+DROP TRIGGER IF EXISTS audit_archiving_of_conversation;
+CREATE TRIGGER audit_archiving_of_conversation
+AFTER UPDATE ON conversation
+FOR EACH ROW
+BEGIN
+    IF OLD.is_archived = false AND NEW.is_archived = true THEN
+        INSERT INTO system_event_log (event_type, affected_id, details)
+        VALUES (
+            'ARCHIVE',
+            NEW.conversation_id,
+            'Archiving inactive conversation' );
+    END IF;
+
+    IF OLD.is_archived = true AND NEW.is_archived = false THEN
+        INSERT INTO system_event_log (event_type, affected_id, details)
+        VALUES (
+            'UNARCHIVE',
+            NEW.conversation_id,
+            'Unarchiving previously inactive conversation' );
+    END IF;
+END $$
+
 DELIMITER ;
 
 # 21. Trip owners should be able to see all pending buddy requests
