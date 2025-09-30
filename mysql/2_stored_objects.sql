@@ -54,8 +54,79 @@ END;
 
 # 1. User can search for a trip destination using start/end dates, buddy count and location.
 # Maybe also description – for specific activities.
+WITH accepted_by_trip AS (
+    SELECT td.trip_id,
+           SUM(b.person_count) as accepted_persons
+    FROM buddy b
+    JOIN trip_destination td
+    ON td.trip_destination_id = b.trip_destination_id
+    WHERE b.request_status = 'accepted'
+    GROUP BY td.trip_id
+)
+
+SELECT
+    td.trip_destination_id,
+    t.trip_id,
+    d.destination_id,
+    d.name as destination_name,
+    d.country,
+    d.state,
+    td.start_date as destination_start,
+    td.end_date as destination_end,
+    t.max_buddies,
+    COALESCE(abt.accepted_persons, 0) AS accepted_persons,
+    (t.max_buddies - COALESCE(abt.accepted_persons, 0)) AS remaining_capacity
+FROM trip_destination td
+JOIN trip t ON t.trip_id = td.trip_id
+JOIN destination d ON d.destination_id = td.destination_id
+LEFT JOIN accepted_by_trip abt ON abt.trip_id = t.trip_id
+WHERE
+    (
+        (:req_start IS NULL AND :req_end IS NULL)
+        OR (:req_start IS NOT NULL AND :req_end IS NOT NULL
+            AND NOT (td.end_date < :req_start OR td.start_date > :req_end))
+        OR (:req_start IS NOT NULL AND :req_end IS NOT NULL
+            AND td.end_date >= :req_start)
+        OR (:req_start IS NOT NULL AND :req_end IS NOT NULL
+            AND td.start_date <= :req_end)
+    )
+    AND (:country IS NULL OR :country = '' OR d.country = :country)
+    AND (:state   IS NULL OR :state   = '' OR d.state   = :state)
+    AND (
+        :party_size IS NULL
+        OR (COALESCE(t.max_buddies, 0) - COALESCE(abt.accepted_persons, 0)) >= :party_size
+        )
+    AND (
+        :q IS NULL OR :q = ''
+        OR td.description LIKE CONCAT('%', :q, '%')
+        OR d.name LIKE CONCAT('%', :q, '%')
+    )
+ORDER BY td.start_date, d.name;
+
+-- Start of notes
+SELECT COUNT(*) FROM trip_destination;
+SELECT * FROM destination WHERE country = 'Spain';
+SELECT MIN(start_date), MAX(end_date) FROM trip_destination;
+
+SELECT d.country, COUNT(*) as segments
+From trip_destination td
+Join destination d ON d.destination_id = td.destination_id
+GROUP BY d.country
+order by segments DESC, d.country;
+
+SELECT td.trip_destination_id, td.trip_id,
+       d.destination_id, d.name, d.state, d.country,
+       td.start_date, td.end_date
+FROM trip_destination td
+JOIN destination d ON d.destination_id = td.destination_id
+ORDER BY td.start_date
+LIMIT 20;
 
 
+SELECT * from trip_destination;
+SELECT * from destination;
+SELECT * FROM buddy;
+-- End of Notes
 
 # 3. User should see all conversations they are part of (also archived ones)
 DROP PROCEDURE IF EXISTS get_user_conversations;
