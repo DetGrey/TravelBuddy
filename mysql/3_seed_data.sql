@@ -1134,33 +1134,33 @@ INSERT INTO message (sender_id, content, sent_at, conversation_id) VALUES
 INSERT INTO conversation (conversation_id, trip_destination_id, is_group) VALUES (2, NULL, FALSE);
 INSERT INTO conversation_participant (conversation_id, user_id) VALUES (2, 27), (2, 59);
 INSERT INTO message (sender_id, content, sent_at, conversation_id) VALUES
-(59, 'Hey Mandy, I saw you were interested in hiking. Are you planning any big trips?', '2025-09-24 10:30:00', 2),
-(27, 'Hi William, not at the moment, but I''m always looking for new trails. Have you been to any good ones lately?', '2025-09-24 10:32:00', 2),
-(59, 'I just got back from a great trip to Zion National Park. The trails there are amazing! I can send you some photos if you want to see them.', '2025-09-24 10:35:00', 2);
+(59, 'Hey Mandy, I saw you were interested in hiking. Are you planning any big trips?', '2025-08-14 10:30:00', 2),
+(27, 'Hi William, not at the moment, but I''m always looking for new trails. Have you been to any good ones lately?', '2025-08-14 13:12:00', 2),
+(59, 'I just got back from a great trip to Zion National Park. The trails there are amazing! I can send you some photos if you want to see them.', '2025-08-14 18:35:00', 2);
 
 -- Convo 3: Zoe Ramirez (ID 50) and Jack Murphy (ID 55)
 INSERT INTO conversation (conversation_id, trip_destination_id, is_group) VALUES (3, NULL, FALSE);
 INSERT INTO conversation_participant (conversation_id, user_id) VALUES (3, 50), (3, 55);
 INSERT INTO message (sender_id, content, sent_at, conversation_id) VALUES
-(50, 'Hey Jack, you mentioned you like to visit art museums. Are you planning any trips to a city with a good art scene?', '2025-09-24 14:00:00', 3),
-(55, 'Hi Zoe, I''m thinking about Paris next year. The Louvre is a must-see for me!', '2025-09-24 14:02:00', 3),
-(50, 'That''s on my bucket list, too! Let me know if you want to swap notes on good spots. I''ve found a few local galleries that look incredible.', '2025-09-24 14:05:00', 3);
+(50, 'Hey Jack, you mentioned you like to visit art museums. Are you planning any trips to a city with a good art scene?', '2025-07-02 14:00:00', 3),
+(55, 'Hi Zoe, I''m thinking about Paris next year. The Louvre is a must-see for me!', '2025-07-02 14:02:00', 3),
+(50, 'That''s on my bucket list, too! Let me know if you want to swap notes on good spots. I''ve found a few local galleries that look incredible.', '2025-07-03 09:15:00', 3);
 
 -- Convo 4: Daniel Evans (ID 51) and Grace Powell (ID 60)
 INSERT INTO conversation (conversation_id, trip_destination_id, is_group) VALUES (4, NULL, FALSE);
 INSERT INTO conversation_participant (conversation_id, user_id) VALUES (4, 51), (4, 60);
 INSERT INTO message (sender_id, content, sent_at, conversation_id) VALUES
-(51, 'Hi Grace, I saw your profile and we have similar interests in adventure travel.', '2025-09-24 11:30:00', 4),
-(60, 'Oh, that''s great! What kind of adventure are you into?', '2025-09-24 11:32:00', 4),
-(51, 'Mostly rock climbing and surfing. I''m looking for a new place to try both. Do you have any suggestions?', '2025-09-24 11:35:00', 4);
+(51, 'Hi Grace, I saw your profile and we have similar interests in adventure travel.', '2025-05-10 11:30:00', 4),
+(60, 'Oh, that''s great! What kind of adventure are you into?', '2025-05-10 11:32:00', 4),
+(51, 'Mostly rock climbing and surfing. I''m looking for a new place to try both. Do you have any suggestions?', '2025-05-11 08:20:00', 4);
 
 -- Convo 5: Mason Clark (ID 43) and Julian White (ID 61)
 INSERT INTO conversation (conversation_id, trip_destination_id, is_group) VALUES (5, NULL, FALSE);
 INSERT INTO conversation_participant (conversation_id, user_id) VALUES (5, 43), (5, 61);
 INSERT INTO message (sender_id, content, sent_at, conversation_id) VALUES
-(61, 'Hey Mason, I''m new to the app. Any tips on finding a good travel buddy?', '2025-09-24 16:40:00', 5),
-(43, 'Just be honest about what you''re looking for and check out people''s profiles. It worked for me!', '2025-09-24 16:41:00', 5),
-(61, 'Thanks, that''s helpful! I''m hoping to find someone to go to a music festival with. Do you know of any festivals coming up?', '2025-09-24 16:45:00', 5);
+(61, 'Hey Mason, I''m new to the app. Any tips on finding a good travel buddy?', '2025-01-18 16:40:00', 5),
+(43, 'Just be honest about what you''re looking for and check out people''s profiles. It worked for me!', '2025-01-18 17:41:00', 5),
+(61, 'Thanks, that''s helpful! I''m hoping to find someone to go to a music festival with. Do you know of any festivals coming up?', '2025-01-19 09:45:00', 5);
 
 -- =====================================
 -- 2. Private Conversations (Trip-Specific)
@@ -1186,56 +1186,55 @@ INSERT INTO message (sender_id, content, sent_at, conversation_id) VALUES
 INSERT INTO conversation (conversation_id, trip_destination_id, is_group) VALUES (8, 3, FALSE);
 INSERT INTO conversation_participant (conversation_id, user_id) VALUES (8, 4), (8, 8);
 INSERT INTO message (sender_id, content, sent_at, conversation_id) VALUES
-(8, 'Hi Kim, I''m so excited for our Parisian food trip! Have you started looking at restaurants yet?', '2026-09-06 14:15:00', 8),
-(4, 'I have a few in mind! I found a great bistro near our hotel. The reviews are fantastic.', '2026-09-06 14:16:00', 8),
-(8, 'Nice! Let''s make a list and start making reservations soon. I hear it can get busy.', '2026-09-06 14:20:00', 8);
+(8, 'Hi Kim, I''m so excited for our Parisian food trip! Have you started looking at restaurants yet?', '2025-03-06 14:15:00', 8),
+(4, 'I have a few in mind! I found a great bistro near our hotel. The reviews are fantastic.', '2025-03-06 14:16:00', 8),
+(8, 'Nice! Let''s make a list and start making reservations soon. I hear it can get busy.', '2025-03-07 10:20:00', 8);
 
 -- Convo 9: Trip to Honolulu (TD 21, Owner: ID 10, Buddy: ID 63)
 INSERT INTO conversation (conversation_id, trip_destination_id, is_group) VALUES (9, 21, FALSE);
 INSERT INTO conversation_participant (conversation_id, user_id) VALUES (9, 10), (9, 63);
 INSERT INTO message (sender_id, content, sent_at, conversation_id) VALUES
-(63, 'Hey Juan, I can''t wait for our Honolulu trip! I''ve been looking at some of the best spots for surfing.', '2026-07-23 09:00:00', 9),
-(10, 'I know! I found a good deal on a surfing lesson for both of us if you''re interested. Do you have any gear we should bring?', '2026-07-23 09:01:00', 9),
-(63, 'Sounds good to me. Let''s book it! I think all the gear is included in the lesson price.', '2026-07-23 09:05:00', 9);
+(63, 'Hey Juan, I can''t wait for our Honolulu trip! I''ve been looking at some of the best spots for surfing.', '2025-07-12 09:00:00', 9),
+(10, 'I know! I found a good deal on a surfing lesson for both of us if you''re interested. Do you have any gear we should bring?', '2025-07-12 13:45:00', 9),
+(63, 'Sounds good to me. Let''s book it! I think all the gear is included in the lesson price.', '2025-07-13 08:10:00', 9);
 
 -- Convo 10: Trip to New York City (TD 28, Owner: ID 73, Buddy: ID 33)
 INSERT INTO conversation (conversation_id, trip_destination_id, is_group) VALUES (10, 28, FALSE);
 INSERT INTO conversation_participant (conversation_id, user_id) VALUES (10, 73), (10, 33);
 INSERT INTO message (sender_id, content, sent_at, conversation_id) VALUES
-(33, 'Hey Nathaniel, for our NYC trip, have you looked into Broadway shows at all?', '2026-03-06 16:40:00', 10),
-(73, 'I have! I''m hoping to catch a matinee. Have you got a preference?', '2026-03-06 16:41:00', 10),
-(33, 'I''m open to anything. Let me know what you find! I''m also interested in checking out some jazz clubs. Do you know of any good ones?', '2026-03-06 16:45:00', 10);
+(33, 'Hey Nathaniel, for our NYC trip, have you looked into Broadway shows at all?', '2025-02-04 16:40:00', 10),
+(73, 'I have! I''m hoping to catch a matinee. Have you got a preference?', '2025-02-04 17:05:00', 10),
+(33, 'I''m open to anything. Let me know what you find! I''m also interested in checking out some jazz clubs. Do you know of any good ones?', '2025-02-05 09:15:00', 10);
 
 -- =====================================
 -- 3. Group Conversations (Trip-Specific)
 -- =====================================
-
 -- Convo 11: Trip to Phuket (TD 140, Owner: ID 23, Buddies: ID 49, 56, 62)
 INSERT INTO conversation (conversation_id, trip_destination_id, is_group) VALUES (11, 140, TRUE);
 INSERT INTO conversation_participant (conversation_id, user_id) VALUES (11, 23), (11, 49), (11, 56), (11, 62);
 INSERT INTO message (sender_id, content, sent_at, conversation_id) VALUES
-(23, 'Welcome everyone to the Phuket trip chat! I''m so excited for our Ultimate Thailand Escape.', '2026-06-02 10:00:00', 11),
-(49, 'Hey guys! I''m ready to unwind on the beautiful beaches. Have we decided on a resort yet?', '2026-06-02 10:01:00', 11),
-(56, 'I''ve been looking at all the water sports we can do. Can''t wait! Do you think we''ll have time for a full day of snorkeling?', '2026-06-02 10:02:00', 11),
-(62, 'I''ve already started a list of islands we should visit. I think a trip to Phi Phi Island is a must!', '2026-06-02 10:03:00', 11);
+(23, 'Welcome everyone to the Phuket trip chat! I''m so excited for our Ultimate Thailand Escape.', '2025-06-02 10:00:00', 11),
+(49, 'Hey guys! I''m ready to unwind on the beautiful beaches. Have we decided on a resort yet?', '2025-06-02 13:45:00', 11),
+(56, 'I''ve been looking at all the water sports we can do. Can''t wait! Do you think we''ll have time for a full day of snorkeling?', '2025-06-03 09:20:00', 11),
+(62, 'I''ve already started a list of islands we should visit. I think a trip to Phi Phi Island is a must!', '2025-06-03 18:10:00', 11);
 
 -- Convo 12: Trip to Bangkok (TD 141, Owner: ID 23, Buddies: ID 49, 56, 62)
 INSERT INTO conversation (conversation_id, trip_destination_id, is_group) VALUES (12, 141, TRUE);
 INSERT INTO conversation_participant (conversation_id, user_id) VALUES (12, 23), (12, 49), (12, 56), (12, 62);
 INSERT INTO message (sender_id, content, sent_at, conversation_id) VALUES
-(23, 'Next up, Bangkok! We can coordinate our visits to temples and night markets here.', '2026-06-09 11:00:00', 12),
-(49, 'I can''t wait to see the Grand Palace! What''s the best way to get around the city, do you think?', '2026-06-09 11:01:00', 12),
-(56, 'I''m ready to eat all the street food! I found a food tour that looks awesome. Should I book it?', '2026-06-09 11:02:00', 12),
-(62, 'I found a great walking tour we could do! I think we should also try to fit in a river cruise.', '2026-06-09 11:03:00', 12);
+(23, 'Next up, Bangkok! We can coordinate our visits to temples and night markets here.', '2025-06-09 11:00:00', 12),
+(49, 'I can''t wait to see the Grand Palace! What''s the best way to get around the city, do you think?', '2025-06-09 14:30:00', 12),
+(56, 'I''m ready to eat all the street food! I found a food tour that looks awesome. Should I book it?', '2025-06-10 08:15:00', 12),
+(62, 'I found a great walking tour we could do! I think we should also try to fit in a river cruise.', '2025-06-10 19:05:00', 12);
 
 -- Convo 13: Trip to Chiang Mai (TD 142, Owner: ID 23, Buddies: ID 49, 56, 62)
 INSERT INTO conversation (conversation_id, trip_destination_id, is_group) VALUES (13, 142, TRUE);
 INSERT INTO conversation_participant (conversation_id, user_id) VALUES (13, 23), (13, 49), (13, 56), (13, 62);
 INSERT INTO message (sender_id, content, sent_at, conversation_id) VALUES
-(23, 'Final stop: Chiang Mai! Let''s discuss our final week here.', '2026-06-16 13:00:00', 13),
-(49, 'I''m so ready for a relaxing end to the trip. I''ve heard the massages are incredible! Should we book one for our last day?', '2026-06-16 13:01:00', 13),
-(56, 'I found a good elephant sanctuary we can volunteer at. It''s an ethical one. What do you all think?', '2026-06-16 13:02:00', 13),
-(62, 'Let''s make a plan to visit the night bazaar! I heard it''s the best place to get souvenirs.', '2026-06-16 13:03:00', 13);
+(23, 'Final stop: Chiang Mai! Let''s discuss our final week here.', '2025-06-16 13:00:00', 13),
+(49, 'I''m so ready for a relaxing end to the trip. I''ve heard the massages are incredible! Should we book one for our last day?', '2025-06-16 17:20:00', 13),
+(56, 'I found a good elephant sanctuary we can volunteer at. It''s an ethical one. What do you all think?', '2025-06-17 09:10:00', 13),
+(62, 'Let''s make a plan to visit the night bazaar! I heard it''s the best place to get souvenirs.', '2025-06-17 20:45:00', 13);
 
 -- Convo 14: Trip to Los Angeles (TD 19, Owner: ID 26, Buddies: ID 25, 28, 59)
 INSERT INTO conversation (conversation_id, trip_destination_id, is_group) VALUES (14, 19, TRUE);
@@ -1250,6 +1249,6 @@ INSERT INTO message (sender_id, content, sent_at, conversation_id) VALUES
 INSERT INTO conversation (conversation_id, trip_destination_id, is_group) VALUES (15, 23, TRUE);
 INSERT INTO conversation_participant (conversation_id, user_id) VALUES (15, 32), (15, 43), (15, 74);
 INSERT INTO message (sender_id, content, sent_at, conversation_id) VALUES
-(32, 'Alright team, now for Los Angeles!', '2027-09-08 11:30:00', 15),
-(43, 'I am so excited to visit Universal Studios! Is it better to go during the week or on a weekend?', '2027-09-08 11:31:00', 15),
-(74, 'I am looking forward to hiking to the Hollywood Sign! I found a trail that has great views.', '2027-09-08 11:32:00', 15);
+(32, 'Alright team, now for Los Angeles!', '2025-02-08 11:30:00', 15),
+(43, 'I am so excited to visit Universal Studios! Is it better to go during the week or on a weekend?', '2025-02-08 15:10:00', 15),
+(74, 'I am looking forward to hiking to the Hollywood Sign! I found a trail that has great views.', '2025-02-09 09:25:00', 15);

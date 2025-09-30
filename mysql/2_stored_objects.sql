@@ -4,6 +4,71 @@ USE travel_buddy;
 
 
 
+# 3. User should see all conversations they are part of (also archived ones)
+DROP PROCEDURE IF EXISTS get_user_conversations;
+DELIMITER $$
+CREATE PROCEDURE get_user_conversations(IN p_user_id INT)
+BEGIN
+    SELECT
+        c.conversation_id,
+        m.message_id,
+        m.content,
+        CASE
+            WHEN DATE(sent_at) = CURDATE() THEN DATE_FORMAT(sent_at, '%H:%i')
+            WHEN DATE(sent_at) = CURDATE() - INTERVAL 1 DAY THEN 'Yesterday'
+            WHEN YEAR(sent_at) = YEAR(CURDATE()) THEN DATE_FORMAT(sent_at, '%d/%m')
+            ELSE DATE_FORMAT(sent_at, '%Y')
+        END AS formatted_sent_at
+    FROM conversation c
+    JOIN conversation_participant p ON c.conversation_id = p.conversation_id
+    LEFT JOIN message m ON m.message_id = (
+        SELECT m2.message_id
+        FROM message m2
+        WHERE m2.conversation_id = c.conversation_id
+        ORDER BY m2.sent_at DESC
+        LIMIT 1
+    )
+    WHERE p.user_id = p_user_id; # Example 49
+END $$
+DELIMITER ;
+
+# 6. User should be able to send a message in a conversation
+# 7. When sending a message, also check if convo is archived and if yes, change it back to false
+DROP PROCEDURE IF EXISTS insert_new_message;
+DELIMITER $$
+CREATE PROCEDURE insert_new_message(
+    IN p_sender_id INT,
+    IN p_conversation_id INT,
+    IN p_content TEXT
+)
+BEGIN
+    -- Validate that none of the inputs are NULL
+    IF p_sender_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'sender_id cannot be NULL';
+    END IF;
+
+    IF p_conversation_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'conversation_id cannot be NULL';
+    END IF;
+
+    IF p_content IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'content cannot be NULL';
+    END IF;
+
+    INSERT INTO message (sender_id, content, conversation_id)
+    VALUES (p_sender_id, p_content, p_conversation_id);
+
+    -- After inserting the message
+    UPDATE conversation
+    SET is_archived = FALSE
+    WHERE conversation_id = p_conversation_id
+      AND is_archived = TRUE;
+END $$
+DELIMITER ;
+
 # 18. User should be able to make a new convo with a user (optional if it is connected to a trip)
 DROP PROCEDURE IF EXISTS insert_new_conversation;
 DELIMITER $$
@@ -30,6 +95,11 @@ CREATE PROCEDURE insert_new_conversation_participants(
 BEGIN
     DECLARE i INT DEFAULT 0;
     DECLARE user_id_count INT;
+
+    IF p_conversation_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'conversation_id cannot be NULL';
+    END IF;
 
     SET user_id_count = JSON_LENGTH(p_user_ids_json);
 
