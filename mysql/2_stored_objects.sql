@@ -1,4 +1,8 @@
 USE travel_buddy;
+# 1. User can search for a trip destination using start/end dates, buddy count and location.
+# Maybe also description – for specific activities.
+
+
 
 # 18. User should be able to make a new convo with a user (optional if it is connected to a trip)
 DROP PROCEDURE IF EXISTS insert_new_conversation;
