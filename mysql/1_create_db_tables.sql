@@ -101,9 +101,9 @@ CREATE TABLE IF NOT EXISTS buddy (
 CREATE TABLE IF NOT EXISTS conversation (
     conversation_id INT AUTO_INCREMENT PRIMARY KEY,
     trip_destination_id INT,
-    is_group BOOLEAN DEFAULT FALSE,
+    is_group BOOLEAN DEFAULT FALSE NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    is_archived BOOLEAN DEFAULT FALSE,
+    is_archived BOOLEAN DEFAULT FALSE NOT NULL,
     CONSTRAINT fk_conversation_trip FOREIGN KEY (trip_destination_id) REFERENCES trip_destination(trip_destination_id)
         ON DELETE SET NULL ON UPDATE CASCADE
 );

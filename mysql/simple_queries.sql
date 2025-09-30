@@ -1,8 +1,8 @@
-USE travel_buddy_db;
+USE travel_buddy;
 show tables;
 
 SELECT *
-FROM trip_destination;
+FROM conversation_participant;
 
 -- See itinerary (all destinations) for a trip
 SELECT *

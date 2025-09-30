@@ -1,4 +1,51 @@
 USE travel_buddy;
+
+# 18. User should be able to make a new convo with a user (optional if it is connected to a trip)
+DROP PROCEDURE IF EXISTS insert_new_conversation;
+DELIMITER $$
+CREATE PROCEDURE insert_new_conversation(
+    IN p_trip_destination_id INT,
+    IN p_is_group BOOL)
+BEGIN
+    IF p_is_group IS NULL THEN
+        INSERT INTO conversation (trip_destination_id, is_group)
+        VALUES (p_trip_destination_id, FALSE);
+    ELSE
+        INSERT INTO conversation (trip_destination_id, is_group)
+        VALUES (p_trip_destination_id, is_group);
+    END IF;
+END $$
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS insert_new_conversation_participants;
+DELIMITER $$
+CREATE PROCEDURE insert_new_conversation_participants(
+    IN p_conversation_id INT,
+    IN p_user_ids_json JSON
+)
+BEGIN
+    DECLARE i INT DEFAULT 0;
+    DECLARE user_id_count INT;
+
+    SET user_id_count = JSON_LENGTH(p_user_ids_json);
+
+    WHILE i < user_id_count DO
+        -- Extract the user ID at position i from the JSON array
+        -- JSON_EXTRACT gets the value at index i (e.g., $[0], $[1], ...)
+        -- JSON_UNQUOTE removes surrounding quotes only if the value is a string (in case the json contains string instead of int)
+        INSERT INTO conversation_participant (conversation_id, user_id)
+        VALUES (
+            p_conversation_id,
+            JSON_UNQUOTE(JSON_EXTRACT(p_user_ids_json, CONCAT('$[', i, ']')))
+        );
+
+        -- Move to the next index
+        SET i = i + 1;
+    END WHILE;
+END $$
+
+DELIMITER ;
+
 # 19. Every month, trip_destination and trip should be archived (is_archived = true)
 # if trip_destination end_date has passed
 DROP EVENT IF EXISTS monthly_archive_old_trip_destinations;
