@@ -1,4 +1,8 @@
 USE travel_buddy;
+# 1. User can search for a trip destination using start/end dates, buddy count and location.
+# Maybe also description – for specific activities.
+
+
 # 19. Every month, trip_destination and trip should be archived (is_archived = true)
 # if trip_destination end_date has passed
 DROP EVENT IF EXISTS monthly_archive_old_trip_destinations;

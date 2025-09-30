@@ -1,4 +1,4 @@
-USE travel_buddy_db;
+USE travel_buddy;
 show tables;
 
 SELECT *
