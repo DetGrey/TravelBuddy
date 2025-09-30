@@ -192,7 +192,7 @@ CREATE TABLE IF NOT EXISTS conversation_audit (
 CREATE TABLE IF NOT EXISTS system_event_log (
     event_id INT AUTO_INCREMENT PRIMARY KEY,
     event_type VARCHAR(100) NOT NULL,
-    affected_rows INT,
+    affected_id INT,
     triggered_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     details TEXT
 );
