@@ -52,6 +52,24 @@ BEGIN
     RETURN v_conversation_id;
 END;
 
+DROP FUNCTION IF EXISTS get_owner_id_from_trip;
+
+CREATE FUNCTION get_owner_id_from_trip (in_trip_id INT)
+RETURNS INT
+DETERMINISTIC
+READS SQL DATA
+BEGIN
+    DECLARE v_owner_id INT;
+    SELECT t.owner_id INTO v_owner_id
+    FROM trip t
+    WHERE trip_id = in_trip_id
+    LIMIT 1;
+
+    RETURN v_owner_id;
+END;
+
+
+
 # 1. User can search for a trip destination using start/end dates, buddy count and location.
 # Maybe also description – for specific activities.
 DROP PROCEDURE IF EXISTS search_trips;
@@ -116,6 +134,42 @@ BEGIN
     LIMIT 50;
 END;
 CALL search_trips('2025-02-22', NULL, NULL, NULL, NULL, NULL, NULL);
+
+# 2. User should be able to see the trips they are connected to (both as owner and as buddy) – also archived ones
+DROP PROCEDURE IF EXISTS get_user_trips;
+
+CREATE PROCEDURE get_user_trips (
+    IN in_user_id INT
+)
+BEGIN
+    -- Trips where user is owner
+    SELECT t.trip_id,
+           td.trip_destination_id,
+           d.name AS destination_name,
+           t.description AS trip_description,
+           'owner' AS role
+    FROM trip t
+    JOIN trip_destination td ON td.trip_id = t.trip_id
+    JOIN destination d ON d.destination_id = td.destination_id
+    WHERE get_owner_id_from_trip(t.trip_id) = in_user_id
+
+    UNION
+
+    -- Trips where user is buddy
+    SELECT t.trip_id,
+           td.trip_destination_id,
+           d.name AS destination_name,
+           t.description AS trip_description,
+           'buddy' AS role
+    FROM trip t
+    JOIN trip_destination td ON td.trip_id = t.trip_id
+    JOIN destination d ON d.destination_id = td.destination_id
+    JOIN buddy b ON b.trip_destination_id = td.trip_destination_id
+    WHERE get_user_id_from_buddy(b.buddy_id) = in_user_id
+
+    ORDER BY trip_id, role;
+
+END;
 
 
 # 3. User should see all conversations they are part of (also archived ones)
