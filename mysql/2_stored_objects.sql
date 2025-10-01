@@ -3,7 +3,7 @@ USE travel_buddy;
 -- Date + FK'er
 CREATE INDEX idx_td_dates on trip_destination (start_date, end_date);
 CREATE INDEX idx_td_trip on trip_destination (trip_id);
-# Lavet allerede CREATE Index idx_td_destination on trip_destination(destination_id);
+CREATE Index idx_td_destination on trip_destination(destination_id);
 
 -- Location
 CREATE INDEX idx_dest_contry_state ON destination (country,state);
