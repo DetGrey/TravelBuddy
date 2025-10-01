@@ -249,7 +249,7 @@ DELIMITER $$
 CREATE PROCEDURE insert_new_message(
     IN p_sender_id INT,
     IN p_conversation_id INT,
-    IN p_content TEXT
+    IN p_content VARCHAR(2000)
 )
 BEGIN
     -- Validate that none of the inputs are NULL
@@ -290,7 +290,7 @@ CREATE PROCEDURE remove_buddy_from_conversation(
 BEGIN
     DECLARE v_user_id INT;
     DECLARE v_conversation_id INT;
-    DECLARE v_audit_message TEXT;
+    DECLARE v_audit_message VARCHAR(200);
 
     IF p_buddy_id IS NULL THEN
         SIGNAL SQLSTATE '45000'
@@ -316,15 +316,13 @@ BEGIN
             conversation_id,
             affected_user_id,
             action,
-            triggered_by,
-            message_sent
+            triggered_by
         )
         VALUES (
             v_conversation_id,
             v_user_id,
             'user_removed',
-            p_triggered_by,
-            v_audit_message
+            p_triggered_by
         );
     END IF;
 END $$
@@ -411,15 +409,13 @@ BEGIN
             conversation_id,
             affected_user_id,
             action,
-            triggered_by,
-            message_sent
+            triggered_by
         )
         VALUES (
             v_conversation_id,
             NULL,
             'created',
-            p_owner_id,
-            CONCAT('Group conversation created for trip destination ', p_trip_destination_id)
+            p_owner_id
         );
     END IF;
 END $$
@@ -458,15 +454,13 @@ BEGIN
                 conversation_id,
                 affected_user_id,
                 action,
-                triggered_by,
-                message_sent
+                triggered_by
             )
             VALUES (
                 v_conversation_id,
                 v_user_id,
                 'user_added',
-                NULL,
-                CONCAT('Buddy with id ', p_buddy_id, ' added to conversation')
+                NULL
             );
         END IF;
     END IF;
@@ -505,15 +499,13 @@ BEGIN
         conversation_id,
         affected_user_id,
         action,
-        triggered_by,
-        message_sent
+        triggered_by
     )
     VALUES (
         v_conversation_id,
         NULL,
         'created',
-        p_owner_id,
-        'Private conversation added'
+        p_owner_id
     );
 
     -- 2. Add participants
@@ -526,22 +518,19 @@ BEGIN
         conversation_id,
         affected_user_id,
         action,
-        triggered_by,
-        message_sent
+        triggered_by
     ) VALUES
     (
         v_conversation_id,
         p_owner_id,
         'user_added',
-        p_owner_id,
-        'Owner added to private conversation'
+        p_owner_id
     ),
     (
         v_conversation_id,
         p_user_id,
         'user_added',
-        p_owner_id,
-        'User added to private conversation'
+        p_owner_id
     );
 END $$
 DELIMITER ;

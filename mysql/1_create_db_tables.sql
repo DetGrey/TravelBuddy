@@ -1,7 +1,9 @@
 -- =====================================
--- Create Database
+-- Create Database (emoji-safe defaults)
 -- =====================================
-CREATE DATABASE IF NOT EXISTS travel_buddy;
+CREATE DATABASE IF NOT EXISTS travel_buddy
+  CHARACTER SET utf8mb4          -- Use utf8mb4 to support emojis and multilingual text
+  COLLATE utf8mb4_unicode_ci;    -- Unicode collation for consistent sorting/comparison
 USE travel_buddy;
 
 DROP TABLE IF EXISTS message;
@@ -34,10 +36,10 @@ CREATE TABLE IF NOT EXISTS user (
 -- Destination Table
 -- =====================================
 CREATE TABLE destination (
-    destination_id INT PRIMARY KEY,
+    destination_id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    state VARCHAR(255),
-    country VARCHAR(255) NOT NULL,
+    state VARCHAR(100),
+    country VARCHAR(100) NOT NULL,
     longitude DECIMAL(10, 7),
     latitude DECIMAL(10, 7)
 );
@@ -51,7 +53,7 @@ CREATE TABLE IF NOT EXISTS trip (
     max_buddies INT CHECK (max_buddies >= 1),
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
-    description TEXT,
+    description VARCHAR(255),
     is_archived BOOLEAN DEFAULT FALSE,
     CONSTRAINT fk_trip_owner FOREIGN KEY (owner_id) REFERENCES user(user_id)
         ON DELETE CASCADE ON UPDATE CASCADE,
@@ -68,7 +70,7 @@ CREATE TABLE IF NOT EXISTS trip_destination (
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
     sequence_number INT NOT NULL,
-    description TEXT,
+    description VARCHAR(255),
     is_archived BOOLEAN DEFAULT FALSE,
     CONSTRAINT fk_itinerary_destination FOREIGN KEY (destination_id) REFERENCES destination(destination_id)
         ON DELETE CASCADE ON UPDATE CASCADE,
@@ -128,7 +130,7 @@ CREATE TABLE IF NOT EXISTS conversation_participant (
 CREATE TABLE IF NOT EXISTS message (
     message_id INT AUTO_INCREMENT PRIMARY KEY,
     sender_id INT,
-    content TEXT NOT NULL,
+    content VARCHAR(2000) NOT NULL,
     sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     conversation_id INT NOT NULL,
     CONSTRAINT fk_message_sender FOREIGN KEY (sender_id) REFERENCES user(user_id)
@@ -159,8 +161,8 @@ CREATE TABLE IF NOT EXISTS trip_audit (
     trip_id INT NOT NULL,
     action ENUM('created', 'updated', 'deleted') NOT NULL,
     field_changed VARCHAR(100), -- e.g., 'start_date', 'end_date', 'max_buddies'
-    old_value TEXT,
-    new_value TEXT,
+    old_value VARCHAR(255),
+    new_value VARCHAR(255),
     changed_by INT, -- user who made the change
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_trip_audit_trip FOREIGN KEY (trip_id) REFERENCES trip(trip_id)
@@ -177,7 +179,6 @@ CREATE TABLE IF NOT EXISTS conversation_audit (
     affected_user_id INT, -- the user added or removed (if applicable)
     action ENUM('created', 'user_added', 'user_removed') NOT NULL,
     triggered_by INT, -- who initiated the action
-    message_sent TEXT, -- E.g. 'Group chat created for trip destination X'
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_convo_audit_convo FOREIGN KEY (conversation_id) REFERENCES conversation(conversation_id)
         ON DELETE CASCADE ON UPDATE CASCADE,
@@ -194,5 +195,5 @@ CREATE TABLE IF NOT EXISTS system_event_log (
     event_type VARCHAR(100) NOT NULL,
     affected_id INT,
     triggered_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    details TEXT
+    details VARCHAR(255)
 );
