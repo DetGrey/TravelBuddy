@@ -54,25 +54,19 @@ END;
 
 # 1. User can search for a trip destination using start/end dates, buddy count and location.
 # Maybe also description – for specific activities.
-WITH per_trip_buddy AS (
-    SELECT
-        td.trip_id,
-        b.user_id,
-        MAX(b.person_count) AS persons_once
-    FROM buddy b
-    JOIN trip_destination td
-    ON td.trip_destination_id = b.trip_destination_id
-    WHERE b.request_status = 'accepted'
-    GROUP BY td.trip_id, b.user_id
-),
-accepted_by_trip AS (
-    SELECT trip_id,
-           SUM(persons_once) as accepted_persons
-    FROM per_trip_buddy
-    GROUP BY trip_id
-)
+DROP PROCEDURE IF EXISTS search_trips;
 
-SELECT
+CREATE PROCEDURE search_trips (
+    IN in_req_start DATE,
+    IN in_req_end DATE,
+    IN in_country VARCHAR(100),
+    IN in_state VARCHAR(100),
+    IN in_name VARCHAR(200),
+    IN in_party_size INT,
+    IN in_q VARCHAR(255)
+)
+BEGIN
+    SELECT
     td.trip_destination_id,
     t.trip_id,
     d.destination_id,
@@ -81,81 +75,48 @@ SELECT
     d.state,
     td.start_date as destination_start,
     td.end_date as destination_end,
-    t.max_buddies,
+    COALESCE(t.max_buddies, 0) AS max_buddies,
     COALESCE(abt.accepted_persons, 0) AS accepted_persons,
-    (t.max_buddies - COALESCE(abt.accepted_persons, 0)) AS remaining_capacity
-FROM trip_destination td
-JOIN trip t ON t.trip_id = td.trip_id
-JOIN destination d ON d.destination_id = td.destination_id
-LEFT JOIN accepted_by_trip abt ON abt.trip_id = t.trip_id
-WHERE
+    GREATEST(COALESCE(t.max_buddies, 0) - COALESCE(abt.accepted_persons, 0), 0) AS remaining_capacity
+    FROM trip_destination td
+    JOIN trip t ON t.trip_id = td.trip_id
+    JOIN destination d ON d.destination_id = td.destination_id
+    LEFT JOIN (
+        SELECT td2.trip_destination_id, SUM(b.person_count) AS accepted_persons
+        FROM buddy b
+        JOIN trip_destination td2 ON td2.trip_destination_id = b.trip_destination_id
+        WHERE b.request_status = 'accepted'
+        GROUP BY td2.trip_destination_id
+        ) AS abt
+        ON abt.trip_destination_id = td.trip_destination_id
+    WHERE
     (
-        (:req_start IS NULL AND :req_end IS NULL)
-        OR (:req_start IS NOT NULL AND :req_end IS NOT NULL
-            AND NOT (td.end_date < :req_start OR td.start_date > :req_end))
-        OR (:req_start IS NOT NULL AND :req_end IS NOT NULL
-            AND td.end_date >= :req_start)
-        OR (:req_start IS NOT NULL AND :req_end IS NOT NULL
-            AND td.start_date <= :req_end)
+        (in_req_start IS NULL AND in_req_end IS NULL)
+        OR (in_req_start IS NOT NULL AND in_req_end IS NOT NULL
+            AND td.start_date >= in_req_start
+            AND td.end_date <= in_req_end)
+        OR (in_req_start IS NOT NULL AND in_req_end IS NULL
+            AND td.start_date >= in_req_start)
+        OR (in_req_start IS NOT NULL AND in_req_end IS NOT NULL
+            AND td.end_date <= in_req_end)
     )
-    AND (:country IS NULL OR :country = '' OR d.country = :country)
-    AND (:state   IS NULL OR :state   = '' OR d.state   = :state)
+    AND (in_name IS NULL OR in_name = '' OR d.name = in_name)
+    AND (in_country IS NULL OR in_country = '' OR d.country = in_country)
+    AND (in_state   IS NULL OR in_state   = '' OR d.state   = in_state)
     AND (
-        :party_size IS NULL
-        OR (COALESCE(t.max_buddies, 0) - COALESCE(abt.accepted_persons, 0)) >= :party_size
+        in_party_size IS NULL
+        OR (COALESCE(t.max_buddies, 0) - COALESCE(abt.accepted_persons, 0)) >= in_party_size
         )
     AND (
-        :q IS NULL OR :q = ''
-        OR td.description LIKE CONCAT('%', :q, '%')
-        OR d.name LIKE CONCAT('%', :q, '%')
+        in_q IS NULL OR in_q = ''
+        OR td.description LIKE CONCAT('%', in_q, '%')
+        OR d.name LIKE CONCAT('%', in_q, '%')
     )
-ORDER BY td.start_date, d.name;
+    ORDER BY td.start_date, d.name
+    LIMIT 50;
+END;
+CALL search_trips('2025-02-22', NULL, NULL, NULL, NULL, NULL, NULL);
 
--- Start of notes
-SELECT COUNT(*) FROM trip_destination;
-SELECT * FROM destination WHERE country = 'Spain';
-SELECT MIN(start_date), MAX(end_date) FROM trip_destination;
-
-SELECT d.country, COUNT(*) as segments
-From trip_destination td
-Join destination d ON d.destination_id = td.destination_id
-GROUP BY d.country
-order by segments DESC, d.country;
-
-SELECT td.trip_destination_id, td.trip_id,
-       d.destination_id, d.name, d.state, d.country,
-       td.start_date, td.end_date
-FROM trip_destination td
-JOIN destination d ON d.destination_id = td.destination_id
-ORDER BY td.start_date
-LIMIT 20;
-
-
--- Overbookede trips
-    WITH accepted_by_trip AS (
-  SELECT td.trip_id, SUM(b.person_count) AS accepted_persons
-  FROM buddy b
-  JOIN trip_destination td ON td.trip_destination_id = b.trip_destination_id
-  WHERE b.request_status = 'accepted'
-  GROUP BY td.trip_id
-)
-SELECT t.trip_id, t.max_buddies,
-       COALESCE(abt.accepted_persons,0) AS accepted_persons,
-       (COALESCE(t.max_buddies,0) - COALESCE(abt.accepted_persons,0)) AS remaining
-FROM trip t
-LEFT JOIN accepted_by_trip abt ON abt.trip_id = t.trip_id
-WHERE (COALESCE(t.max_buddies,0) - COALESCE(abt.accepted_persons,0)) < 0
-ORDER BY remaining;
-
--- Se overbookede pr trip
-SELECT b.buddy_id, td.trip_id, b.person_count, b.request_status
-FROM buddy b
-JOIN trip_destination td ON td.trip_destination_id = b.trip_destination_id
-WHERE b.request_status = 'accepted'
-  AND td.trip_id = :trip_id
-ORDER BY b.buddy_id;
-
--- End of Notes
 
 # 3. User should see all conversations they are part of (also archived ones)
 DROP PROCEDURE IF EXISTS get_user_conversations;
