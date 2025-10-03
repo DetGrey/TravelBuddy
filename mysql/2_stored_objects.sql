@@ -133,7 +133,6 @@ BEGIN
     ORDER BY td.start_date, d.name
     LIMIT 50;
 END;
-CALL search_trips('2025-02-22', NULL, NULL, NULL, NULL, NULL, NULL);
 
 # 2. User should be able to see the trips they are connected to (both as owner and as buddy) – also archived ones
 DROP PROCEDURE IF EXISTS get_user_trips;
