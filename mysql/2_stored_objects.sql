@@ -1,4 +1,5 @@
 USE travel_buddy;
+
 # INDEX
 -- Date + FK'er
 CREATE INDEX idx_td_dates on trip_destination (start_date, end_date);
@@ -673,3 +674,8 @@ BEGIN
       AND t.owner_id = p_user_id; # Example user 4
 END $$
 DELIMITER ;
+
+# 22. See all users (admin). No need to see e.g. password_hash though.
+CREATE or REPLACE VIEW all_users AS
+SELECT user_id, name, email, birthdate, is_deleted
+FROM user;
