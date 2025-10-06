@@ -12,8 +12,6 @@ CREATE INDEX idx_dest_contry_state ON destination (country,state);
 -- Buddies (count)
 CREATE INDEX idx_buddy_seg_status on buddy (trip_destination_id, request_status);
 
-# GLOBAL VIEWS
-
 # GLOBAL FUNCTIONS
 DROP FUNCTION IF EXISTS get_user_id_from_buddy;
 CREATE FUNCTION get_user_id_from_buddy(f_buddy_id INT)
@@ -479,8 +477,30 @@ BEGIN
             );
         END IF;
     END IF;
+END;
+DELIMITER ;
+
+# Transaction for Accept + add to group chat
+DROP PROCEDURE IF EXISTS accept_buddy_request_in_tx;
+DELIMITER $$
+
+CREATE PROCEDURE accept_buddy_request_in_tx (
+    IN p_buddy_id INT,
+    IN p_owner_id INT
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+        BEGIN
+            ROLLBACK;
+            RESIGNAL;
+        END;
+    START TRANSACTION;
+    CALL update_buddy_request(p_buddy_id, 'accepted', p_owner_id);
+    CALL add_buddy_to_conversation(p_buddy_id);
+    COMMIT;
 END $$
 DELIMITER ;
+
 
 # 18. User should be able to make a new convo with a user (optional if it is connected to a trip)
 DROP PROCEDURE IF EXISTS insert_new_private_conversation;
