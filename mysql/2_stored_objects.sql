@@ -14,6 +14,7 @@ CREATE INDEX idx_buddy_seg_status on buddy (trip_destination_id, request_status)
 
 # GLOBAL FUNCTIONS
 DROP FUNCTION IF EXISTS get_user_id_from_buddy;
+DELIMITER $$
 CREATE FUNCTION get_user_id_from_buddy(f_buddy_id INT)
 RETURNS INT
 DETERMINISTIC
@@ -24,9 +25,11 @@ BEGIN
         WHERE buddy_id = f_buddy_id
         LIMIT 1
     );
-END;
+END $$
+DELIMITER ;
 
 DROP FUNCTION IF EXISTS get_group_conversation_for_buddy;
+DELIMITER $$
 CREATE FUNCTION get_group_conversation_for_buddy(f_buddy_id INT)
 RETURNS INT
 DETERMINISTIC
@@ -49,10 +52,11 @@ BEGIN
     LIMIT 1;
 
     RETURN v_conversation_id;
-END;
+END $$
+DELIMITER ;
 
 DROP FUNCTION IF EXISTS get_owner_id_from_trip;
-
+DELIMITER $$
 CREATE FUNCTION get_owner_id_from_trip (in_trip_id INT)
 RETURNS INT
 DETERMINISTIC
@@ -65,14 +69,13 @@ BEGIN
     LIMIT 1;
 
     RETURN v_owner_id;
-END;
-
-
+END $$
+DELIMITER ;
 
 # 1. User can search for a trip destination using start/end dates, buddy count and location.
 # Maybe also description – for specific activities.
 DROP PROCEDURE IF EXISTS search_trips;
-
+DELIMITER $$
 CREATE PROCEDURE search_trips (
     IN in_req_start DATE,
     IN in_req_end DATE,
@@ -131,11 +134,12 @@ BEGIN
     )
     ORDER BY td.start_date, d.name
     LIMIT 50;
-END;
+END $$
+DELIMITER ;
 
 # 2. User should be able to see the trips they are connected to (both as owner and as buddy) – also archived ones
 DROP PROCEDURE IF EXISTS get_user_trips;
-
+DELIMITER $$
 CREATE PROCEDURE get_user_trips (
     IN in_user_id INT
 )
@@ -166,9 +170,8 @@ BEGIN
     WHERE get_user_id_from_buddy(b.buddy_id) = in_user_id
 
     ORDER BY trip_id, role;
-
-END;
-
+END $$
+DELIMITER ;
 
 # 3. User should see all conversations they are part of (also archived ones)
 DROP PROCEDURE IF EXISTS get_user_conversations;
@@ -585,6 +588,7 @@ DO BEGIN
 END $$
 
 DROP TRIGGER IF EXISTS audit_archiving_of_trip_destination;
+DELIMITER $$
 CREATE TRIGGER audit_archiving_of_trip_destination
 AFTER UPDATE ON trip_destination
 FOR EACH ROW
@@ -596,10 +600,11 @@ BEGIN
             NEW.trip_destination_id,
             'Archiving old trip destination' );
     END IF;
-END;
+END $$
+DELIMITER ;
 
-DROP EVENT IF EXISTS monthly_archive_old_trips $$
-
+DROP EVENT IF EXISTS monthly_archive_old_trips;
+DELIMITER $$
 CREATE EVENT monthly_archive_old_trips
 ON SCHEDULE EVERY 1 MONTH
 STARTS '2025-09-30 00:00:00'
@@ -609,8 +614,10 @@ DO BEGIN
     SET is_archived = true
     WHERE end_date < NOW();
 END $$
+DELIMITER ;
 
 DROP TRIGGER IF EXISTS audit_archiving_of_trip;
+DELIMITER $$
 CREATE TRIGGER audit_archiving_of_trip
 AFTER UPDATE ON trip
 FOR EACH ROW
@@ -622,15 +629,13 @@ BEGIN
             NEW.trip_id,
             'Archiving old trip' );
     END IF;
-END;
-
+END $$
 DELIMITER ;
 
 # 20. Every two weeks, check if a conversation has not been active for at least a week
 # and make it archived
 DROP EVENT IF EXISTS archive_due_to_inactivity;
 DELIMITER $$
-
 CREATE EVENT archive_due_to_inactivity
 ON SCHEDULE EVERY 2 WEEK
 STARTS '2025-09-30 00:00:00'
@@ -645,8 +650,10 @@ DO BEGIN
         HAVING MAX(m.sent_at) <= NOW() - INTERVAL 1 WEEK
     );
 END $$
+DELIMITER ;
 
 DROP TRIGGER IF EXISTS audit_archiving_of_conversation;
+DELIMITER $$
 CREATE TRIGGER audit_archiving_of_conversation
 AFTER UPDATE ON conversation
 FOR EACH ROW
@@ -667,7 +674,6 @@ BEGIN
             'Unarchiving previously inactive conversation' );
     END IF;
 END $$
-
 DELIMITER ;
 
 # 21. Trip owners should be able to see all pending buddy requests
