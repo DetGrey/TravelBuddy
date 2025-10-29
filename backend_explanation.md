@@ -200,3 +200,9 @@ public class User : BaseEntity<int>
 
   - **Purpose:** The canonical model for a user in the system. It enforces data integrity by using **private setters** (making it immutable outside the class) and factory methods.
   - **Key Takeaway:** The Entity deals with **data and behavior** that belong to the domain itself. It is the object passed between the Repository and the Service.
+
+
+## How to run the backend
+
+1. Write `dotnet run`
+2. Go to either `https://localhost:7164/swagger/index.html` or `https://localhost:7164/api/users`
