@@ -206,3 +206,9 @@ public class User : BaseEntity<int>
 
 1. Write `dotnet run`
 2. Go to either `https://localhost:7164/swagger/index.html` or `https://localhost:7164/api/users`
+
+### If on a new device
+
+1. Write `cd src/TravelBuddy.Api`
+2. Get the dependencies: `dotnet restore`
+3. Continue with the instructions above aka `dotnet run`
