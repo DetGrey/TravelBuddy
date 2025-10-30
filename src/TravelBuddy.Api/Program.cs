@@ -64,9 +64,11 @@ builder.Services.AddDbContext<SharedKernelDbContext>(options =>
 
 // 1. Register the Repository (Binds IUserRepository to UserRepository)
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-
 // 2. Register the Service (Binds IUserService to UserService)
-builder.Services.AddScoped<IUserService, UserService>(); 
+builder.Services.AddScoped<IUserService, UserService>();
+
+builder.Services.AddScoped<ITripDestinationRepository, TripDestinationRepository>();
+builder.Services.AddScoped<ITripDestinationService, TripDestinationService>();
 
 var app = builder.Build();
 

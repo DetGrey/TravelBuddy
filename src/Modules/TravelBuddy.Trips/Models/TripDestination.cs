@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace TravelBuddy.Trips.Models;
+﻿namespace TravelBuddy.Trips.Models;
 
 public partial class TripDestination
 {

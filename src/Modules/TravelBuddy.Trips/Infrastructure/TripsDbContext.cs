@@ -27,6 +27,8 @@ public partial class TripsDbContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
+    public DbSet<TripDestinationSearchResult> TripDestinationSearchResults { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
@@ -251,6 +253,8 @@ public partial class TripsDbContext : DbContext
                 .HasMaxLength(255)
                 .HasColumnName("password_hash");
         });
+
+        modelBuilder.Entity<TripDestinationSearchResult>().HasNoKey();
 
         OnModelCreatingPartial(modelBuilder);
     }

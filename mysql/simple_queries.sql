@@ -2,7 +2,7 @@ USE travel_buddy;
 show tables;
 
 SELECT *
-FROM user;
+FROM trip_destination;
 
 -- See itinerary (all destinations) for a trip
 SELECT *

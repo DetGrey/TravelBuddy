@@ -87,17 +87,17 @@ CREATE PROCEDURE search_trips (
 )
 BEGIN
     SELECT
-    td.trip_destination_id,
-    t.trip_id,
-    d.destination_id,
-    d.name as destination_name,
-    d.country,
-    d.state,
-    td.start_date as destination_start,
-    td.end_date as destination_end,
-    COALESCE(t.max_buddies, 0) AS max_buddies,
-    COALESCE(abt.accepted_persons, 0) AS accepted_persons,
-    GREATEST(COALESCE(t.max_buddies, 0) - COALESCE(abt.accepted_persons, 0), 0) AS remaining_capacity
+        td.trip_destination_id AS TripDestinationId,
+        t.trip_id AS TripId,
+        d.destination_id AS DestinationId,
+        d.name AS DestinationName,
+        d.country AS Country,
+        d.state AS State,
+        td.start_date AS DestinationStart,
+        td.end_date AS DestinationEnd,
+        COALESCE(t.max_buddies, 0) AS MaxBuddies,
+        COALESCE(abt.accepted_persons, 0) AS AcceptedPersons,
+        GREATEST(COALESCE(t.max_buddies, 0) - COALESCE(abt.accepted_persons, 0), 0) AS RemainingCapacity
     FROM trip_destination td
     JOIN trip t ON t.trip_id = td.trip_id
     JOIN destination d ON d.destination_id = td.destination_id
@@ -107,31 +107,31 @@ BEGIN
         JOIN trip_destination td2 ON td2.trip_destination_id = b.trip_destination_id
         WHERE b.request_status = 'accepted'
         GROUP BY td2.trip_destination_id
-        ) AS abt
+    ) AS abt
         ON abt.trip_destination_id = td.trip_destination_id
     WHERE
-    (
-        (in_req_start IS NULL AND in_req_end IS NULL)
-        OR (in_req_start IS NOT NULL AND in_req_end IS NOT NULL
-            AND td.start_date >= in_req_start
-            AND td.end_date <= in_req_end)
-        OR (in_req_start IS NOT NULL AND in_req_end IS NULL
-            AND td.start_date >= in_req_start)
-        OR (in_req_start IS NOT NULL AND in_req_end IS NOT NULL
-            AND td.end_date <= in_req_end)
-    )
-    AND (in_name IS NULL OR in_name = '' OR d.name = in_name)
-    AND (in_country IS NULL OR in_country = '' OR d.country = in_country)
-    AND (in_state   IS NULL OR in_state   = '' OR d.state   = in_state)
-    AND (
-        in_party_size IS NULL
-        OR (COALESCE(t.max_buddies, 0) - COALESCE(abt.accepted_persons, 0)) >= in_party_size
+        (
+            (in_req_start IS NULL AND in_req_end IS NULL)
+            OR (in_req_start IS NOT NULL AND in_req_end IS NOT NULL
+                AND td.start_date >= in_req_start
+                AND td.end_date <= in_req_end)
+            OR (in_req_start IS NOT NULL AND in_req_end IS NULL
+                AND td.start_date >= in_req_start)
+            OR (in_req_start IS NOT NULL AND in_req_end IS NOT NULL
+                AND td.end_date <= in_req_end)
         )
-    AND (
-        in_q IS NULL OR in_q = ''
-        OR td.description LIKE CONCAT('%', in_q, '%')
-        OR d.name LIKE CONCAT('%', in_q, '%')
-    )
+        AND (in_name IS NULL OR in_name = '' OR d.name = in_name)
+        AND (in_country IS NULL OR in_country = '' OR d.country = in_country)
+        AND (in_state IS NULL OR in_state = '' OR d.state = in_state)
+        AND (
+            in_party_size IS NULL
+            OR (COALESCE(t.max_buddies, 0) - COALESCE(abt.accepted_persons, 0)) >= in_party_size
+        )
+        AND (
+            in_q IS NULL OR in_q = ''
+            OR td.description LIKE CONCAT('%', in_q, '%')
+            OR d.name LIKE CONCAT('%', in_q, '%')
+        )
     ORDER BY td.start_date, d.name
     LIMIT 50;
 END $$
