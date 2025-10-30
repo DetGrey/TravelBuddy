@@ -1,51 +1,51 @@
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using TravelBuddy.Users.Models;
 
-namespace TravelBuddy.Users.Infrastructure
+namespace TravelBuddy.Users.Infrastructure;
+
+public partial class UsersDbContext : DbContext
 {
-    // A DbContext specific to the Users module (a session with the database).
-    public class UsersDbContext : DbContext
+    public UsersDbContext(DbContextOptions<UsersDbContext> options)
+        : base(options)
     {
-        // This DbSet represents the collection (table) of Users in the database.
-        public DbSet<User> Users { get; set; } = null!;
-
-        // Constructor: Receives configuration options from the API host (Dependency Injection).
-        public UsersDbContext(DbContextOptions<UsersDbContext> options) : base(options)
-        {
-        }
-
-        // Configuration Method: Tells EF Core how the C# 'User' class maps to the SQL database.
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            // 1. Start configuration for the User entity.
-            var userEntity = modelBuilder.Entity<User>();
-
-            // 2. Map the C# class to the physical table named 'user'.
-            userEntity.ToTable("user");
-
-            // 3. Configure the Primary Key 'Id' property.
-            userEntity.HasKey(u => u.Id);
-            userEntity.Property(u => u.Id).HasColumnName("user_id"); 
-            
-            // 4. Configure Properties and Constraints (Fluent API).
-            
-            // Map Name property, set column name, limit length, and require a value (NOT NULL).
-            userEntity.Property(u => u.Name).HasColumnName("name").HasMaxLength(100).IsRequired();
-            
-            // Map Email property, limit length, require a value, and enforce a UNIQUE index 
-            // (no two users can have the same email).
-            userEntity.Property(u => u.Email).HasColumnName("email").HasMaxLength(150).IsRequired();
-            userEntity.HasIndex(u => u.Email).IsUnique(); 
-
-            // Map PasswordHash property.
-            userEntity.Property(u => u.PasswordHash).HasColumnName("password_hash").HasMaxLength(255).IsRequired();
-            
-            // Map Birthdate property.
-            userEntity.Property(u => u.Birthdate).HasColumnName("birthdate").IsRequired();
-            
-            // Map IsDeleted property and set a default value in the database.
-            userEntity.Property(u => u.IsDeleted).HasColumnName("is_deleted").HasDefaultValue(false);
-            
-            base.OnModelCreating(modelBuilder);
-        }
     }
+
+    public virtual DbSet<User> Users { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder
+            .UseCollation("utf8mb4_0900_ai_ci")
+            .HasCharSet("utf8mb4");
+
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.HasKey(e => e.UserId).HasName("PRIMARY");
+
+            entity.ToTable("user");
+
+            entity.HasIndex(e => e.Email, "email").IsUnique();
+
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.Property(e => e.Birthdate).HasColumnName("birthdate");
+            entity.Property(e => e.Email)
+                .HasMaxLength(150)
+                .HasColumnName("email");
+            entity.Property(e => e.IsDeleted)
+                .HasDefaultValueSql("'0'")
+                .HasColumnName("is_deleted");
+            entity.Property(e => e.Name)
+                .HasMaxLength(100)
+                .HasColumnName("name");
+            entity.Property(e => e.PasswordHash)
+                .HasMaxLength(255)
+                .HasColumnName("password_hash");
+        });
+
+        OnModelCreatingPartial(modelBuilder);
+    }
+
+    partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }

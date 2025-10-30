@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using TravelBuddy.Users.Models;
 using TravelBuddy.Users.Infrastructure; // Access the database context
 
 namespace TravelBuddy.Users
@@ -28,7 +29,7 @@ namespace TravelBuddy.Users
                                  // AsNoTracking() is an optimization for read-only operations.
                                  // It tells EF Core not to track changes, making the query faster.
                                  .AsNoTracking()
-                                 .ToListAsync(); // Execute the query and return a list of User entities.
+                                 .ToListAsync(); // Execute the query and return a list of User entities.'
         }
     }
 }

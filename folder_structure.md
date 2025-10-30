@@ -1,61 +1,77 @@
+Perfect, Ane — here’s your revised documentation that **explains the structure as the current and only version**, without referencing any past updates. I’ve streamlined the headings and removed all historical comparisons:
 
-## 📂 Modular Monorepo Structure
+---
+
+## 📦 Modular Monorepo Structure
 
 ```markdown
 /travel_buddy/
 ├── src/
-│   ├── Modules/
-│   │   ├── TravelBuddy.Users/        <-- Class Library (Business Logic/Domain)
-│   │   ├── TravelBuddy.Trips/        <-- Class Library
-│   │   └── TravelBuddy.Messaging/    <-- Class Library
-│   └── TravelBuddy.Api/              <-- ASP.NET Core Web API Host (Monolith Entry)
+│   ├── Modules/
+│   │   ├── TravelBuddy.Users/             <-- Class Library (Business Logic/Domain)
+│   │   │   ├── Models/                    # User entity
+│   │   │   ├── Infrastructure/            # UsersDbContext.cs
+│   │   │   ├── UserService.cs             # Application logic
+│   │   │   ├── IUserRepository.cs         # Repository contract
+│   │   │   └── UserRepository.cs          # Repository implementation
+│   │   │
+│   │   ├── TravelBuddy.Trips/             <-- Class Library
+│   │   │   ├── Models/                    # Trip, TripAudit, Buddy, etc.
+│   │   │   ├── Infrastructure/            # TripsDbContext.cs
+│   │   │   └── TripService.cs, etc.
+│   │   │
+│   │   ├── TravelBuddy.Messaging/         <-- Class Library
+│   │   │   ├── Models/                    # Message, Conversation, etc.
+│   │   │   ├── Infrastructure/            # MessagingDbContext.cs
+│   │   │   └── MessagingService.cs, etc.
+│
+│   ├── Shared/
+│   │   └── TravelBuddy.SharedKernel/      <-- Class Library (Cross-cutting concerns)
+│   │       ├── Models/                    # SystemEventLog, BaseEntity<TId>, etc.
+│   │       ├── Infrastructure/            # SharedKernelDbContext.cs
+│   │       └── Extensions/, Constants/    # Optional: shared helpers, enums
+│
+│   └── TravelBuddy.Api/                   <-- ASP.NET Core Web API Host (Monolith Entry)
+│       ├── Controllers/                   # API endpoints (e.g., UsersController)
+│       ├── Program.cs                     # DI setup and app startup
+│       ├── appsettings.json               # Configuration
+│       └── launchSettings.json            # Environment settings
+│
 ├── tests/
-│   ├── TravelBuddy.Users.Tests/      <-- Unit/Integration Tests for Users module
-│   ├── TravelBuddy.Trips.Tests/      <-- Unit/Integration Tests for Trips module
-│   └── TravelBuddy.Api.Tests/        <-- Integration Tests for the API Host
+│   ├── TravelBuddy.Users.Tests/          <-- Unit/Integration Tests for Users module
+│   ├── TravelBuddy.Trips.Tests/          <-- Unit/Integration Tests for Trips module
+│   └── TravelBuddy.Api.Tests/            <-- Integration Tests for the API Host
+│
 ├── frontend/
-│   └── travel-buddy-app/             <-- Placeholder for your Frontend project
+│   └── travel-buddy-app/                 <-- Placeholder for your Frontend project (e.g., React, Vue)
+│
 ├── mysql/
-│   └── create_db.sql
-└── travel_buddy.sln                  <-- The main Visual Studio Solution file
+│   └── create_db.sql                     <-- SQL script to initialize the database
+│
+└── travel_buddy.sln                      <-- The main Visual Studio Solution file
 ```
 
------
+---
 
-## 🔁 Key Structural Updates
+## 🧠 Architecture Overview
 
-The primary change in your project structure, as shown in the image, is how the modules are organized and how shared code is handled.
+### 🔹 Modular Monolith Pattern
 
-| Component | Old Structure (Description) | New Structure (Inferred from Image) |
-| :--- | :--- | :--- |
-| **API Host** | `src/TravelBuddy.Api` (Adjacent to `Modules/`) | `src/TravelBuddy.Api` (Adjacent to `Modules/`) |
-| **Modules** | `src/Modules/TravelBuddy.Users`, etc. | `src/Modules/TravelBuddy.Users`, etc. (No change to path) |
-| **Shared Kernel** | **`src/Shared/TravelBuddy.SharedKernel`** (A separate project) | **Top-level `Shared` project is REMOVED.** Common types are likely now handled via: **1.** Direct reference between modules and API, or **2.** A `Shared` folder *inside* a module (like `TravelBuddy.Users/Shared`). |
-| **Users Details** | Conceptual folders (Infrastructure, Domain) | Concrete folders shown: `Infrastructure`, `Shared`, `User.cs`, `UsersRepository.cs`, `UserService.cs` |
+- Each module is a **bounded context** with its own models, services, and `DbContext`.
+- The **SharedKernel** provides reusable types like `BaseEntity<TId>` and `SystemEventLog`.
+- The **API Host** (`TravelBuddy.Api`) acts as the entry point, wiring everything together via dependency injection.
 
------
+### 🔹 Module Composition Example: `TravelBuddy.Users`
 
-## 🔍 Explanation of the Updated Structure
+- `Models/`: Domain entities like `User`
+- `Infrastructure/`: EF Core context (`UsersDbContext`)
+- `UserRepository.cs`: Data access abstraction
+- `UserService.cs`: Business logic
+- No navigation properties to other modules — relationships are handled via foreign keys
 
-### 1\. The Core Architecture (Modular Monolith)
+### 🔹 API Host Responsibilities
 
-The pattern remains a **Modular Monolith**, but the file organization inside `src` is now slightly different.
-
-  - **`src/Modules/`**: This is where all **business logic** is isolated. Each folder (e.g., `TravelBuddy.Users`) is intended to be a **bounded context** responsible for its specific domain.
-  - **`src/TravelBuddy.Api/`**: This acts as the **Adapter** and **Host**. It's the thin layer that handles HTTP requests, dependency injection setup (`Program.cs`), and configuration (`appsettings.json`), delegating work to the services within the modules.
-
-### 2\. Deep Dive into a Module (`TravelBuddy.Users`)
-
-The image provides great detail on the internal organization of the `TravelBuddy.Users` project, which strongly follows **Clean Architecture** principles:
-
-  - **`User.cs`**: The **Domain Entity** or Model.
-  - **`Infrastructure/UsersDbContext.cs`**: The **Data Access Layer**. This file is where the application configures its database connection, table mapping, and ORM (like Entity Framework Core) specifically for the Users domain.
-  - **`UsersRepository.cs`**: The **Repository Pattern implementation**. This class provides an abstraction layer over the database. The `UserService` calls this class to save or retrieve users without knowing SQL or Entity Framework specifics.
-  - **`UserService.cs`**: The **Application/Business Logic Layer**. This class orchestrates operations, handles business rules, and is called by the `UsersController.cs` in the API project.
-  - **`Shared/`**: **This is the new key difference.** Since the top-level `SharedKernel` is gone, this internal `Shared` folder likely holds the **Data Transfer Objects (DTOs)**, **Commands**, and **Queries** that the **API project** uses to communicate with the `TravelBuddy.Users` module.
-
-### 3\. The API Host (`TravelBuddy.Api`) Components
-
-  - **`Controllers/UsersController.cs`**: The **Presentation Layer**. It receives requests from the internet and calls methods on the **`UserService.cs`** to fulfill the request.
-  - **`Program.cs`**: The main entry point responsible for configuring the **Dependency Injection (DI)** container and running the application. It hooks up the services and repositories from all the modules.
-  - **`appsettings.json` / `launchSettings.json`**: Application and environment-specific settings.
+- `Controllers/`: Handle HTTP requests and delegate to services
+- `Program.cs`: Registers all `DbContext`s and services
+- `appsettings.json`: Stores connection strings and configuration
+- `launchSettings.json`: Defines environment-specific settings

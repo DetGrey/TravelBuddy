@@ -1,8 +1,14 @@
 using Microsoft.EntityFrameworkCore;
+using Pomelo.EntityFrameworkCore.MySql;
 // Uses the main module namespace for User, IUserRepository, IUserService, etc.
 using TravelBuddy.Users; 
-using TravelBuddy.Users.Infrastructure; // Still needed for UsersDbContext
-using Pomelo.EntityFrameworkCore.MySql;
+using TravelBuddy.Users.Infrastructure;
+using TravelBuddy.Trips; 
+using TravelBuddy.Trips.Infrastructure;
+using TravelBuddy.Messaging; 
+using TravelBuddy.Messaging.Infrastructure;
+using TravelBuddy.SharedKernel; 
+using TravelBuddy.SharedKernel.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,22 +25,48 @@ builder.Services.AddAuthorization();
 // Get the connection string from appsettings.json
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// --- USER MODULE CONFIGURATION ---
+// --- MODULE CONFIGURATION ---
 // Register the Users DbContext
 builder.Services.AddDbContext<UsersDbContext>(options =>
     options.UseMySql(
         connectionString,
         ServerVersion.AutoDetect(connectionString),
-        b => b.MigrationsAssembly(typeof(Program).Assembly.FullName) 
-));
+        b => b.MigrationsAssembly(typeof(UsersDbContext).Assembly.FullName)
+    )
+);
+
+// Register the Trips DbContext
+builder.Services.AddDbContext<TripsDbContext>(options =>
+    options.UseMySql(
+        connectionString,
+        ServerVersion.AutoDetect(connectionString),
+        b => b.MigrationsAssembly(typeof(TripsDbContext).Assembly.FullName)
+    )
+);
+
+// Register the Messaging DbContext
+builder.Services.AddDbContext<MessagingDbContext>(options =>
+    options.UseMySql(
+        connectionString,
+        ServerVersion.AutoDetect(connectionString),
+        b => b.MigrationsAssembly(typeof(MessagingDbContext).Assembly.FullName)
+    )
+);
+
+// Register the SharedKernel DbContext
+builder.Services.AddDbContext<SharedKernelDbContext>(options =>
+    options.UseMySql(
+        connectionString,
+        ServerVersion.AutoDetect(connectionString),
+        b => b.MigrationsAssembly(typeof(SharedKernelDbContext).Assembly.FullName)
+    )
+);
 
 // 1. Register the Repository (Binds IUserRepository to UserRepository)
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 // 2. Register the Service (Binds IUserService to UserService)
 builder.Services.AddScoped<IUserService, UserService>(); 
-
-// ... (Other module placeholders) ...
 
 var app = builder.Build();
 
@@ -49,7 +81,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseAuthorization(); 
-
 app.MapControllers(); 
 
 app.Run();

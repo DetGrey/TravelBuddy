@@ -3,7 +3,7 @@ namespace TravelBuddy.Users
     // Public DTO (Data Transfer Object) - This is the safe contract for the API response.
     // It only exposes necessary public data, deliberately hiding sensitive fields like PasswordHash.
     public record UserDto(
-        int Id, 
+        int UserId, 
         string Name, 
         string Email,
         DateOnly Birthdate // Using DateOnly for proper date display without time
@@ -36,10 +36,10 @@ namespace TravelBuddy.Users
             // This converts the internal 'User' object (which has PasswordHash) 
             // into the safe 'UserDto' (which does not).
             return users.Select(u => new UserDto(
-                u.Id,
+                u.UserId,
                 u.Name,
                 u.Email,
-                DateOnly.FromDateTime(u.Birthdate)
+                u.Birthdate
             )).ToList();
         }
     }

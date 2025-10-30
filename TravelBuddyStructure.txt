@@ -1,0 +1,45 @@
+/travel_buddy/
+├── src/
+│   ├── TravelBuddy.Api/                        <-- ASP.NET Core Web API Host (Monolith Entry)
+│   │   ├── Controllers/                         # API endpoints (e.g., UsersController)
+│   │   └── Program.cs                           # Startup and DI configuration
+│   │
+│   ├── Modules/
+│   │   ├── TravelBuddy.Users/                  <-- Class Library (.NET 8)
+│   │   │   ├── Models/                          # User entity
+│   │   │   ├── Infrastructure/
+│   │   │   │   └── UsersDbContext.cs
+│   │   │   ├── IUserRepository.cs
+│   │   │   └── UserService.cs
+│   │   │
+│   │   ├── TravelBuddy.Trips/                  <-- Class Library
+│   │   │   ├── Models/                          # Trip, TripAudit, Buddy, etc.
+│   │   │   ├── Infrastructure/
+│   │   │   │   └── TripsDbContext.cs
+│   │   │   └── TripService.cs, etc.
+│   │   │
+│   │   └── TravelBuddy.Messaging/              <-- Class Library
+│   │       ├── Models/                          # Message, Conversation, etc.
+│   │       ├── Infrastructure/
+│   │       │   └── MessagingDbContext.cs
+│   │       └── MessagingService.cs, etc.
+│   │
+│   └── Shared/
+│       └── TravelBuddy.SharedKernel/           <-- Class Library (Common types)
+│           ├── Models/                          # SystemEventLog, etc.
+│           └── Infrastructure/
+│               └── SharedKernelDbContext.cs
+│
+├── tests/
+│   ├── TravelBuddy.Users.Tests/                <-- Unit/Integration Tests for Users module
+│   ├── TravelBuddy.Trips.Tests/                <-- Unit/Integration Tests for Trips module
+│   └── TravelBuddy.Api.Tests/                  <-- Integration Tests for the API Host
+│
+├── frontend/
+│   └── travel-buddy-app/                       <-- Placeholder for your Frontend project (e.g., React, Vue, Angular)
+│
+├── mysql/
+│   └── create_db.sql                           <-- SQL script to initialize the database
+│
+└── travel_buddy.sln                            <-- The main Visual Studio Solution file
+
