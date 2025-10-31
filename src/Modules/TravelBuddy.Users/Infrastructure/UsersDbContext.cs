@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using TravelBuddy.Users.Models;
 
 namespace TravelBuddy.Users.Infrastructure;
@@ -42,6 +40,10 @@ public partial class UsersDbContext : DbContext
             entity.Property(e => e.PasswordHash)
                 .HasMaxLength(255)
                 .HasColumnName("password_hash");
+            entity.Property(e => e.Role)
+                .HasDefaultValueSql("'user'")
+                .HasColumnType("enum('user','admin')")
+                .HasColumnName("role");
         });
 
         OnModelCreatingPartial(modelBuilder);

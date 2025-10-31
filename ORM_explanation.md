@@ -105,6 +105,8 @@ var trips = await _context.Trips
 </ItemGroup>
 ```
 
+> Note: adding `--force` makes it possible to overwrite old files
+
 **USERS**
 ```bash
 dotnet ef dbcontext scaffold "Your_Connection_String" Pomelo.EntityFrameworkCore.MySql \
@@ -114,7 +116,8 @@ dotnet ef dbcontext scaffold "Your_Connection_String" Pomelo.EntityFrameworkCore
   --namespace TravelBuddy.Users.Models \
   --context-namespace TravelBuddy.Users.Infrastructure \
   --table user \
-  --no-onconfiguring
+  --no-onconfiguring \
+  --force
 ```
 
 **MESSAGES**
@@ -133,7 +136,8 @@ dotnet ef dbcontext scaffold "Your_Connection_String" Pomelo.EntityFrameworkCore
   --table trip_destination \
   --table destination \
   --table trip \
-  --no-onconfiguring
+  --no-onconfiguring \
+  --force
 ```
 
 **TRIPS**
@@ -151,7 +155,8 @@ dotnet ef dbcontext scaffold "Your_Connection_String" Pomelo.EntityFrameworkCore
   --table buddy \
   --table buddy_audit \
   --table trip_audit \
-  --no-onconfiguring
+  --no-onconfiguring \
+  --force
 ```
 
 **SHARED**

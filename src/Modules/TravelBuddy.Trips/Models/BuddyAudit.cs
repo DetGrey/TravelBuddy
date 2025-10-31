@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using TravelBuddy.Users.Models;
+﻿using TravelBuddy.Users.Models;
 
 namespace TravelBuddy.Trips.Models;
 

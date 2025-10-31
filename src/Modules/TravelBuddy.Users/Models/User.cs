@@ -13,4 +13,6 @@ public partial class User
     public DateOnly Birthdate { get; set; }
 
     public bool? IsDeleted { get; set; }
+
+    public string? Role { get; set; }
 }

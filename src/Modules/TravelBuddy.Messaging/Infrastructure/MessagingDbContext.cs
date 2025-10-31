@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using TravelBuddy.Messaging.Models;
 using TravelBuddy.Trips.Models;
 using TravelBuddy.Users.Models;
@@ -130,6 +128,8 @@ public partial class MessagingDbContext : DbContext
 
             entity.ToTable("destination");
 
+            entity.HasIndex(e => new { e.Country, e.State }, "idx_dest_contry_state");
+
             entity.Property(e => e.DestinationId).HasColumnName("destination_id");
             entity.Property(e => e.Country)
                 .HasMaxLength(100)
@@ -211,9 +211,11 @@ public partial class MessagingDbContext : DbContext
 
             entity.ToTable("trip_destination");
 
-            entity.HasIndex(e => e.DestinationId, "fk_itinerary_destination");
+            entity.HasIndex(e => new { e.StartDate, e.EndDate }, "idx_td_dates");
 
-            entity.HasIndex(e => e.TripId, "fk_itinerary_trip");
+            entity.HasIndex(e => e.DestinationId, "idx_td_destination");
+
+            entity.HasIndex(e => e.TripId, "idx_td_trip");
 
             entity.Property(e => e.TripDestinationId).HasColumnName("trip_destination_id");
             entity.Property(e => e.Description)
@@ -259,6 +261,10 @@ public partial class MessagingDbContext : DbContext
             entity.Property(e => e.PasswordHash)
                 .HasMaxLength(255)
                 .HasColumnName("password_hash");
+            entity.Property(e => e.Role)
+                .HasDefaultValueSql("'user'")
+                .HasColumnType("enum('user','admin')")
+                .HasColumnName("role");
         });
 
         OnModelCreatingPartial(modelBuilder);

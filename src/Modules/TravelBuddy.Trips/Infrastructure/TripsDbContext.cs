@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using TravelBuddy.Trips.Models;
 using TravelBuddy.Users.Models;
 
@@ -43,9 +41,9 @@ public partial class TripsDbContext : DbContext
 
             entity.ToTable("buddy");
 
-            entity.HasIndex(e => e.TripDestinationId, "fk_buddy_tripDestination");
-
             entity.HasIndex(e => e.UserId, "fk_buddy_user");
+
+            entity.HasIndex(e => new { e.TripDestinationId, e.RequestStatus }, "idx_buddy_seg_status");
 
             entity.Property(e => e.BuddyId).HasColumnName("buddy_id");
             entity.Property(e => e.DepartureReason)
@@ -115,6 +113,8 @@ public partial class TripsDbContext : DbContext
             entity.HasKey(e => e.DestinationId).HasName("PRIMARY");
 
             entity.ToTable("destination");
+
+            entity.HasIndex(e => new { e.Country, e.State }, "idx_dest_contry_state");
 
             entity.Property(e => e.DestinationId).HasColumnName("destination_id");
             entity.Property(e => e.Country)
@@ -206,9 +206,11 @@ public partial class TripsDbContext : DbContext
 
             entity.ToTable("trip_destination");
 
-            entity.HasIndex(e => e.DestinationId, "fk_itinerary_destination");
+            entity.HasIndex(e => new { e.StartDate, e.EndDate }, "idx_td_dates");
 
-            entity.HasIndex(e => e.TripId, "fk_itinerary_trip");
+            entity.HasIndex(e => e.DestinationId, "idx_td_destination");
+
+            entity.HasIndex(e => e.TripId, "idx_td_trip");
 
             entity.Property(e => e.TripDestinationId).HasColumnName("trip_destination_id");
             entity.Property(e => e.Description)
@@ -254,6 +256,10 @@ public partial class TripsDbContext : DbContext
             entity.Property(e => e.PasswordHash)
                 .HasMaxLength(255)
                 .HasColumnName("password_hash");
+            entity.Property(e => e.Role)
+                .HasDefaultValueSql("'user'")
+                .HasColumnType("enum('user','admin')")
+                .HasColumnName("role");
         });
 
         modelBuilder.Entity<TripDestinationSearchResult>().HasNoKey();
