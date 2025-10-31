@@ -1,6 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using Pomelo.EntityFrameworkCore.MySql;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 // Uses the main module namespace for User, IUserRepository, IUserService, etc.
+using TravelBuddy.Api.Auth; 
 using TravelBuddy.Users; 
 using TravelBuddy.Users.Infrastructure;
 using TravelBuddy.Trips; 
@@ -17,10 +20,44 @@ var builder = WebApplication.CreateBuilder(args);
 // Configure OpenAPI/Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-// NEW: This registers the services needed for your Controllers (UsersController)
-builder.Services.AddControllers(); 
-// NEW: Authorization service registration (the fix from the last step)
+// This registers the services needed for your Controllers (UsersController)
+builder.Services.AddControllers();
+// Authorization service registration
 builder.Services.AddAuthorization();
+
+// Add JWT
+var jwtKey = builder.Configuration["Jwt:Key"];
+var jwtIssuer = builder.Configuration["Jwt:Issuer"];
+var jwtAudience = builder.Configuration["Jwt:Audience"];
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+        };
+
+         // Extract token from cookie if Authorization header is missing
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                if (context.Request.Cookies.ContainsKey("access_token"))
+                {
+                    context.Token = context.Request.Cookies["access_token"];
+                }
+                return Task.CompletedTask;
+            }
+        };
+    });
+
 
 // Get the connection string from appsettings.json
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -70,6 +107,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITripDestinationRepository, TripDestinationRepository>();
 builder.Services.AddScoped<ITripDestinationService, TripDestinationService>();
 
+builder.Services.AddScoped<JwtTokenGenerator>();
+
 var app = builder.Build();
 
 // --- 2. HTTP REQUEST PIPELINE CONFIGURATION ---
@@ -82,6 +121,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization(); 
 app.MapControllers(); 
 

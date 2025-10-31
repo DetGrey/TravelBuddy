@@ -5,6 +5,8 @@ SELECT *
 FROM trip_destination;
 
 
+DELETE from user where email = 'ane@mail.com';
+
 CALL get_user_trips(1);
 
 -- See itinerary (all destinations) for a trip

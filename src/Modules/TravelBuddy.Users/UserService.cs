@@ -1,21 +1,19 @@
+using TravelBuddy.Users.DTOs;
+using TravelBuddy.Users.Models;
+using TravelBuddy.Users.Infrastructure.Security;
+
 namespace TravelBuddy.Users
 {
-    // Public DTO (Data Transfer Object) - This is the safe contract for the API response.
-    // It only exposes necessary public data, deliberately hiding sensitive fields like PasswordHash.
-    public record UserDto(
-        int UserId, 
-        string Name, 
-        string Email,
-        DateOnly Birthdate // Using DateOnly for proper date display without time
-    );
-
     // Contract: Defines the public methods available for the Users service.
     public interface IUserService
     {
+        Task<User?> AuthenticateAsync(string email, string password);
+        Task<User?> RegisterAsync(RegisterRequestDto request);
+
         // Gets a list of all users from the database.
         Task<IEnumerable<UserDto>> GetAllUsersAsync();
     }
-    
+
     // Implementation: Contains the actual business logic.
     public class UserService : IUserService
     {
@@ -27,11 +25,41 @@ namespace TravelBuddy.Users
             _userRepository = userRepository;
         }
 
+        public async Task<User?> AuthenticateAsync(string email, string password)
+        {
+            var user = await _userRepository.GetByEmailAsync(email);
+            if (user == null || user.IsDeleted) return null;
+
+            bool isValid = PasswordHasher.VerifyPassword(password, user.PasswordHash);
+            return isValid ? user : null;
+        }
+
+        public async Task<User?> RegisterAsync(RegisterRequestDto request)
+        {
+            var existing = await _userRepository.GetByEmailAsync(request.Email);
+            if (existing != null) return null; // Email already in use
+
+            var hashedPassword = PasswordHasher.HashPassword(request.Password);
+
+            var newUser = new User
+            {
+                Name = request.Name,
+                Email = request.Email,
+                PasswordHash = hashedPassword,
+                Birthdate = request.Birthdate,
+                Role = "user"
+            };
+
+            await _userRepository.AddAsync(newUser);
+
+            return newUser;
+        }
+
         public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
         {
             // 1. Delegate to the Data Layer (Repository) to fetch the raw User entities.
             var users = await _userRepository.GetAllAsync();
-            
+
             // 2. Map Entities to DTOs (Data Transformation).
             // This converts the internal 'User' object (which has PasswordHash) 
             // into the safe 'UserDto' (which does not).
