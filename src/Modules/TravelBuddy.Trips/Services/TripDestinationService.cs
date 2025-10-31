@@ -26,6 +26,14 @@ namespace TravelBuddy.Trips
         int RemainingCapacity
     );
 
+    public record UserTripSummaryDto(
+        int TripId,
+        int TripDestinationId,
+        string DestinationName,
+        string TripDescription,
+        string Role
+    );
+
     // INTERFACE
     public interface ITripDestinationService
     {
@@ -38,6 +46,8 @@ namespace TravelBuddy.Trips
             int? partySize,
             string? q
         );
+
+        Task<IEnumerable<UserTripSummaryDto>> GetUserTripsAsync(int userId);
     }
 
     // CLASS
@@ -61,20 +71,33 @@ namespace TravelBuddy.Trips
         {
             var results = await _repository.SearchTripsAsync(reqStart, reqEnd, country, state, name, partySize, q);
 
-              return results.Select(r => new TripDestinationSearchDto(
-                r.TripDestinationId,
-                r.TripId,
-                r.DestinationId,
-                r.DestinationName,
-                r.Country,
-                r.State,
-                r.DestinationStart,
-                r.DestinationEnd,
-                r.MaxBuddies,
-                r.AcceptedPersons,
-                r.RemainingCapacity
-            )).ToList();
+            return results.Select(r => new TripDestinationSearchDto(
+              r.TripDestinationId,
+              r.TripId,
+              r.DestinationId,
+              r.DestinationName,
+              r.Country,
+              r.State,
+              r.DestinationStart,
+              r.DestinationEnd,
+              r.MaxBuddies,
+              r.AcceptedPersons,
+              r.RemainingCapacity
+          )).ToList();
 
+        }
+
+        public async Task<IEnumerable<UserTripSummaryDto>> GetUserTripsAsync(int userId)
+        {
+            var results = await _repository.GetUserTripsAsync(userId);
+
+            return results.Select(r => new UserTripSummaryDto(
+                r.TripId,
+                r.TripDestinationId,
+                r.DestinationName,
+                r.TripDescription,
+                r.Role
+            )).ToList();
         }
     }
 }

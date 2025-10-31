@@ -29,6 +29,8 @@ public partial class TripsDbContext : DbContext
 
     public DbSet<TripDestinationSearchResult> TripDestinationSearchResults { get; set; }
 
+    public DbSet<UserTripSummary> UserTripSummaries { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
@@ -255,6 +257,8 @@ public partial class TripsDbContext : DbContext
         });
 
         modelBuilder.Entity<TripDestinationSearchResult>().HasNoKey();
+
+        modelBuilder.Entity<UserTripSummary>().HasNoKey();
 
         OnModelCreatingPartial(modelBuilder);
     }

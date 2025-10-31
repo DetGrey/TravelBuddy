@@ -145,11 +145,11 @@ CREATE PROCEDURE get_user_trips (
 )
 BEGIN
     -- Trips where user is owner
-    SELECT t.trip_id,
-           td.trip_destination_id,
-           d.name AS destination_name,
-           t.description AS trip_description,
-           'owner' AS role
+    SELECT t.trip_id AS TripId,
+           td.trip_destination_id AS TripDestinationId,
+           d.name AS DestinationName,
+           t.description AS TripDescription,
+           'owner' AS Role
     FROM trip t
     JOIN trip_destination td ON td.trip_id = t.trip_id
     JOIN destination d ON d.destination_id = td.destination_id
@@ -158,18 +158,18 @@ BEGIN
     UNION
 
     -- Trips where user is buddy
-    SELECT t.trip_id,
-           td.trip_destination_id,
-           d.name AS destination_name,
-           t.description AS trip_description,
-           'buddy' AS role
+    SELECT t.trip_id AS TripId,
+           td.trip_destination_id  AS TripDestinationId,
+           d.name AS DestinationName,
+           t.description AS TripDescription,
+           'buddy' AS Role
     FROM trip t
     JOIN trip_destination td ON td.trip_id = t.trip_id
     JOIN destination d ON d.destination_id = td.destination_id
     JOIN buddy b ON b.trip_destination_id = td.trip_destination_id
     WHERE get_user_id_from_buddy(b.buddy_id) = in_user_id
 
-    ORDER BY trip_id, role;
+    ORDER BY TripId, Role;
 END $$
 DELIMITER ;
 

@@ -4,6 +4,9 @@ show tables;
 SELECT *
 FROM trip_destination;
 
+
+CALL get_user_trips(1);
+
 -- See itinerary (all destinations) for a trip
 SELECT *
 FROM trip_destination

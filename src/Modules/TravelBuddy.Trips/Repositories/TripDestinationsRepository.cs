@@ -16,6 +16,8 @@ namespace TravelBuddy.Trips
             int? partySize,
             string? q
         );
+
+        Task<IEnumerable<UserTripSummary>> GetUserTripsAsync(int userId);
     }
 
     // CLASS
@@ -56,6 +58,15 @@ namespace TravelBuddy.Trips
                         {partySizeParam},
                         {qParam}
                     )")
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<UserTripSummary>> GetUserTripsAsync(int userId)
+        {
+            return await _context.UserTripSummaries
+                .FromSqlInterpolated($@"
+                    CALL get_user_trips({userId})")
                 .AsNoTracking()
                 .ToListAsync();
         }

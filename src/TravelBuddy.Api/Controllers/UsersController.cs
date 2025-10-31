@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using TravelBuddy.Users; // Accesses the IUserService contract and UserDto
+using TravelBuddy.Trips;
 
 namespace TravelBuddy.Api.Controllers
 {
@@ -11,11 +12,16 @@ namespace TravelBuddy.Api.Controllers
     {
         // This is the dependency on the business logic layer (UserService).
         private readonly IUserService _userService;
+        private readonly ITripDestinationService _tripDestinationService;
 
         // Constructor: ASP.NET Core automatically injects the IUserService implementation here.
-        public UsersController(IUserService userService)
+        public UsersController(
+            IUserService userService,
+            ITripDestinationService tripDestinationService
+        )
         {
             _userService = userService;
+            _tripDestinationService = tripDestinationService;
         }
 
         // [HttpGet] maps this method to an HTTP GET request (URL: /api/users).
@@ -38,15 +44,16 @@ namespace TravelBuddy.Api.Controllers
             return Ok(users);
         }
         
-        // 2. NEW ENDPOINT: GET /api/users/{id}
+        // GET /api/users/{id}/trip-destinations
         // The "{id}" parameter in the HttpGet attribute maps the URL segment to the 'id' parameter below.
-        [HttpGet("{id}")]
+        [HttpGet("{id}/trip-destinations")]
         [ProducesResponseType(typeof(UserDto), 200)] // Success response type
         [ProducesResponseType(404)]                   // Not Found response
-        public async Task<ActionResult<UserDto>> GetById([FromRoute] int id)
+        public async Task<ActionResult<UserDto>> GetUserTrips([FromRoute] int id)
         {
-            // TODO make one to find user by id
-            return NotFound();
+            var tripDestinations = await _tripDestinationService.GetUserTripsAsync(id);
+            if (!tripDestinations.Any()) return NoContent();
+            return Ok(tripDestinations);
         }
     }
 }

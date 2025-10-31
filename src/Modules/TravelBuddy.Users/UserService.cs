@@ -7,7 +7,7 @@ namespace TravelBuddy.Users
         string Name, 
         string Email,
         DateOnly Birthdate // Using DateOnly for proper date display without time
-    ); 
+    );
 
     // Contract: Defines the public methods available for the Users service.
     public interface IUserService
