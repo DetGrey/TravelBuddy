@@ -705,3 +705,27 @@ DELIMITER ;
 CREATE or REPLACE VIEW all_users AS
 SELECT user_id, name, email, birthdate, is_deleted
 FROM user;
+
+# 27. User should be able to delete their own account + admin can delete all
+DROP PROCEDURE IF EXISTS delete_user;
+DELIMITER $$
+CREATE PROCEDURE delete_user(
+    IN p_user_id INT,
+    IN p_password_hash VARCHAR(255)
+)
+BEGIN
+    IF p_user_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'user_id cannot be NULL';
+    END IF;
+
+    UPDATE user
+    SET
+        is_deleted = TRUE,
+        name = 'Deleted User',
+        email = CONCAT('deleted_', user_id, '@example.com'),
+        password_hash = p_password_hash,
+        birthdate = NOW()
+    WHERE user_id = p_user_id;
+END $$
+DELIMITER ;

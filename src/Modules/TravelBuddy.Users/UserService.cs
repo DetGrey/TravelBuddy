@@ -9,6 +9,7 @@ namespace TravelBuddy.Users
     {
         Task<User?> AuthenticateAsync(string email, string password);
         Task<User?> RegisterAsync(RegisterRequestDto request);
+        Task<bool> DeleteUser(int userId);
 
         Task<bool> ChangePasswordAsync(PasswordChangeRequestDto request, string email, int userId);
 
@@ -55,6 +56,13 @@ namespace TravelBuddy.Users
             await _userRepository.AddAsync(newUser);
 
             return newUser;
+        }
+        
+        public async Task<bool> DeleteUser(int userId)
+        {
+            var placeholder = $"deleted_{userId}_{DateTime.UtcNow:yyyyMMddHHmmss}";
+            var hashedPassword = PasswordHasher.HashPassword(placeholder);
+            return await _userRepository.DeleteAsync(userId, hashedPassword);
         }
 
         public async Task<bool> ChangePasswordAsync(PasswordChangeRequestDto request, string email, int userId)

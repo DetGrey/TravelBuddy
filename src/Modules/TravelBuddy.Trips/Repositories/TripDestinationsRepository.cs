@@ -66,7 +66,7 @@ namespace TravelBuddy.Trips
         {
             return await _context.UserTripSummaries
                 .FromSqlInterpolated($@"
-                    CALL get_user_trips({userId})")
+                    CALL get_user_trips({userId})") // FromSqlInterpolated() automatically prevents SQL injections
                 .AsNoTracking()
                 .ToListAsync();
         }

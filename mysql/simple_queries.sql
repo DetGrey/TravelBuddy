@@ -5,7 +5,7 @@ SELECT *
 FROM trip_destination;
 
 
-DELETE from user where email = 'ane@mail.com';
+DELETE from user where user_id = 85;
 
 UPDATE user
 SET role = 'admin'

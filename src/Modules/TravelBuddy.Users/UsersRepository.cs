@@ -9,6 +9,7 @@ namespace TravelBuddy.Users
     {
         Task<User?> GetByEmailAsync(string email);
         Task AddAsync(User user);
+        Task<bool> DeleteAsync(int userId, string passwordHash);
         Task UpdatePasswordAsync(int userId, string passwordHash);
 
         // Method to get all User entities from the persistence store.
@@ -34,6 +35,15 @@ namespace TravelBuddy.Users
         {
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
+        }
+        public async Task<bool> DeleteAsync(int userId, string passwordHash)
+        {
+            if (string.IsNullOrWhiteSpace(passwordHash))
+                throw new ArgumentException("Password hash cannot be empty.", nameof(passwordHash));
+        
+            // ExecuteSqlInterpolatedAsync() automatically prevents SQL injections
+            var result = await _context.Database.ExecuteSqlInterpolatedAsync($@"CALL delete_user({userId}, {passwordHash})");
+            return result == 1;
         }
         public async Task UpdatePasswordAsync(int userId, string passwordHash)
         {
