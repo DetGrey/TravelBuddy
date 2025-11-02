@@ -109,6 +109,9 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITripDestinationRepository, TripDestinationRepository>();
 builder.Services.AddScoped<ITripDestinationService, TripDestinationService>();
 
+builder.Services.AddScoped<IBuddyRepository, BuddyRepository>();
+builder.Services.AddScoped<IBuddyService, BuddyService>();
+
 builder.Services.AddScoped<JwtTokenGenerator>();
 
 var app = builder.Build();

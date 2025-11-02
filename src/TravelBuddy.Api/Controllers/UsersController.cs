@@ -1,10 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using TravelBuddy.Users;
-using TravelBuddy.Trips;
-using TravelBuddy.Api.Auth;
-using TravelBuddy.Users.DTOs;
 using System.Security.Claims;
+using TravelBuddy.Api.Auth;
+using TravelBuddy.Users;
+using TravelBuddy.Users.DTOs;
+using TravelBuddy.Trips;
+using TravelBuddy.Trips.DTOs;
 
 namespace TravelBuddy.Api.Controllers
 {
@@ -14,22 +15,25 @@ namespace TravelBuddy.Api.Controllers
     [Route("api/[controller]")] 
     public class UsersController : ControllerBase
     {
+        private readonly JwtTokenGenerator _jwtTokenGenerator;
         // This is the dependency on the business logic layer (UserService).
         private readonly IUserService _userService;
-        private readonly ITripDestinationService _tripDestinationService;
-        private readonly JwtTokenGenerator _jwtTokenGenerator;
+        private readonly ITripDestinationService _tripDestinationService;    
+        private readonly IBuddyService _buddyService;
 
 
         // Constructor: ASP.NET Core automatically injects the IUserService implementation here.
         public UsersController(
+            JwtTokenGenerator jwtTokenGenerator,
             IUserService userService,
             ITripDestinationService tripDestinationService,
-            JwtTokenGenerator jwtTokenGenerator
+            IBuddyService buddyService
         )
         {
+            _jwtTokenGenerator = jwtTokenGenerator;
             _userService = userService;
             _tripDestinationService = tripDestinationService;
-            _jwtTokenGenerator = jwtTokenGenerator;
+            _buddyService = buddyService;
         }
 
         [HttpPost("login")]
@@ -201,6 +205,23 @@ namespace TravelBuddy.Api.Controllers
             if (!tripDestinations.Any()) return NoContent();
 
             return Ok(tripDestinations);
+        }
+
+        [Authorize]
+        [HttpGet("{id}/pending-buddy-requests")]
+        [ProducesResponseType(typeof(IEnumerable<PendingBuddyRequestsDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> GetPendingBuddyRequests([FromRoute] int id)
+        {
+            if (!User.IsSelfOrAdmin(id))
+                return Forbid();
+
+            var pendingBuddyRequests = await _buddyService.GetPendingBuddyRequestsAsync(id);
+            if (!pendingBuddyRequests.Any()) return NoContent();
+
+            return Ok(pendingBuddyRequests);
         }
         
         [Authorize(Roles = "admin")]

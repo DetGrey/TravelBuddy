@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using TravelBuddy.Trips;
+using TravelBuddy.Trips.DTOs;
 using TravelBuddy.Api.Auth;
 
 namespace TravelBuddy.Api.Controllers

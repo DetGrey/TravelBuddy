@@ -1,39 +1,7 @@
+using TravelBuddy.Trips.DTOs;
+
 namespace TravelBuddy.Trips
 {
-    // DTO (Data Transfer Object)
-    public record TripDestinationDto(
-        int TripDestinationId,
-        int DestinationId,
-        int TripId,
-        DateOnly StartDate,
-        DateOnly EndDate,
-        int SequenceNumber,
-        string? Description,
-        bool? IsArchived
-    );
-
-    public record TripDestinationSearchDto(
-        int TripDestinationId,
-        int TripId,
-        int DestinationId,
-        string DestinationName,
-        string Country,
-        string State,
-        DateOnly DestinationStart,
-        DateOnly DestinationEnd,
-        int MaxBuddies,
-        int AcceptedPersons,
-        int RemainingCapacity
-    );
-
-    public record UserTripSummaryDto(
-        int TripId,
-        int TripDestinationId,
-        string DestinationName,
-        string TripDescription,
-        string Role
-    );
-
     // INTERFACE
     public interface ITripDestinationService
     {

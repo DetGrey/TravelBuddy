@@ -677,9 +677,9 @@ END $$
 DELIMITER ;
 
 # 21. Trip owners should be able to see all pending buddy requests
-DROP PROCEDURE IF EXISTS get_buddy_requests;
+DROP PROCEDURE IF EXISTS get_pending_buddy_requests;
 DELIMITER $$
-CREATE PROCEDURE get_buddy_requests(IN p_user_id INT)
+CREATE PROCEDURE get_pending_buddy_requests(IN p_user_id INT)
 BEGIN
     IF p_user_id IS NULL THEN
         SIGNAL SQLSTATE '45000'
@@ -687,10 +687,12 @@ BEGIN
     END IF;
 
     SELECT
-      td.trip_id,
-      d.name AS destination,
-      u.user_id,
-      u.name
+      td.trip_id AS TripId,
+      d.name AS DestinationName,
+      u.user_id AS BuddyUserId,
+      u.name AS BuddyName,
+      b.note AS BuddyNote,
+      b.person_count AS PersonCount
     FROM trip t
     JOIN trip_destination td ON t.trip_id = td.trip_id
     JOIN destination d ON td.destination_id = d.destination_id

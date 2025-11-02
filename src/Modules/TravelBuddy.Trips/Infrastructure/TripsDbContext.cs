@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using TravelBuddy.Trips.DTOs;
 using TravelBuddy.Trips.Models;
 using TravelBuddy.Users.Models;
 
@@ -28,6 +29,8 @@ public partial class TripsDbContext : DbContext
     public DbSet<TripDestinationSearchResult> TripDestinationSearchResults { get; set; }
 
     public DbSet<UserTripSummary> UserTripSummaries { get; set; }
+
+    public DbSet<PendingBuddyRequest> PendingBuddyRequests { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -265,6 +268,8 @@ public partial class TripsDbContext : DbContext
         modelBuilder.Entity<TripDestinationSearchResult>().HasNoKey();
 
         modelBuilder.Entity<UserTripSummary>().HasNoKey();
+
+        modelBuilder.Entity<PendingBuddyRequest>().HasNoKey();
 
         OnModelCreatingPartial(modelBuilder);
     }
