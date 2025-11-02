@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using TravelBuddy.Trips;
+using TravelBuddy.Api.Auth;
 
 namespace TravelBuddy.Api.Controllers
 {
@@ -16,7 +17,8 @@ namespace TravelBuddy.Api.Controllers
         }
 
         [HttpGet("search")]
-        [ProducesResponseType(typeof(IEnumerable<TripDestinationDto>), 200)]
+        [ProducesResponseType(typeof(IEnumerable<TripDestinationDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult<IEnumerable<TripDestinationDto>>> SearchTrips(
             [FromQuery] DateOnly? reqStart,
             [FromQuery] DateOnly? reqEnd,

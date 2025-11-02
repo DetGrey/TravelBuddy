@@ -7,6 +7,10 @@ FROM trip_destination;
 
 DELETE from user where email = 'ane@mail.com';
 
+UPDATE user
+SET role = 'admin'
+where email = 'admin@admin.com';
+
 CALL get_user_trips(1);
 
 -- See itinerary (all destinations) for a trip

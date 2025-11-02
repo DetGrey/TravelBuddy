@@ -1,13 +1,22 @@
 
 ## Writing convention for our project
 
-| Layer               | Convention     | Example                        |
-|---------------------|----------------|--------------------------------|
+| Layer               | Convention     | Example                         |
+|---------------------|----------------|---------------------------------|
 | API endpoint path   | `kebab-case`   | `/api/trip-destinations/search` |
-| Query parameters    | `camelCase`    | `?reqStart=2025-03-01`         |
-| C# properties       | `PascalCase`   | `TripDestinationId`            |
-| SQL aliases         | `PascalCase`   | `AS TripDestinationId`         |
-| DB schema           | `snake_case`   | `trip_destination_id`          |
+| Query parameters    | `camelCase`    | `?reqStart=2025-03-01`          |
+| C# properties       | `PascalCase`   | `TripDestinationId`             |
+| SQL aliases         | `PascalCase`   | `AS TripDestinationId`          |
+| DB schema           | `snake_case`   | `trip_destination_id`           |
+
+
+## DTO response vs request types
+
+| **DTO type**         | **Purpose**              | **Best Practice**             | 
+|----------------------|--------------------------|-------------------------------|
+| `UserDto`            | Response DTO (read-only) | Use `record` for immutability | 
+| `RegisterRequestDto` | Request DTO (writeable)  | Use `class` with validation   | 
+
 
 ## How to add new endpoints (shown through example)
 

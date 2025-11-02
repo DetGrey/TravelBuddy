@@ -10,6 +10,8 @@ namespace TravelBuddy.Users
         Task<User?> AuthenticateAsync(string email, string password);
         Task<User?> RegisterAsync(RegisterRequestDto request);
 
+        Task<bool> ChangePasswordAsync(PasswordChangeRequestDto request, string email, int userId);
+
         // Gets a list of all users from the database.
         Task<IEnumerable<UserDto>> GetAllUsersAsync();
     }
@@ -53,6 +55,22 @@ namespace TravelBuddy.Users
             await _userRepository.AddAsync(newUser);
 
             return newUser;
+        }
+
+        public async Task<bool> ChangePasswordAsync(PasswordChangeRequestDto request, string email, int userId)
+        {
+            var user = await _userRepository.GetByEmailAsync(email);
+            if (user == null || user.IsDeleted) return false;
+
+            // Note: To actually change password from generated users, comment out the two lines below
+            bool isValid = PasswordHasher.VerifyPassword(request.OldPassword, user.PasswordHash);
+            if (!isValid) return false;
+
+            var hashedPassword = PasswordHasher.HashPassword(request.NewPassword);
+
+            await _userRepository.UpdatePasswordAsync(userId, hashedPassword);
+
+            return true;
         }
 
         public async Task<IEnumerable<UserDto>> GetAllUsersAsync()

@@ -9,6 +9,7 @@ namespace TravelBuddy.Users
     {
         Task<User?> GetByEmailAsync(string email);
         Task AddAsync(User user);
+        Task UpdatePasswordAsync(int userId, string passwordHash);
 
         // Method to get all User entities from the persistence store.
         Task<IEnumerable<User>> GetAllAsync();
@@ -33,6 +34,16 @@ namespace TravelBuddy.Users
         {
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
+        }
+        public async Task UpdatePasswordAsync(int userId, string passwordHash)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user != null)
+            {
+                user.PasswordHash = passwordHash;
+                await _context.SaveChangesAsync();
+            }
+
         }
 
         public async Task<IEnumerable<User>> GetAllAsync()
