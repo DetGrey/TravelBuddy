@@ -179,8 +179,8 @@ DELIMITER $$
 CREATE PROCEDURE get_user_conversations(IN p_user_id INT)
 BEGIN
     SELECT
-        c.conversation_id,
-        m.content,
+        c.conversation_id AS ConversationId,
+        m.content AS Content,
         CASE
             WHEN DATE(sent_at) = CURDATE() THEN DATE_FORMAT(sent_at, '%H:%i')
             WHEN DATE(sent_at) = CURDATE() - INTERVAL 1 DAY THEN 'Yesterday'
@@ -211,19 +211,19 @@ BEGIN
     END IF;
 
     SELECT
-        c.conversation_id,
-        c.trip_destination_id,
+        c.conversation_id AS ConversationId,
+        c.trip_destination_id AS TripDestinationId,
         JSON_OBJECT(
             'destination', d.name,
             'date', td.start_date
-        ) AS trip_destination,
-        COUNT(DISTINCT u.user_id) AS participant_count,
+        ) AS TripDestination,
+        COUNT(DISTINCT u.user_id) AS ParticipantCount,
         JSON_ARRAYAGG(
             JSON_OBJECT(
                 'user_id', u.user_id,
                 'name', u.name
             )
-        ) AS participants
+        ) AS Participants
     FROM conversation c
     JOIN trip_destination td ON c.trip_destination_id = td.trip_destination_id
     JOIN destination d ON td.destination_id = d.destination_id
@@ -246,11 +246,11 @@ BEGIN
     END IF;
 
     SELECT
-      m.message_id,
-      m.sender_id,
-      u.name,
-      m.sent_at,
-      m.content
+      m.message_id AS MessageId,
+      m.sender_id AS SenderId,
+      u.name AS Name,
+      m.sent_at AS SentAt,
+      m.content AS Content
     FROM message m
     JOIN conversation c ON m.conversation_id = c.conversation_id
     JOIN user u ON m.sender_id = u.user_id
@@ -293,7 +293,6 @@ BEGIN
     WHERE conversation_id = p_conversation_id
       AND is_archived = TRUE;
 END $$
-
 DELIMITER ;
 
 # 10. If a buddy is not active anymore (left or removed) they should be removed from group conversation
@@ -311,6 +310,11 @@ BEGIN
     IF p_buddy_id IS NULL THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'buddy_id cannot be NULL';
+    END IF;
+
+    IF p_triggered_by IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'triggered_by cannot be NULL';
     END IF;
 
     SET v_conversation_id = get_group_conversation_for_buddy(p_buddy_id);
@@ -337,7 +341,7 @@ BEGIN
         VALUES (
             v_conversation_id,
             v_user_id,
-            'user_removed',
+            v_audit_message,
             p_triggered_by
         );
     END IF;
