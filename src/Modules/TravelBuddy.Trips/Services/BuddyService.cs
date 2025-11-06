@@ -6,6 +6,7 @@ namespace TravelBuddy.Trips
     public interface IBuddyService
     {
         Task<IEnumerable<PendingBuddyRequestsDto>> GetPendingBuddyRequestsAsync(int userId);
+        Task<bool> InsertBuddyRequestAsync(BuddyDto buddyDto);
     }
 
     // CLASS
@@ -30,6 +31,11 @@ namespace TravelBuddy.Trips
                 r.BuddyNote,
                 r.PersonCount
             )).ToList();
+        }
+
+        public async Task<bool> InsertBuddyRequestAsync(BuddyDto buddyDto)
+        {
+            return await _repository.InsertBuddyRequestAsync(buddyDto);
         }
     }
 }

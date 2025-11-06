@@ -9,6 +9,7 @@ namespace TravelBuddy.Trips
     public interface IBuddyRepository
     {
         Task<IEnumerable<PendingBuddyRequest>> GetPendingBuddyRequestsAsync(int userId);
+        Task<bool> InsertBuddyRequestAsync(BuddyDto buddyDto);
     }
 
     // CLASS
@@ -28,6 +29,26 @@ namespace TravelBuddy.Trips
                     CALL get_pending_buddy_requests({userId})")
                 .AsNoTracking()
                 .ToListAsync();
+        }
+
+        public async Task<bool> InsertBuddyRequestAsync(BuddyDto buddyDto)
+        {
+            try
+            {
+                await _context.Database.ExecuteSqlInterpolatedAsync($@"CALL request_to_join_trip_destination(
+                    {buddyDto.UserId}, 
+                    {buddyDto.TripDestinationId},
+                    {buddyDto.PersonCount},
+                    {buddyDto.Note}
+                )");
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+
         }
     }
 }

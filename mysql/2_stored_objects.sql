@@ -57,7 +57,7 @@ DELIMITER ;
 
 DROP FUNCTION IF EXISTS get_owner_id_from_trip;
 DELIMITER $$
-CREATE FUNCTION get_owner_id_from_trip (in_trip_id INT)
+CREATE FUNCTION get_owner_id_from_trip (f_trip_id INT)
 RETURNS INT
 DETERMINISTIC
 READS SQL DATA
@@ -65,10 +65,50 @@ BEGIN
     DECLARE v_owner_id INT;
     SELECT t.owner_id INTO v_owner_id
     FROM trip t
-    WHERE trip_id = in_trip_id
+    WHERE trip_id = f_trip_id
     LIMIT 1;
 
     RETURN v_owner_id;
+END $$
+DELIMITER ;
+
+DROP FUNCTION IF EXISTS get_trip_destination_remaining_capacity;
+DELIMITER $$
+CREATE FUNCTION get_trip_destination_remaining_capacity (f_trip_destination_id INT)
+RETURNS INT
+DETERMINISTIC
+BEGIN
+    DECLARE v_trip_id INT;
+    DECLARE v_max_buddies INT;
+    DECLARE v_accepted_buddies INT;
+    DECLARE v_remaining_capacity INT;
+
+    SELECT trip_id INTO v_trip_id
+    FROM trip_destination
+    WHERE trip_destination_id = f_trip_destination_id
+    LIMIT 1;
+
+    IF v_trip_id IS NULL THEN
+        RETURN NULL;
+    END IF;
+
+    SELECT max_buddies INTO v_max_buddies
+    FROM trip
+    WHERE trip_id = v_trip_id
+    LIMIT 1;
+
+    SELECT SUM(b.person_count) INTO v_accepted_buddies
+    FROM buddy b
+    WHERE b.trip_destination_id = f_trip_destination_id;
+
+    SET v_remaining_capacity = COALESCE(v_max_buddies, 0) - COALESCE(v_accepted_buddies, 0);
+
+    IF v_remaining_capacity < 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Remaining capacity is negative — data inconsistency detected';
+    END IF;
+
+    RETURN v_remaining_capacity;
 END $$
 DELIMITER ;
 
@@ -441,6 +481,70 @@ BEGIN
 END $$
 DELIMITER ;
 
+# 16. User should be able to request to join a trip destination
+DROP PROCEDURE IF EXISTS request_to_join_trip_destination;
+DELIMITER $$
+CREATE PROCEDURE request_to_join_trip_destination(
+    IN p_user_id INT,
+    IN p_trip_destination_id INT,
+    IN p_person_count INT,
+    IN p_note VARCHAR(255)
+)
+BEGIN
+    DECLARE v_buddy_id INT;
+    DECLARE v_remaining_capacity INT;
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+        BEGIN
+            ROLLBACK;
+            RESIGNAL;
+        END;
+
+    IF p_user_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'user_id cannot be NULL';
+    END IF;
+    IF p_trip_destination_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'trip_destination_id cannot be NULL';
+    END IF;
+    IF p_person_count IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'person_count cannot be NULL';
+    END IF;
+    IF p_person_count <= 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'person_count must be greater than zero';
+    END IF;
+
+    START TRANSACTION;
+
+    SET v_remaining_capacity = get_trip_destination_remaining_capacity(p_trip_destination_id);
+
+    IF v_remaining_capacity < p_person_count THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'there is not enough buddy capacity for the person_count';
+    END IF;
+
+    IF EXISTS (
+        SELECT 1 FROM buddy
+        WHERE user_id = p_user_id AND trip_destination_id = p_trip_destination_id
+    ) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'User has already requested to join this trip destination';
+    END IF;
+
+    INSERT INTO buddy (user_id, trip_destination_id, person_count, note)
+    VALUES (p_user_id, p_trip_destination_id, p_person_count, p_note);
+
+    SET v_buddy_id = LAST_INSERT_ID();
+
+    INSERT INTO buddy_audit (buddy_id, action, reason, changed_by)
+    VALUES (v_buddy_id, 'requested', 'Buddy request added', p_user_id);
+
+    COMMIT;
+END $$
+DELIMITER ;
+
 # 17. When a buddy is accepted to join, they should be added to group chat if it exists
 DROP PROCEDURE IF EXISTS add_buddy_to_conversation;
 DELIMITER $$
@@ -484,7 +588,7 @@ BEGIN
             );
         END IF;
     END IF;
-END;
+END $$
 DELIMITER ;
 
 # Transaction for Accept + add to group chat

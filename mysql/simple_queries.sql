@@ -2,10 +2,10 @@ USE travel_buddy;
 show tables;
 
 SELECT *
-FROM trip_destination;
+FROM buddy_audit;
 
 
-DELETE from user where user_id = 85;
+DELETE from buddy where buddy_id = 431;
 
 UPDATE user
 SET role = 'admin'

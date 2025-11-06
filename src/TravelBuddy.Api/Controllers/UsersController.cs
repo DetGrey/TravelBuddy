@@ -72,7 +72,7 @@ namespace TravelBuddy.Api.Controllers
         }
 
         [HttpPost("register")]
-        [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(IActionResult), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(string), StatusCodes.Status409Conflict)]
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
@@ -103,7 +103,7 @@ namespace TravelBuddy.Api.Controllers
                 Expires = DateTime.UtcNow.AddHours(1)
             });
 
-            return Ok(new AuthResponseDto(userDto, token));
+            return Created($"/api/users/{userDto.UserId}", new AuthResponseDto(userDto, token));
         }
 
         [Authorize]
@@ -186,42 +186,6 @@ namespace TravelBuddy.Api.Controllers
 
             // 3. Returns the list of users with an HTTP 200 OK status.
             return Ok(users);
-        }
-
-        // GET /api/users/{id}/trip-destinations
-        // The "{id}" parameter in the HttpGet attribute maps the URL segment to the 'id' parameter below.
-        [Authorize]
-        [HttpGet("{id}/trip-destinations")]
-        [ProducesResponseType(typeof(IEnumerable<UserDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> GetUserTrips([FromRoute] int id)
-        {
-            if (!User.IsSelfOrAdmin(id))
-                return Forbid();
-
-            var tripDestinations = await _tripDestinationService.GetUserTripsAsync(id);
-            if (!tripDestinations.Any()) return NoContent();
-
-            return Ok(tripDestinations);
-        }
-
-        [Authorize]
-        [HttpGet("{id}/pending-buddy-requests")]
-        [ProducesResponseType(typeof(IEnumerable<PendingBuddyRequestsDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> GetPendingBuddyRequests([FromRoute] int id)
-        {
-            if (!User.IsSelfOrAdmin(id))
-                return Forbid();
-
-            var pendingBuddyRequests = await _buddyService.GetPendingBuddyRequestsAsync(id);
-            if (!pendingBuddyRequests.Any()) return NoContent();
-
-            return Ok(pendingBuddyRequests);
         }
         
         [Authorize(Roles = "admin")]
