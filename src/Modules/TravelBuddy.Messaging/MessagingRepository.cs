@@ -4,16 +4,16 @@ using TravelBuddy.Messaging.Infrastructure;
 
 namespace TravelBuddy.Messaging
 {
-    public interface IConversationRepository
+    public interface IMessagingRepository
     {
         Task<IEnumerable<Conversation>> GetConversationsForUserAsync(int userId);
     }
 
-    public class ConversationRepository : IConversationRepository
+    public class MessagingRepository : IMessagingRepository
     {
         private readonly MessagingDbContext _context;
 
-        public ConversationRepository(MessagingDbContext context)
+        public MessagingRepository(MessagingDbContext context)
         {
             _context = context;
         }

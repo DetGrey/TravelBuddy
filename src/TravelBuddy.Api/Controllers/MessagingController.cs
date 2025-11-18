@@ -5,11 +5,11 @@ namespace TravelBuddy.Api.Controllers
 {
     [ApiController]
     [Route("api/conversations")]
-    public class ConversationController : ControllerBase
+    public class MessagingController : ControllerBase
     {
         private readonly IMessagingService _messagingService;
 
-        public ConversationController(IMessagingService messagingService)
+        public MessagingController(IMessagingService messagingService)
         {
             _messagingService = messagingService;
         }
