@@ -267,6 +267,8 @@ public partial class MessagingDbContext : DbContext
                 .HasColumnName("role");
         });
 
+        modelBuilder.Entity<BuddyAudit>().HasNoKey();
+
         OnModelCreatingPartial(modelBuilder);
     }
 
