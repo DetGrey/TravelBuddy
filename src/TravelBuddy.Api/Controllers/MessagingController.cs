@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TravelBuddy.Messaging;
 
@@ -5,6 +6,7 @@ namespace TravelBuddy.Api.Controllers
 {
     [ApiController]
     [Route("api/conversations")]
+    [Authorize]
     public class MessagingController : ControllerBase
     {
         private readonly IMessagingService _messagingService;
