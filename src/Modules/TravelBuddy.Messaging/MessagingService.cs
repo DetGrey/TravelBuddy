@@ -11,6 +11,8 @@ namespace TravelBuddy.Messaging
         Task<ConversationDetailDto?> GetConversationDetailAsync(int userId, int conversationId);
 
         Task<IReadOnlyList<MessageDto>> GetMessagesForConversationAsync(int userId, int conversationId);
+
+        Task<MessageDto> SendMessageAsync(int userId, int conversationId, string content);
     }
 
     public class MessagingService : IMessagingService
@@ -95,6 +97,47 @@ namespace TravelBuddy.Messaging
             ))
             .ToList();
 
+        }
+
+        public async Task<MessageDto?> SendMessageAsync(int userId, int conversationId, string content)
+        {
+            // 1. Is there a conversation?
+            var conversation = await _messagingRepository.GetConversationParticipantAsync(conversationId);
+            if (conversation == null)
+            {
+                return null;
+            }
+
+            // 2. Is the user a participant in the conversation?
+            var isParticipant = conversation.ConversationParticipants
+                .Any(cp => cp.UserId == userId);
+            
+            if (!isParticipant)
+            {
+                return null; 
+            }
+
+            // 3. Create a new message_entity
+            var message = new Message
+            {
+                ConversationId = conversationId,
+                SenderId = userId,
+                Content = content,
+                SentAt = DateTime.UtcNow
+            };
+
+            // 4. Save the message in the DB
+            var saved = await _messagingRepository.AddMessageAsync(message);
+
+            // 5. Maps to DTO
+            return new MessageDto(
+                Id: saved.MessageId,
+                ConversationId: saved.ConversationId,
+                SenderId: saved.SenderId,
+                SenderName: null,
+                Content: saved.Content,
+                SentAt: saved.SentAt
+            );
         }
     }
 }

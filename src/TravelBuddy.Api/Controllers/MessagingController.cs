@@ -58,5 +58,36 @@ namespace TravelBuddy.Api.Controllers
 
             return Ok(result);
         }
+
+        // -------------------------------------------------------
+        // 4) POST send a message in a conversation
+        //    /api/messaging/{conversationId}/messages?userId=26
+        //    Body:
+        //    {
+        //        "content": "Hej, hvornår mødes vi?"
+        //    }
+        // -------------------------------------------------------
+
+        [HttpPost("{conversationId:int}/messages")]
+        public async Task<ActionResult<MessageDto>> SendMessage(
+            int conversationId,
+            [FromQuery] int userId,
+            [FromBody] SendMessageRequestDto request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Content))
+            {
+                return BadRequest("Content must not be empty.");
+            }
+
+            var result = await _messagingService.SendMessageAsync(userId,conversationId,request.Content);
+
+            if (result == null)
+            {
+                return NotFound("Conversation not found or you are not a partipant.");
+            }
+
+            return Ok(result);
+        }
+
     }
 }

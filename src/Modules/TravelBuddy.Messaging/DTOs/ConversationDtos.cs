@@ -31,3 +31,7 @@ public record MessageDto(
     string Content,
     DateTime? SentAt
 );
+
+public record SendMessageRequestDto(
+    string Content
+);

@@ -12,6 +12,8 @@ namespace TravelBuddy.Messaging
         Task<Conversation?> GetConversationParticipantAsync(int conversationId);
 
         Task<IReadOnlyList<Message>> GetMessagesForConversationAsync(int conversationId);
+
+        Task<Message> AddMessageAsync(Message message);
     }
 
     public class MessagingRepository : IMessagingRepository
@@ -48,6 +50,13 @@ namespace TravelBuddy.Messaging
                 .OrderBy(m => m.SentAt)
                 .AsNoTracking()
                 .ToListAsync();
+        }
+
+        public async Task<Message> AddMessageAsync(Message message)
+        {
+            await _context.Messages.AddAsync(message);
+            await _context.SaveChangesAsync();
+            return message;
         }
     }
 }
