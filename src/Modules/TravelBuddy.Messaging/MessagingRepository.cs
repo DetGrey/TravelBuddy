@@ -10,6 +10,8 @@ namespace TravelBuddy.Messaging
         Task<IEnumerable<Conversation>> GetConversationsForUserAsync(int userId);
 
         Task<Conversation?> GetConversationParticipantAsync(int conversationId);
+
+        Task<IReadOnlyList<Message>> GetMessagesForConversationAsync(int conversationId);
     }
 
     public class MessagingRepository : IMessagingRepository
@@ -36,6 +38,16 @@ namespace TravelBuddy.Messaging
                 .Include(c => c.ConversationParticipants)
                     .ThenInclude(cp => cp.User)
                 .FirstOrDefaultAsync(c => c.ConversationId == conversationId); 
+        }
+
+        public async Task<IReadOnlyList<Message>> GetMessagesForConversationAsync(int conversationId)
+        {
+            return await _context.Messages
+                .Include(m => m.Sender)
+                .Where(m => m.ConversationId == conversationId)
+                .OrderBy(m => m.SentAt)
+                .AsNoTracking()
+                .ToListAsync();
         }
     }
 }

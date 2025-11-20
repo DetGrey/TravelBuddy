@@ -22,3 +22,12 @@ public record ConversationDetailDto (
     int ParticipantCount, 
     IEnumerable<ConversationParticipantDto> Participant
 );
+
+public record MessageDto(
+    int Id,
+    int ConversationId,
+    int? SenderId,
+    string? SenderName,
+    string Content,
+    DateTime? SentAt
+);
