@@ -87,7 +87,7 @@ using var messagingDbContext = new MessagingDbContext(messagingOptions);
 try
 {
     Console.WriteLine("Testing MySQL connection...");
-    using var connection = usersDbContext.Database.GetDbConnection();
+    var connection = usersDbContext.Database.GetDbConnection();
     await connection.OpenAsync();
     Console.WriteLine("MySQL connection OK!");
     await connection.CloseAsync();
