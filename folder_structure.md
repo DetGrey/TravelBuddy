@@ -51,6 +51,59 @@ Perfect, Ane — here’s your revised documentation that **explains the structu
 └── travel_buddy.sln                      <-- The main Visual Studio Solution file
 ```
 
+## Updated Folder strucuture
+``` markdown
+/travel_buddy/
+├── src/
+│   ├── Modules/
+│   │   ├── TravelBuddy.Users/             <-- Class Library (Business Logic/Domain)
+│   │   │   ├── Models/                    # User entity
+│   │   │   ├── Infrastructure/            # UsersDbContext.cs
+│   │   │   ├── UserService.cs             # Application logic
+│   │   │   ├── IUserRepository.cs         # Repository contract
+│   │   │   └── UserRepository.cs          # Repository implementation
+│   │   │
+│   │   ├── TravelBuddy.Trips/             <-- Class Library
+│   │   │   ├── Models/                    # Trip, TripAudit, Buddy, etc.
+│   │   │   ├── Infrastructure/            # TripsDbContext.cs
+│   │   │   └── TripService.cs, etc.
+│   │   │
+│   │   ├── TravelBuddy.Messaging/         <-- Class Library
+│   │   │   ├── Models/                    # Message, Conversation, etc.
+│   │   │   ├── Infrastructure/            # MessagingDbContext.cs
+│   │   │   └── MessagingService.cs, etc.
+│
+│   ├── Shared/
+│   │   └── TravelBuddy.SharedKernel/      <-- Class Library (Cross-cutting concerns)
+│   │       ├── Models/                    # SystemEventLog, BaseEntity<TId>, etc.
+│   │       ├── Infrastructure/            # SharedKernelDbContext.cs
+│   │       └── Extensions/, Constants/    # Optional: shared helpers, enums
+│
+│   ├── TravelBuddy.Api/                   <-- ASP.NET Core Web API Host (Monolith Entry)
+│   │       ├── Controllers/                   # API endpoints (e.g., UsersController)
+│   │       ├── Program.cs                     # DI setup and app startup
+│   │       ├── appsettings.json               # Configuration
+│   │       └── launchSettings.json            # Environment settings
+│
+│   └── TravelBuddy.Migrator/            <-- Console App/Class Library for DB/NoSQL migrations
+│           ├── Models/                    # Document/Entity Models used in migration
+│           ├── bin/                       # Build output
+│           └── Program.cs                 # Entry point for migration execution
+│
+├── tests/
+│   ├── TravelBuddy.Users.Tests/          <-- Unit/Integration Tests for Users module
+│   ├── TravelBuddy.Trips.Tests/          <-- Unit/Integration Tests for Trips module
+│   └── TravelBuddy.Api.Tests/            <-- Integration Tests for the API Host
+│
+├── frontend/
+│   └── travel-buddy-app/                 <-- Placeholder for your Frontend project (e.g., React, Vue)
+│
+├── mysql/
+│   └── create_db.sql                     <-- SQL script to initialize the database
+│
+└── travel_buddy.sln                      <-- The main Visual Studio Solution file
+```
+
 ---
 
 ## 🧠 Architecture Overview
