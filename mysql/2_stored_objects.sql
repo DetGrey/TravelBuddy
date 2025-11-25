@@ -126,6 +126,9 @@ CREATE PROCEDURE search_trips (
     IN in_q VARCHAR(255)
 )
 BEGIN
+    DECLARE v_party_size INT;
+    SET v_party_size = IF(in_party_size IS NULL OR in_party_size < 1, 1, in_party_size);
+
     SELECT
         td.trip_destination_id AS TripDestinationId,
         t.trip_id AS TripId,
@@ -163,10 +166,7 @@ BEGIN
         AND (in_name IS NULL OR in_name = '' OR d.name = in_name)
         AND (in_country IS NULL OR in_country = '' OR d.country = in_country)
         AND (in_state IS NULL OR in_state = '' OR d.state = in_state)
-        AND (
-            in_party_size IS NULL
-            OR (COALESCE(t.max_buddies, 0) - COALESCE(abt.accepted_persons, 0)) >= in_party_size
-        )
+        AND ((COALESCE(t.max_buddies, 0) - COALESCE(abt.accepted_persons, 0)) >= v_party_size)
         AND (
             in_q IS NULL OR in_q = ''
             OR td.description LIKE CONCAT('%', in_q, '%')
@@ -208,6 +208,7 @@ BEGIN
     JOIN destination d ON d.destination_id = td.destination_id
     JOIN buddy b ON b.trip_destination_id = td.trip_destination_id
     WHERE get_user_id_from_buddy(b.buddy_id) = in_user_id
+    AND b.is_active = TRUE
 
     ORDER BY TripId, Role;
 END $$
@@ -335,6 +336,72 @@ BEGIN
 END $$
 DELIMITER ;
 
+# 8. Buddy can leave a trip destination
+# 9. Owner can remove a buddy from a trip destination.
+DROP PROCEDURE IF EXISTS remove_buddy_from_trip_destination;
+DELIMITER $$
+CREATE PROCEDURE remove_buddy_from_trip_destination(
+    IN p_user_id INT,
+    IN p_trip_destination_id INT,
+    IN p_triggered_by INT,
+    IN p_departure_reason VARCHAR(255)
+)
+BEGIN
+    DECLARE v_buddy_id INT;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    DECLARE EXIT HANDLER FOR NOT FOUND
+    BEGIN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Buddy record not found for given user and trip destination';
+    END;
+
+
+    -- Validate inputs
+    IF p_user_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'user_id cannot be NULL';
+    END IF;
+
+    IF p_trip_destination_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'trip_destination_id cannot be NULL';
+    END IF;
+
+    IF p_triggered_by IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'triggered_by cannot be NULL';
+    END IF;
+
+    -- Resolve buddy record
+    SELECT buddy_id
+    INTO v_buddy_id
+    FROM buddy
+    WHERE user_id = p_user_id
+      AND trip_destination_id = p_trip_destination_id
+    LIMIT 1;
+
+    START TRANSACTION;
+
+    -- Mark buddy inactive
+    UPDATE buddy
+    SET is_active = FALSE,
+        departure_reason = p_departure_reason
+    WHERE buddy_id = v_buddy_id;
+
+    -- Cleanup conversation
+    CALL remove_buddy_from_conversation(v_buddy_id, p_triggered_by);
+
+    COMMIT;
+    SELECT 1 AS Success;
+END $$
+DELIMITER ;
+
 # 10. If a buddy is not active anymore (left or removed) they should be removed from group conversation
 DROP PROCEDURE IF EXISTS remove_buddy_from_conversation;
 DELIMITER $$
@@ -345,7 +412,6 @@ CREATE PROCEDURE remove_buddy_from_conversation(
 BEGIN
     DECLARE v_user_id INT;
     DECLARE v_conversation_id INT;
-    DECLARE v_audit_message VARCHAR(200);
 
     IF p_buddy_id IS NULL THEN
         SIGNAL SQLSTATE '45000'
@@ -367,11 +433,6 @@ BEGIN
         AND conversation_id = v_conversation_id;
 
         -- Audit log
-        SET v_audit_message = IF(
-            v_user_id = p_triggered_by,
-            'Buddy left the chat',
-            'Owner removed buddy');
-
         INSERT INTO conversation_audit (
             conversation_id,
             affected_user_id,
@@ -381,30 +442,73 @@ BEGIN
         VALUES (
             v_conversation_id,
             v_user_id,
-            v_audit_message,
+            'user_removed',
             p_triggered_by
         );
     END IF;
 END $$
 DELIMITER ;
 
+# 11. If someone is removed from group conversation, there should be sent a message in the group saying someone left
+# 12. User should be able to create a new trip with trip destinations
+
 # 13. Trip owners should be able to accept or reject buddy requests
 DROP PROCEDURE IF EXISTS update_buddy_request;
 DELIMITER $$
 CREATE PROCEDURE update_buddy_request(
     IN p_buddy_id INT,
-    IN p_new_status VARCHAR(10),
+    IN p_new_status ENUM('accepted', 'rejected'),
     IN p_owner_id INT
 )
 BEGIN
+    DECLARE v_trip_destination_id INT;
+    DECLARE v_trip_owner_id INT;
+
+    -- Validate inputs
     IF p_buddy_id IS NULL THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'buddy_id cannot be NULL';
     END IF;
 
-    IF p_new_status NOT IN ('accepted', 'rejected') THEN
+    IF p_new_status IS NULL THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Invalid status. Must be accepted or rejected';
+        SET MESSAGE_TEXT = 'new_status cannot be NULL';
+    END IF;
+
+    IF p_owner_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'owner_id cannot be NULL';
+    END IF;
+
+    -- Get trip destination for buddy
+    SELECT trip_destination_id
+    INTO v_trip_destination_id
+    FROM buddy
+    WHERE buddy_id = p_buddy_id
+    LIMIT 1;
+
+    IF v_trip_destination_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Buddy not found';
+    END IF;
+
+    -- Get actual owner of the trip
+    SELECT t.owner_id
+    INTO v_trip_owner_id
+    FROM trip t
+    JOIN trip_destination td ON td.trip_id = t.trip_id
+    WHERE td.trip_destination_id = v_trip_destination_id
+    LIMIT 1;
+
+    IF v_trip_owner_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Trip owner not found';
+    END IF;
+
+    -- Check if it is the actual owner
+    IF p_owner_id <> v_trip_owner_id THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Not authorized: only trip owner can update buddy request';
     END IF;
 
     -- Update buddy request status
@@ -592,12 +696,12 @@ END $$
 DELIMITER ;
 
 # Transaction for Accept + add to group chat
-DROP PROCEDURE IF EXISTS accept_buddy_request_in_tx;
+DROP PROCEDURE IF EXISTS update_buddy_request_tx;
 DELIMITER $$
-
-CREATE PROCEDURE accept_buddy_request_in_tx (
+CREATE PROCEDURE update_buddy_request_tx (
     IN p_buddy_id INT,
-    IN p_owner_id INT
+    IN p_owner_id INT,
+    IN p_new_status ENUM('accepted', 'rejected')
 )
 BEGIN
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
@@ -606,7 +710,7 @@ BEGIN
             RESIGNAL;
         END;
     START TRANSACTION;
-    CALL update_buddy_request(p_buddy_id, 'accepted', p_owner_id);
+    CALL update_buddy_request(p_buddy_id, p_new_status, p_owner_id);
     CALL add_buddy_to_conversation(p_buddy_id);
     COMMIT;
 END $$
@@ -797,7 +901,8 @@ BEGIN
     SELECT
       td.trip_id AS TripId,
       d.name AS DestinationName,
-      u.user_id AS BuddyUserId,
+      b.buddy_id AS BuddyId,
+      u.user_id AS UserId,
       u.name AS BuddyName,
       b.note AS BuddyNote,
       b.person_count AS PersonCount

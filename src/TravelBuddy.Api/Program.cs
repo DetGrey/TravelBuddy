@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Text.Json.Serialization;
 // Uses the main module namespace for User, IUserRepository, IUserService, etc.
 using TravelBuddy.Api.Auth; 
 using TravelBuddy.Users; 
@@ -12,6 +13,7 @@ using TravelBuddy.Messaging;
 using TravelBuddy.Messaging.Infrastructure;
 using TravelBuddy.SharedKernel; 
 using TravelBuddy.SharedKernel.Infrastructure;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -116,6 +118,13 @@ builder.Services.AddScoped<IMessagingRepository, MessagingRepository>();
 builder.Services.AddScoped<IMessagingService, MessagingService>();
 
 builder.Services.AddScoped<JwtTokenGenerator>();
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+    });
 
 var app = builder.Build();
 

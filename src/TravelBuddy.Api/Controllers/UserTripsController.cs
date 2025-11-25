@@ -13,23 +13,15 @@ namespace TravelBuddy.Api.Controllers
     [Route("api/users/{userId}/trips")]
     public class UserTripsController : ControllerBase
     {
-        // This is the dependency on the business logic layer (UserService).
         private readonly ITripDestinationService _tripDestinationService;
-        private readonly IBuddyService _buddyService;
 
-
-        // Constructor: ASP.NET Core automatically injects the IUserService implementation here.
         public UserTripsController(
-            ITripDestinationService tripDestinationService,
-            IBuddyService buddyService
+            ITripDestinationService tripDestinationService
         )
         {
             _tripDestinationService = tripDestinationService;
-            _buddyService = buddyService;
         }
 
-        // GET /api/users/{userId}/trips/trip-destinations
-        // The "{userId}" parameter in the HttpGet attribute maps the URL segment to the 'userId' parameter below.
         [Authorize]
         [HttpGet("trip-destinations")]
         [ProducesResponseType(typeof(IEnumerable<UserDto>), StatusCodes.Status200OK)]
@@ -47,37 +39,45 @@ namespace TravelBuddy.Api.Controllers
         }
 
         [Authorize]
-        [HttpPost("buddy-request")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
+        [HttpDelete("trip-destinations/{tripDestinationId}/leave")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> PostBuddyRequest([FromRoute] int userId, [FromBody] BuddyDto dto)
-        {
-            if (!User.IsSelfOrAdmin(userId)) return Forbid();
+        public async Task<IActionResult> LeaveTripDestination(
+            [FromRoute] int userId,
+            [FromRoute] int tripDestinationId,
+            [FromQuery] string? departureReason
+        ) {
+            var triggeredBy = User.GetUserId();
+            if (triggeredBy == null) return Unauthorized();
 
-            dto.UserId = userId;
+            var isSelfOrAdmin = User.IsSelfOrAdmin(userId);
+            var isOwner = await _tripDestinationService.IsTripOwnerAsync(triggeredBy.Value, tripDestinationId);
 
-            var success = await _buddyService.InsertBuddyRequestAsync(dto);
-            if (!success) return BadRequest("Buddy request failed");
+            if (!isSelfOrAdmin && !isOwner)
+                return Forbid();
 
-            return Created();
-        }
+            if (string.IsNullOrWhiteSpace(departureReason))
+            {
+                departureReason = isSelfOrAdmin
+                    ? "Left voluntarily or by admin"
+                    : "Removed by owner";
+            }
 
-        [Authorize]
-        [HttpGet("pending-buddy-requests")]
-        [ProducesResponseType(typeof(IEnumerable<PendingBuddyRequestsDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> GetPendingBuddyRequests([FromRoute] int userId)
-        {
-            if (!User.IsSelfOrAdmin(userId)) return Forbid();
+            var (success, errorMessage) = await _tripDestinationService.LeaveTripDestinationAsync(
+                userId,
+                tripDestinationId,
+                triggeredBy.Value,
+                departureReason
+            );
 
-            var pendingBuddyRequests = await _buddyService.GetPendingBuddyRequestsAsync(userId);
-            if (!pendingBuddyRequests.Any()) return NoContent();
+            if (!success) 
+            {
+                return BadRequest(errorMessage ?? "Failed to update buddy status.");
+            }
 
-            return Ok(pendingBuddyRequests);
+            return NoContent();
         }
     }
 }

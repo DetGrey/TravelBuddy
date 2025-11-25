@@ -16,6 +16,8 @@ namespace TravelBuddy.Trips
         );
 
         Task<IEnumerable<UserTripSummaryDto>> GetUserTripsAsync(int userId);
+        Task<bool> IsTripOwnerAsync(int userId, int tripDestinationId);
+        Task<(bool Success, string? ErrorMessage)> LeaveTripDestinationAsync(int userId, int tripDestinationId, int triggeredBy, string departureReason);
     }
 
     // CLASS
@@ -66,6 +68,19 @@ namespace TravelBuddy.Trips
                 r.TripDescription,
                 r.Role
             )).ToList();
+        }
+        public async Task<bool> IsTripOwnerAsync(int userId, int tripDestinationId)
+        {
+            var tripOwner = await _repository.GetTripOwnerAsync(tripDestinationId);
+            return tripOwner == userId;
+        }
+        public async Task<(bool Success, string? ErrorMessage)> LeaveTripDestinationAsync(
+            int userId,
+            int tripDestinationId,
+            int triggeredBy, 
+            string departureReason
+        ) {
+            return await _repository.LeaveTripDestinationAsync(userId, tripDestinationId, triggeredBy, departureReason);
         }
     }
 }

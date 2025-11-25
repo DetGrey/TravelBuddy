@@ -9,6 +9,7 @@
 
 # Extra
 todo.md
+db_user_privileges.sql
 .env 
 
 # Build results
