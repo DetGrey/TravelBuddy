@@ -16,6 +16,10 @@ Your `Program.cs` code will automatically load these secrets during local develo
 
     ```bash
     dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=YOUR_SERVER;Database=travelbuddy_db;Uid=YOUR_USER;Pwd=YOUR_PASSWORD"
+    dotnet user-secrets set "ConnectionStrings:MongoDbConnection" "mongodb+srv://<db_username>:<db_password>@travelbuddycluster.zfwb35g.mongodb.net/?appName=TravelBuddyCluster"
+    dotnet user-secrets set "ConnectionStrings:Neo4jUri" "bolt://localhost:7687"
+    dotnet user-secrets set "ConnectionStrings:Neo4jUser" "neo4j"
+    dotnet user-secrets set "ConnectionStrings:Neo4jPassword" "your_secure_password"
     ```
 
     *Replace the example string with your actual MySQL connection string.*

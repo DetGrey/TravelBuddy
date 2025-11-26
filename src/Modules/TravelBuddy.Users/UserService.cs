@@ -20,17 +20,21 @@ namespace TravelBuddy.Users
     // Implementation: Contains the actual business logic.
     public class UserService : IUserService
     {
-        // Dependency Injection: This service requires the IUserRepository to fetch data.
-        private readonly IUserRepository _userRepository;
+        private readonly IUserRepositoryFactory _userRepositoryFactory;
 
-        public UserService(IUserRepository userRepository)
+        public UserService(IUserRepositoryFactory userRepositoryFactory)
         {
-            _userRepository = userRepository;
+            _userRepositoryFactory = userRepositoryFactory;
         }
+
+        // Helper method to get the correct repository for the current request scope
+        private IUserRepository GetRepo() => _userRepositoryFactory.GetUserRepository();
 
         public async Task<User?> AuthenticateAsync(string email, string password)
         {
-            var user = await _userRepository.GetByEmailAsync(email);
+            var userRepository = GetRepo();
+
+            var user = await userRepository.GetByEmailAsync(email);
             if (user == null || user.IsDeleted) return null;
 
             bool isValid = PasswordHasher.VerifyPassword(password, user.PasswordHash);
@@ -39,7 +43,9 @@ namespace TravelBuddy.Users
 
         public async Task<User?> RegisterAsync(RegisterRequestDto request)
         {
-            var existing = await _userRepository.GetByEmailAsync(request.Email);
+            var userRepository = GetRepo();
+
+            var existing = await userRepository.GetByEmailAsync(request.Email);
             if (existing != null) return null; // Email already in use
 
             var hashedPassword = PasswordHasher.HashPassword(request.Password);
@@ -53,21 +59,25 @@ namespace TravelBuddy.Users
                 Role = "user"
             };
 
-            await _userRepository.AddAsync(newUser);
+            await userRepository.AddAsync(newUser);
 
             return newUser;
         }
         
         public async Task<bool> DeleteUser(int userId)
         {
+            var userRepository = GetRepo();
+
             var placeholder = $"deleted_{userId}_{DateTime.UtcNow:yyyyMMddHHmmss}";
             var hashedPassword = PasswordHasher.HashPassword(placeholder);
-            return await _userRepository.DeleteAsync(userId, hashedPassword);
+            return await userRepository.DeleteAsync(userId, hashedPassword);
         }
 
         public async Task<bool> ChangePasswordAsync(PasswordChangeRequestDto request, string email, int userId)
         {
-            var user = await _userRepository.GetByEmailAsync(email);
+            var userRepository = GetRepo();
+
+            var user = await userRepository.GetByEmailAsync(email);
             if (user == null || user.IsDeleted) return false;
 
             // Note: To actually change password from generated users, comment out the two lines below
@@ -76,15 +86,17 @@ namespace TravelBuddy.Users
 
             var hashedPassword = PasswordHasher.HashPassword(request.NewPassword);
 
-            await _userRepository.UpdatePasswordAsync(userId, hashedPassword);
+            await userRepository.UpdatePasswordAsync(userId, hashedPassword);
 
             return true;
         }
 
         public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
         {
+            var userRepository = GetRepo();
+
             // 1. Delegate to the Data Layer (Repository) to fetch the raw User entities.
-            var users = await _userRepository.GetAllAsync();
+            var users = await userRepository.GetAllAsync();
 
             // 2. Map Entities to DTOs (Data Transformation).
             // This converts the internal 'User' object (which has PasswordHash) 

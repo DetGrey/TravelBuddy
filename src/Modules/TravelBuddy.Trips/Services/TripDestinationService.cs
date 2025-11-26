@@ -23,12 +23,15 @@ namespace TravelBuddy.Trips
     // CLASS
     public class TripDestinationService : ITripDestinationService
     {
-        private readonly ITripDestinationRepository _repository;
+        private readonly ITripRepositoryFactory _tripRepositoryFactory;
 
-        public TripDestinationService(ITripDestinationRepository repository)
+        public TripDestinationService(ITripRepositoryFactory tripRepositoryFactory)
         {
-            _repository = repository;
+            _tripRepositoryFactory = tripRepositoryFactory;
         }
+
+        // Helper method to get the correct repository for the current request scope
+        private ITripDestinationRepository GetRepo() => _tripRepositoryFactory.GetTripDestinationRepository();
 
         public async Task<IEnumerable<TripDestinationSearchDto>> SearchTripsAsync(
             DateOnly? reqStart,
@@ -39,7 +42,8 @@ namespace TravelBuddy.Trips
             int? partySize,
             string? q)
         {
-            var results = await _repository.SearchTripsAsync(reqStart, reqEnd, country, state, name, partySize, q);
+            var tripDestinationRepository = GetRepo();
+            var results = await tripDestinationRepository.SearchTripsAsync(reqStart, reqEnd, country, state, name, partySize, q);
 
             return results.Select(r => new TripDestinationSearchDto(
               r.TripDestinationId,
@@ -59,7 +63,8 @@ namespace TravelBuddy.Trips
 
         public async Task<IEnumerable<UserTripSummaryDto>> GetUserTripsAsync(int userId)
         {
-            var results = await _repository.GetUserTripsAsync(userId);
+            var tripDestinationRepository = GetRepo();
+            var results = await tripDestinationRepository.GetUserTripsAsync(userId);
 
             return results.Select(r => new UserTripSummaryDto(
                 r.TripId,
@@ -71,7 +76,8 @@ namespace TravelBuddy.Trips
         }
         public async Task<bool> IsTripOwnerAsync(int userId, int tripDestinationId)
         {
-            var tripOwner = await _repository.GetTripOwnerAsync(tripDestinationId);
+            var tripDestinationRepository = GetRepo();
+            var tripOwner = await tripDestinationRepository.GetTripOwnerAsync(tripDestinationId);
             return tripOwner == userId;
         }
         public async Task<(bool Success, string? ErrorMessage)> LeaveTripDestinationAsync(
@@ -80,7 +86,8 @@ namespace TravelBuddy.Trips
             int triggeredBy, 
             string departureReason
         ) {
-            return await _repository.LeaveTripDestinationAsync(userId, tripDestinationId, triggeredBy, departureReason);
+            var tripDestinationRepository = GetRepo();
+            return await tripDestinationRepository.LeaveTripDestinationAsync(userId, tripDestinationId, triggeredBy, departureReason);
         }
     }
 }

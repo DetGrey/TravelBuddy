@@ -13,16 +13,21 @@ namespace TravelBuddy.Trips
     // CLASS
     public class BuddyService : IBuddyService
     {
-        private readonly IBuddyRepository _repository;
+        private readonly ITripRepositoryFactory _tripRepositoryFactory;
 
-        public BuddyService(IBuddyRepository repository)
+        public BuddyService(ITripRepositoryFactory tripRepositoryFactory)
         {
-            _repository = repository;
+            _tripRepositoryFactory = tripRepositoryFactory;
         }
+
+        // Helper method to get the correct repository for the current request scope
+        private IBuddyRepository GetRepo() => _tripRepositoryFactory.GetBuddyRepository();
 
         public async Task<IEnumerable<PendingBuddyRequestsDto>> GetPendingBuddyRequestsAsync(int userId)
         {
-            var results = await _repository.GetPendingBuddyRequestsAsync(userId);
+            var buddyRepository = GetRepo();
+
+            var results = await buddyRepository.GetPendingBuddyRequestsAsync(userId);
 
             return results.Select(r => new PendingBuddyRequestsDto(
                 r.TripId,
@@ -37,12 +42,14 @@ namespace TravelBuddy.Trips
 
         public async Task<bool> InsertBuddyRequestAsync(BuddyDto buddyDto)
         {
-            return await _repository.InsertBuddyRequestAsync(buddyDto);
+            var buddyRepository = GetRepo();
+            return await buddyRepository.InsertBuddyRequestAsync(buddyDto);
         }
 
         public async Task<bool> UpdateBuddyRequestAsync(UpdateBuddyRequestDto updateBuddyRequestDto)
         {
-            return await _repository.UpdateBuddyRequestAsync(updateBuddyRequestDto);
+            var buddyRepository = GetRepo();
+            return await buddyRepository.UpdateBuddyRequestAsync(updateBuddyRequestDto);
         }
     }
 }

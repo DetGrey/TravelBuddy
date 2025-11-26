@@ -3,8 +3,12 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json.Serialization;
+using Microsoft.OpenApi.Models;
+using MongoDB.Driver;
+using Neo4j.Driver;
 // Uses the main module namespace for User, IUserRepository, IUserService, etc.
 using TravelBuddy.Api.Auth; 
+using TravelBuddy.Api.Factories; 
 using TravelBuddy.Users; 
 using TravelBuddy.Users.Infrastructure;
 using TravelBuddy.Trips; 
@@ -62,63 +66,108 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+builder.Services.AddSwaggerGen(options =>
+{
+    // Sets up the basic documentation information for the API
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "TravelBuddy API", Version = "v1" });
+    
+    // Adds a custom filter to every single API endpoint
+    // to include documentation for the 'X-Database-Type' header.
+    // This allows users to select the database directly in the Swagger UI.
+    options.OperationFilter<AddDatabaseHeaderParameter>(); 
+});
 
-// Get the connection string from appsettings.json
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// --- GET CONNECTION STRINGS TO THE DATABASES ---
+// Get the connection strings
+var mysqlConnectionString = builder.Configuration.GetConnectionString("DefaultConnection") ;
+    //?? throw new InvalidOperationException("MySQL connection string not found.");
+
+var mongoDbConnectionString = builder.Configuration["ConnectionStrings:MongoDbConnection"] ;
+    //?? throw new InvalidOperationException("MongoDB connection string not found.");
+    
+var neo4jUri = builder.Configuration["ConnectionStrings:Neo4jUri"];
+    //?? throw new InvalidOperationException("Neo4j URI not found.");
+var neo4jUser = builder.Configuration["ConnectionStrings:Neo4jUser"] ;
+    //?? throw new InvalidOperationException("Neo4j User not found.");
+var neo4jPassword = builder.Configuration["ConnectionStrings:Neo4jPassword"] ;
+    //?? throw new InvalidOperationException("Neo4j Password not found.");
 
 // --- MODULE CONFIGURATION ---
-// Register the Users DbContext
+// 1. MySQL (EF Core) DbContexts Registration
+// Register all DbContexts using the MySQL connection string
 builder.Services.AddDbContext<UsersDbContext>(options =>
     options.UseMySql(
-        connectionString,
-        ServerVersion.AutoDetect(connectionString),
+        mysqlConnectionString, 
+        Microsoft.EntityFrameworkCore.ServerVersion.AutoDetect(mysqlConnectionString), 
         b => b.MigrationsAssembly(typeof(UsersDbContext).Assembly.FullName)
     )
 );
-
-// Register the Trips DbContext
 builder.Services.AddDbContext<TripsDbContext>(options =>
     options.UseMySql(
-        connectionString,
-        ServerVersion.AutoDetect(connectionString),
+        mysqlConnectionString, 
+        Microsoft.EntityFrameworkCore.ServerVersion.AutoDetect(mysqlConnectionString), 
         b => b.MigrationsAssembly(typeof(TripsDbContext).Assembly.FullName)
     )
 );
-
-// Register the Messaging DbContext
 builder.Services.AddDbContext<MessagingDbContext>(options =>
     options.UseMySql(
-        connectionString,
-        ServerVersion.AutoDetect(connectionString),
+        mysqlConnectionString, 
+        Microsoft.EntityFrameworkCore.ServerVersion.AutoDetect(mysqlConnectionString), 
         b => b.MigrationsAssembly(typeof(MessagingDbContext).Assembly.FullName)
     )
 );
-
-// Register the SharedKernel DbContext
 builder.Services.AddDbContext<SharedKernelDbContext>(options =>
     options.UseMySql(
-        connectionString,
-        ServerVersion.AutoDetect(connectionString),
+        mysqlConnectionString, 
+        Microsoft.EntityFrameworkCore.ServerVersion.AutoDetect(mysqlConnectionString), 
         b => b.MigrationsAssembly(typeof(SharedKernelDbContext).Assembly.FullName)
     )
 );
+// MongoDB Client Registration
+builder.Services.AddSingleton<IMongoClient>(s => new MongoClient(mongoDbConnectionString));
 
-// 1. Register the Repository (Binds IUserRepository to UserRepository)
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-// 2. Register the Service (Binds IUserService to UserService)
+// Neo4j Driver Registration
+builder.Services.AddSingleton<IDriver>(s => 
+    GraphDatabase.Driver(neo4jUri, AuthTokens.Basic(neo4jUser, neo4jPassword))
+);
+
+// --- Repository Registration ---
+// Users Module
+builder.Services.AddTransient<MySqlUserRepository>();
+builder.Services.AddTransient<MongoDbUserRepository>();
+builder.Services.AddTransient<Neo4jUserRepository>(); 
+
+// Trips Module
+builder.Services.AddTransient<MySqlTripDestinationRepository>();
+builder.Services.AddTransient<MongoDbTripDestinationRepository>();
+builder.Services.AddTransient<Neo4jTripDestinationRepository>();
+// ... Add other Trip repositories (e.g., Trip, Buddy)
+builder.Services.AddTransient<MySqlBuddyRepository>();
+builder.Services.AddTransient<MongoDbBuddyRepository>();
+builder.Services.AddTransient<Neo4jBuddyRepository>();
+
+// Messaging Module
+builder.Services.AddTransient<MySqlMessagingRepository>();
+builder.Services.AddTransient<MongoDbMessagingRepository>();
+builder.Services.AddTransient<Neo4jMessagingRepository>();
+
+// Register HTTP Context Accessor
+// The factories need this to read the request header.
+builder.Services.AddHttpContextAccessor();
+
+// Register the FACTORIES themselves as Scoped
+// Services will now depend on these interfaces.
+builder.Services.AddScoped<IUserRepositoryFactory, UserRepositoryFactory>();
+builder.Services.AddScoped<ITripRepositoryFactory, TripRepositoryFactory>();
+builder.Services.AddScoped<IMessagingRepositoryFactory, MessagingRepositoryFactory>();
+
+// --- Register the Services (Binds IUserService to UserService) ---
 builder.Services.AddScoped<IUserService, UserService>();
-
-builder.Services.AddScoped<ITripDestinationRepository, TripDestinationRepository>();
 builder.Services.AddScoped<ITripDestinationService, TripDestinationService>();
-
-builder.Services.AddScoped<IBuddyRepository, BuddyRepository>();
 builder.Services.AddScoped<IBuddyService, BuddyService>();
-
-builder.Services.AddScoped<IMessagingRepository, MessagingRepository>();
 builder.Services.AddScoped<IMessagingService, MessagingService>();
 
 builder.Services.AddScoped<JwtTokenGenerator>();
-
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -128,7 +177,7 @@ builder.Services.AddControllers()
 
 var app = builder.Build();
 
-// --- 2. HTTP REQUEST PIPELINE CONFIGURATION ---
+// --- HTTP REQUEST PIPELINE CONFIGURATION ---
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

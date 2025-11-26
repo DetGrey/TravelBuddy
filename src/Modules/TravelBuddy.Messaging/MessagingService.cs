@@ -12,21 +12,25 @@ namespace TravelBuddy.Messaging
 
         Task<IReadOnlyList<MessageDto>> GetMessagesForConversationAsync(int userId, int conversationId);
 
-        Task<MessageDto> SendMessageAsync(int userId, int conversationId, string content);
+        Task<MessageDto?> SendMessageAsync(int userId, int conversationId, string content);
     }
 
     public class MessagingService : IMessagingService
     {
-        private readonly IMessagingRepository _messagingRepository;
+        private readonly IMessagingRepositoryFactory _messagingRepositoryFactory;
 
-        public MessagingService(IMessagingRepository messagingRepository)
+        public MessagingService(IMessagingRepositoryFactory messagingRepositoryFactory)
         {
-            _messagingRepository = messagingRepository;
+            _messagingRepositoryFactory = messagingRepositoryFactory;
         }
+
+        // Helper method to get the correct repository for the current request scope
+        private IMessagingRepository GetRepo() => _messagingRepositoryFactory.GetMessagingRepository();
 
         public async Task<IEnumerable<ConversationSummaryDto>> GetConversationsForUserAsync(int userId)
         {
-            var conversations = await _messagingRepository.GetConversationsForUserAsync(userId);
+            var messagingRepository = GetRepo();
+            var conversations = await messagingRepository.GetConversationsForUserAsync(userId);
 
             return conversations 
                 .Select(c => new ConversationSummaryDto(
@@ -41,7 +45,8 @@ namespace TravelBuddy.Messaging
 
         public async Task<ConversationDetailDto?> GetConversationDetailAsync(int userId, int conversationId)
         {
-            var conversation = await _messagingRepository.GetConversationParticipantAsync(conversationId);
+            var messagingRepository = GetRepo();
+            var conversation = await messagingRepository.GetConversationParticipantAsync(conversationId);
 
             if (conversation == null)
                 return null;
@@ -69,8 +74,9 @@ namespace TravelBuddy.Messaging
 
         public async Task<IReadOnlyList<MessageDto>> GetMessagesForConversationAsync(int userId, int conversationId)
         {
+            var messagingRepository = GetRepo();
             // 1. Checks if the conversation exist and user is a participant
-            var conversation = await _messagingRepository.GetConversationParticipantAsync(conversationId);
+            var conversation = await messagingRepository.GetConversationParticipantAsync(conversationId);
             if (conversation == null)
                 return Array.Empty<MessageDto>();
             
@@ -83,7 +89,7 @@ namespace TravelBuddy.Messaging
             }
             
             // 2. Retrieve all messages in the conversation
-            var messages = await _messagingRepository.GetMessagesForConversationAsync(conversationId);
+            var messages = await messagingRepository.GetMessagesForConversationAsync(conversationId);
 
             // 3. Maps to DTO'er
             return messages
@@ -101,8 +107,9 @@ namespace TravelBuddy.Messaging
 
         public async Task<MessageDto?> SendMessageAsync(int userId, int conversationId, string content)
         {
+            var messagingRepository = GetRepo();
             // 1. Is there a conversation?
-            var conversation = await _messagingRepository.GetConversationParticipantAsync(conversationId);
+            var conversation = await messagingRepository.GetConversationParticipantAsync(conversationId);
             if (conversation == null)
             {
                 return null;
@@ -127,7 +134,7 @@ namespace TravelBuddy.Messaging
             };
 
             // 4. Save the message in the DB
-            var saved = await _messagingRepository.AddMessageAsync(message);
+            var saved = await messagingRepository.AddMessageAsync(message);
 
             // 5. Maps to DTO
             return new MessageDto(
