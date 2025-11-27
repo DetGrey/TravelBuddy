@@ -1,0 +1,32 @@
+node.Trip {
+  color: #cbafff;
+  size: 25px;
+  caption: "{description}";
+}
+
+node.Destination {
+  color: #fbbe61;
+  size: 25px;
+  caption:"{name}"
+}
+
+node.User {
+  color: #9fc67b;
+  size: 25px;
+  caption: "{name}";
+}
+
+relationship.OWNS {
+  width: 1px;
+  color: #9fc67b;
+}
+
+relationship.HAS_STOP {
+  width: 1px;
+  color: #fbbe61;
+}
+
+relationship.BUDDY_ON {
+  width: 1px;
+  color: #cbafff;
+}
