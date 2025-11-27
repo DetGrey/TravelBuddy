@@ -9,7 +9,9 @@
 
 # Extra
 todo.md
-.env
+db_user_privileges.sql
+Factory_explanation.md
+.env 
 
 # Build results
 [Dd]ebug/

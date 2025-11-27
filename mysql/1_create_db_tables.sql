@@ -29,7 +29,8 @@ CREATE TABLE IF NOT EXISTS user (
     email VARCHAR(150) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     birthdate DATE NOT NULL,
-    is_deleted BOOLEAN DEFAULT FALSE
+    is_deleted BOOLEAN DEFAULT FALSE NOT NULL,
+    role ENUM('user', 'admin') DEFAULT 'user' NOT NULL
 );
 
 -- =====================================
