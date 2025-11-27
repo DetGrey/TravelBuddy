@@ -10,6 +10,7 @@ namespace TravelBuddy.Trips
     {
         Task<IEnumerable<PendingBuddyRequest>> GetPendingBuddyRequestsAsync(int userId);
         Task<bool> InsertBuddyRequestAsync(BuddyDto buddyDto);
+        Task<bool> UpdateBuddyRequestAsync(UpdateBuddyRequestDto updateBuddyRequestDto);
     }
 
     // CLASS
@@ -48,7 +49,24 @@ namespace TravelBuddy.Trips
             {
                 return false;
             }
+        }
+        public async Task<bool> UpdateBuddyRequestAsync(UpdateBuddyRequestDto updateBuddyRequestDto)
+        {
+            try
+            {
+                await _context.Database.ExecuteSqlInterpolatedAsync($@"
+                    CALL update_buddy_request_tx(
+                        {updateBuddyRequestDto.BuddyId},
+                        {updateBuddyRequestDto.UserId},
+                        {updateBuddyRequestDto.NewStatus.ToString().ToLower()}
+                    )");
 
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
     }
 }

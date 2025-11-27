@@ -7,6 +7,7 @@ namespace TravelBuddy.Trips
     {
         Task<IEnumerable<PendingBuddyRequestsDto>> GetPendingBuddyRequestsAsync(int userId);
         Task<bool> InsertBuddyRequestAsync(BuddyDto buddyDto);
+        Task<bool> UpdateBuddyRequestAsync(UpdateBuddyRequestDto updateBuddyRequestDto);
     }
 
     // CLASS
@@ -26,7 +27,8 @@ namespace TravelBuddy.Trips
             return results.Select(r => new PendingBuddyRequestsDto(
                 r.TripId,
                 r.DestinationName,
-                r.BuddyUserId,
+                r.BuddyId,
+                r.UserId,
                 r.BuddyName,
                 r.BuddyNote,
                 r.PersonCount
@@ -36,6 +38,11 @@ namespace TravelBuddy.Trips
         public async Task<bool> InsertBuddyRequestAsync(BuddyDto buddyDto)
         {
             return await _repository.InsertBuddyRequestAsync(buddyDto);
+        }
+
+        public async Task<bool> UpdateBuddyRequestAsync(UpdateBuddyRequestDto updateBuddyRequestDto)
+        {
+            return await _repository.UpdateBuddyRequestAsync(updateBuddyRequestDto);
         }
     }
 }

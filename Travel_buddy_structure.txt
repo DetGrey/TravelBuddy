@@ -1,14 +1,20 @@
 /travel_buddy/
 ├── src/
 │   ├── TravelBuddy.Api/                        <-- ASP.NET Core Web API Host (Monolith Entry)
+│   │   ├── Auth/                                # JWT tokens etc.
 │   │   ├── Controllers/                         # API endpoints (e.g., UsersController)
 │   │   └── Program.cs                           # Startup and DI configuration
+│   │
+│   ├── TravelBuddy.Migrator/                   <-- Migrator script from MySQL to MongoDB
+│   │   ├── Models/                              # Document models for MongoDB
+│   │   └── Program.cs                           # Migrating script
 │   │
 │   ├── Modules/
 │   │   ├── TravelBuddy.Users/                  <-- Class Library (.NET 8)
 │   │   │   ├── Models/                          # User entity
 │   │   │   ├── Infrastructure/
 │   │   │   │   └── UsersDbContext.cs
+│   │   │   ├── DTOs/
 │   │   │   ├── IUserRepository.cs
 │   │   │   └── UserService.cs
 │   │   │
@@ -16,17 +22,19 @@
 │   │   │   ├── Models/                          # Trip, TripAudit, Buddy, etc.
 │   │   │   ├── Infrastructure/
 │   │   │   │   └── TripsDbContext.cs
+│   │   │   ├── DTOs/
 │   │   │   └── TripService.cs, etc.
 │   │   │
 │   │   └── TravelBuddy.Messaging/              <-- Class Library
 │   │       ├── Models/                          # Message, Conversation, etc.
 │   │       ├── Infrastructure/
 │   │       │   └── MessagingDbContext.cs
+│   │       ├── DTOs/
 │   │       └── MessagingService.cs, etc.
 │   │
 │   └── Shared/
 │       └── TravelBuddy.SharedKernel/           <-- Class Library (Common types)
-│           ├── Models/                          # SystemEventLog, etc.
+│           ├── Models/                          # SystemEventLog
 │           └── Infrastructure/
 │               └── SharedKernelDbContext.cs
 │
@@ -39,7 +47,8 @@
 │   └── travel-buddy-app/                       <-- Placeholder for your Frontend project (e.g., React, Vue, Angular)
 │
 ├── mysql/
-│   └── create_db.sql                           <-- SQL script to initialize the database
+│   ├── 1_create_db_tables.sql                  <-- SQL script to initialize the database
+│   ├── 2_stored_objects.sql                    <-- SQL script to create our stored objects
+│   └── 3_seed_data.sql                         <-- SQL script to insert our generated data
 │
-└── travel_buddy.sln                            <-- The main Visual Studio Solution file
-
+└── *.md                                        <-- Markdown files for our notes

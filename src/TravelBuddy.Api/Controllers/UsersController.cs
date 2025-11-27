@@ -5,7 +5,6 @@ using TravelBuddy.Api.Auth;
 using TravelBuddy.Users;
 using TravelBuddy.Users.DTOs;
 using TravelBuddy.Trips;
-using TravelBuddy.Trips.DTOs;
 
 namespace TravelBuddy.Api.Controllers
 {
