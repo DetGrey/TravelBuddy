@@ -6,6 +6,7 @@ using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using MongoDB.Driver;
+using Neo4j.Driver;
 using TravelBuddy.Migrator.Models;
 using EFServerVersion = Microsoft.EntityFrameworkCore.ServerVersion;
 
@@ -64,6 +65,26 @@ var mongoConnectionString = Env.GetString(mongoConnVar)
 var mongoDatabaseName = Env.GetString(mongoDbVar) 
     ?? "travel_buddy_mongo";
 
+// ---- Neo4j settings via appsettings + .env ----
+var neo4jSection = configuration.GetSection("Neo4j");
+
+var neo4jUriVar  = neo4jSection["Uri"]      ?? "NEO4J_URI";
+var neo4jUserVar = neo4jSection["User"]     ?? "NEO4J_USER";
+var neo4jPassVar = neo4jSection["Password"] ?? "NEO4J_PASSWORD";
+
+var neo4jUri  = Env.GetString(neo4jUriVar) 
+    ?? throw new InvalidOperationException($"Env var {neo4jUriVar} not set");
+var neo4jUser = Env.GetString(neo4jUserVar) 
+    ?? throw new InvalidOperationException($"Env var {neo4jUserVar} not set");
+var neo4jPass = Env.GetString(neo4jPassVar) 
+    ?? throw new InvalidOperationException($"Env var {neo4jPassVar} not set");
+
+Console.WriteLine($"Neo4j URI being used: {neo4jUri}");
+
+// Create Neo4j driver
+IDriver neo4jDriver = GraphDatabase.Driver(neo4jUri, AuthTokens.Basic(neo4jUser, neo4jPass));
+await using var neo4j = neo4jDriver;
+
 // ------------- EF CORE DB CONTEXTS -------------
 var usersOptions = new DbContextOptionsBuilder<UsersDbContext>()
     .UseMySql(mySqlConnectionString, EFServerVersion.AutoDetect(mySqlConnectionString))
@@ -109,7 +130,7 @@ var tripsCollection         = mongoDatabase.GetCollection<TripDocument>("trips")
 var conversationsCollection = mongoDatabase.GetCollection<ConversationDocument>("conversations");
 var messagesCollection      = mongoDatabase.GetCollection<MessageDocument>("messages");
 
-// ------------- MIGRATION START -------------
+// ------------- MONGODB MIGRATION START -------------
 Console.WriteLine("Starting user migration...");
 
 // ---- Test Mongo Connection ----
@@ -129,6 +150,21 @@ catch (Exception ex)
     return;
 }
 
+// Test Neo4j connection
+try
+{
+    Console.WriteLine("Testing Neo4j connection...");
+    await using var testSession = neo4j.AsyncSession();
+    var cursor = await testSession.RunAsync("RETURN 'Neo4j OK' AS msg");
+    var rec = await cursor.SingleAsync();
+    Console.WriteLine($"{rec["msg"].As<string>()}");
+}
+catch (Exception ex)
+{
+    Console.WriteLine("Neo4j connection FAILED:");
+    Console.WriteLine(ex.Message);
+    return;
+}
 
 // Clear collections so you can re-run the migrator during development
 await usersCollection.DeleteManyAsync(FilterDefinition<UserDocument>.Empty);
@@ -137,7 +173,7 @@ await tripsCollection.DeleteManyAsync(FilterDefinition<TripDocument>.Empty);
 await conversationsCollection.DeleteManyAsync(FilterDefinition<ConversationDocument>.Empty);
 await messagesCollection.DeleteManyAsync(FilterDefinition<MessageDocument>.Empty);
 
-// ===== 1) USERS =====
+// ===== 1) MongoDB: USERS =====
 var users = await usersDbContext.Users
     .AsNoTracking()
     .ToListAsync();
@@ -167,6 +203,7 @@ var userDocs = users.Select(u => new UserDocument
 await usersCollection.InsertManyAsync(userDocs);
 
 Console.WriteLine($"Migrated {userDocs.Count} users to MongoDB.");
+
 
 // ===== 2) DESTINATIONS (flat collection) =====
 Console.WriteLine("Migrating destinations...");
@@ -349,5 +386,174 @@ if (messageDocs.Count > 0)
     await messagesCollection.InsertManyAsync(messageDocs);
 }
 Console.WriteLine($"Messages migrated: {messageDocs.Count}");
+
+
+// ===== Neo4j: MIGRATION =====
+Console.WriteLine("Starting Neo4j migration...");
+
+// ===== Neo4j: USERS =====
+Console.WriteLine("Migrating users to Neo4j...");
+
+await using (var userSession = neo4j.AsyncSession(o => o.WithDefaultAccessMode(AccessMode.Write)))
+{
+    foreach (var u in users)
+    {
+        var parameters = new
+        {
+            userId    = u.UserId,
+            name      = u.Name,
+            email     = u.Email,
+            passwordHash  = u.PasswordHash,
+            birthdate = u.Birthdate.ToString("yyyy-MM-dd"),
+            isDeleted = u.IsDeleted,
+            role      = u.Role
+        };
+
+        await userSession.RunAsync(@"
+            MERGE (u:User { userId: $userId })
+            SET u.name         = $name,
+                u.email        = $email,
+                u.passwordHash = $passwordHash,
+                u.birthdate    = $birthdate,
+                u.isDeleted    = $isDeleted,
+                u.role         = $role
+        ", parameters);
+    }
+}
+
+Console.WriteLine($"Neo4j: migrated {users.Count} users.");
+
+// ===== Neo4j: DESTINATIONS =====
+Console.WriteLine("Migrating destinations to Neo4j...");
+
+await using (var destSession = neo4j.AsyncSession(o => o.WithDefaultAccessMode(AccessMode.Write)))
+{
+    foreach (var d in destinations)
+    {
+        var parameters = new
+        {
+            destinationId = d.DestinationId,
+            name          = d.Name,
+            state         = d.State,
+            country       = d.Country,
+            longitude     = d.Longitude,
+            latitude      = d.Latitude
+        };
+
+        await destSession.RunAsync(@"
+            MERGE (d:Destination { destinationId: $destinationId })
+            SET d.name      = $name,
+                d.state     = $state,
+                d.country   = $country,
+                d.longitude = $longitude,
+                d.latitude  = $latitude
+        ", parameters);
+    }
+}
+
+Console.WriteLine($"Neo4j: migrated {destinations.Count} destinations.");
+
+// ===== Neo4j: TRIPS + OWNS + HAS_STOP =====
+Console.WriteLine("Migrating trips and relationships to Neo4j...");
+
+await using (var tripSession = neo4j.AsyncSession(o => o.WithDefaultAccessMode(AccessMode.Write)))
+{
+    foreach (var t in trips)
+    {
+        var tripParams = new
+        {
+            tripId      = t.TripId,
+            ownerId     = t.OwnerId ?? 0, // if OwnerId is int? in EF
+            maxBuddies  = t.MaxBuddies,
+            startDate   = t.StartDate.ToString("yyyy-MM-dd"),
+            endDate     = t.EndDate.ToString("yyyy-MM-dd"),
+            description = t.Description,
+            isArchived  = t.IsArchived
+        };
+
+        // Trip node + OWNS relationship
+        await tripSession.RunAsync(@"
+            MERGE (t:Trip { tripId: $tripId })
+            SET t.maxBuddies  = $maxBuddies,
+                t.startDate   = $startDate,
+                t.endDate     = $endDate,
+                t.description = $description,
+                t.isArchived  = $isArchived
+            WITH t, $ownerId AS ownerId
+            MATCH (u:User { userId: ownerId })
+            MERGE (u)-[:OWNS]->(t)
+        ", tripParams);
+
+        // HAS_STOP relationships for this trip
+        var tdForTrip = tripDestinations.Where(td => td.TripId == t.TripId).ToList();
+
+        foreach (var td in tdForTrip)
+        {
+            var tdParams = new
+            {
+                tripId            = t.TripId,
+                tripDestinationId = td.TripDestinationId,
+                destinationId     = td.DestinationId,
+                startDate         = td.StartDate.ToString("yyyy-MM-dd"),
+                endDate           = td.EndDate.ToString("yyyy-MM-dd"),
+                sequenceNumber    = td.SequenceNumber,
+                description       = td.Description,
+                isArchived        = td.IsArchived
+            };
+
+            await tripSession.RunAsync(@"
+                MATCH (t:Trip { tripId: $tripId })
+                MATCH (d:Destination { destinationId: $destinationId })
+                MERGE (t)-[r:HAS_STOP { tripDestinationId: $tripDestinationId }]->(d)
+                SET r.startDate      = $startDate,
+                    r.endDate        = $endDate,
+                    r.sequenceNumber = $sequenceNumber,
+                    r.description    = $description,
+                    r.isArchived     = $isArchived
+            ", tdParams);
+        }
+    }
+}
+
+Console.WriteLine("Neo4j: trips and HAS_STOP relationships migrated.");
+
+// ===== Neo4j: BUDDIES =====
+Console.WriteLine("Migrating buddies to Neo4j...");
+
+await using (var buddySession = neo4j.AsyncSession(o => o.WithDefaultAccessMode(AccessMode.Write)))
+{
+    foreach (var b in buddies)
+    {
+        // Find trip for this buddy via TripDestination
+        var td = tripDestinations.FirstOrDefault(td => td.TripDestinationId == b.TripDestinationId);
+        if (td == null) continue;
+
+        var buddyParams = new
+        {
+            userId           = b.UserId,
+            tripId           = td.TripId,
+            tripDestinationId= b.TripDestinationId,
+            personCount      = b.PersonCount,
+            note             = b.Note,
+            isActive         = b.IsActive,
+            departureReason  = b.DepartureReason,
+            requestStatus    = b.RequestStatus
+        };
+
+        await buddySession.RunAsync(@"
+            MATCH (u:User { userId: $userId })
+            MATCH (t:Trip { tripId: $tripId })
+            MERGE (u)-[r:BUDDY_ON { tripDestinationId: $tripDestinationId }]->(t)
+            SET r.personCount     = $personCount,
+                r.note            = $note,
+                r.isActive        = $isActive,
+                r.departureReason = $departureReason,
+                r.requestStatus   = $requestStatus
+        ", buddyParams);
+    }
+}
+
+Console.WriteLine("Neo4j: buddies migrated.");
+
 
 Console.WriteLine("Migration complete.");
