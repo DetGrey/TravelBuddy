@@ -5,7 +5,7 @@ USE travel_buddy;
 -- =======================
 
 INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES
-(1, 'Allison Hill', 'allyhill95@gmail.com', 'af738b28e0a93deae4483d186d93ab0ae1300f80dbd1bf73b8b367a58cb3cb4b', '1995-09-05'),
+(1, 'Allison Hill', 'allyhill95@gmail.com', 'pOuYQCyS06RWqXSfdoz7PA==.zKUHgXV44DoKsF4UcjZ5+ohWiIFba/eT0cAautQLUSY=', '1995-09-05'),
 (2, 'Cristian Santos', 'santos.cris65@yahoo.com', 'f3293232dc4f6f82f27fcb1f5bdf4517cd40e79a4f79ddd795c7d117d36557f3', '1965-07-29'),
 (3, 'Gina Moore', 'gmoore1957@hotmail.com', '33e3f996588677ce376555d9705c6a4e0783924ef7b0f92b335fa735c429b4a7', '1957-08-31'),
 (4, 'Kimberly Dudley', 'kim.dudley@outlook.com', '40f162b663df0eb38e907f235ea9e432809a00d97a969444ef4cc84eb3e16927', '1979-04-27'),
@@ -84,8 +84,10 @@ INSERT INTO user (user_id, name, email, password_hash, birthdate) VALUES
 (77, 'Christian Miller', 'christian.m@gmail.com', '0s7r64t2x8s3v9w5u6r7v8w9x0y1z2a3b4c5d6e7f8g9h0i1j2k3l4m5n6o7p8q9', '1998-07-17'),
 (78, 'Penelope Wright', 'penelope.w@yahoo.com', '1t8s75u3y9t4w0x6v7s8w9x0y1z2a3b4c5d6e7f8g9h0i1j2k3l4m5n6o7p8q9r0', '2002-09-09'),
 (79, 'Owen Reed', 'owen.reed@gmail.com', '2u9t86v4z0u5x1y7w8t9x0y1z2a3b4c5d6e7f8g9h0i1j2k3l4m5n6o7p8q9r0s1', '1996-04-03'),
-(80, 'Audrey Price', 'audrey.p@gmail.com', '3v0u97w5a1v6y2z8x9u0y1z2a3b4c5d6e7f8g9h0i1j2k3l4m5n6o7p8q9r0s1t2', '2001-06-20');
+(80, 'Audrey Price', 'audrey.p@gmail.com', '3v0u97w5a1v6y2z8x9u0y1z2a3b4c5d6e7f8g9h0i1j2k3l4m5n6o7p8q9r0s1t2', '2001-06-20'),
+(81, 'admin', 'admin@admin.com', 'cdxClq8EjaSkmM/2z84ymQ==.0UDe6cg/oeDIXSEVywmmH5l6SQ8h2XlB5ypY8OwePDM=', '2001-06-20');
 
+UPDATE user SET role = 'admin' where email = 'admin@admin.com';
 -- ------------------------------------------------------------------------------------------------------------------------------------------------
 
 -- =======================
@@ -179,8 +181,8 @@ INSERT INTO destination (destination_id, name, state, country, longitude, latitu
 -- =======================
 
 -- Trip 1: France's Cultural Heartbeat
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(1, 5, 4, '2025-06-15', '2025-06-29', 'A two-week journey through France, focusing on its rich cultural heritage. We’ll explore the famous landmarks, museums, and culinary delights of Paris before heading to the sun-drenched south.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(1, 5, 'Trip to France', 4, '2025-06-15', '2025-06-29', 'A two-week journey through France, focusing on its rich cultural heritage. We’ll explore the famous landmarks, museums, and culinary delights of Paris before heading to the sun-drenched south.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (1, 1, 1, '2025-06-15', '2025-06-22', 1, 'Explore the iconic sights of Paris, including the Eiffel Tower, the Louvre Museum, and Notre Dame. Enjoy strolls along the Seine and savoring classic French pastries.'),
@@ -196,8 +198,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (7, 29, 2, 1, 'rejected');
 
 -- Trip 2: The Taste of France
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(2, 4, 3, '2026-09-05', '2026-09-19', 'A culinary adventure across France. This trip is all about tasting the best of French cuisine, from Michelin-star restaurants in Paris to wine tasting in the Bordeaux region.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(2, 4, 'A Taste of France', 3, '2026-09-05', '2026-09-19', 'A culinary adventure across France. This trip is all about tasting the best of French cuisine, from Michelin-star restaurants in Paris to wine tasting in the Bordeaux region.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (3, 1, 2, '2026-09-05', '2026-09-12', 1, 'Focus on Parisian gastronomy. We’ll visit traditional markets, take a cooking class, and dine at classic French bistros and bakeries.'),
@@ -213,8 +215,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (14, 65, 4, 1, 'rejected');
 
 -- Trip 3: A Southern French Getaway
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(3, 62, 5, '2027-07-10', '2027-07-24', 'A two-week summer escape to Southern France. We’ll soak up the sun on the beautiful beaches of Nice and enjoy the vibrant atmosphere before heading to the charm of Bordeaux.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(3, 62, 'A Southern French Getaway', 5, '2027-07-10', '2027-07-24', 'A two-week summer escape to Southern France. We’ll soak up the sun on the beautiful beaches of Nice and enjoy the vibrant atmosphere before heading to the charm of Bordeaux.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (5, 2, 3, '2027-07-10', '2027-07-17', 1, 'Enjoy the stunning beaches and vibrant nightlife of Nice. We’ll visit the Cours Saleya market, hike to Castle Hill for panoramic views, and relax by the Mediterranean Sea.'),
@@ -229,8 +231,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (20, 63, 6, 1, 'pending');
 
 -- Trip 4: Parisian Romance & Riviera Glamour
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(4, 4, 4, '2025-08-20', '2025-09-03', 'A romantic and luxurious trip combining the iconic sights of Paris with the glamorous coastal life of Nice. Perfect for couples or friends seeking both culture and relaxation.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(4, 4, 'Parisian Romance & Riviera Glamour', 4, '2025-08-20', '2025-09-03', 'A romantic and luxurious trip combining the iconic sights of Paris with the glamorous coastal life of Nice. Perfect for couples or friends seeking both culture and relaxation.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (7, 1, 4, '2025-08-20', '2025-08-27', 1, 'Indulge in Parisian romance. We’ll enjoy a dinner cruise on the Seine, visit the Sacré-Cœur, and explore Montmartre’s artistic streets.'),
@@ -245,8 +247,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (26, 78, 8, 1, 'rejected');
 
 -- Trip 5: The French Art & Wine Trail
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(5, 66, 3, '2026-05-10', '2026-05-24', 'An art and wine-focused trip through France. We will immerse ourselves in the great masterpieces of Paris before transitioning to the world-renowned vineyards of Bordeaux.');
+INSERT INTO trip (trip_id, owner_id,trip_name, max_buddies, start_date, end_date, description) VALUES
+(5, 66, 'French Art & Wine Trail', 3, '2026-05-10', '2026-05-24', 'An art and wine-focused trip through France. We will immerse ourselves in the great masterpieces of Paris before transitioning to the world-renowned vineyards of Bordeaux.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (9, 1, 5, '2026-05-10', '2026-05-17', 1, 'Focus on the art of Paris. We’ll visit the Musée d’Orsay and Centre Pompidou, and explore the street art of the Marais district.'),
@@ -261,8 +263,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (32, 60, 10, 1, 'rejected');
 
 -- Trip 1: The American Megapolis Tour
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(9, 26, 4, '2025-05-10', '2025-05-24', 'A journey from the bustling streets of New York City to the glamour of Los Angeles. This trip is about experiencing two of America''s most iconic and contrasting urban centers.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(9, 26, 'American Megapolis Tour', 4, '2025-05-10', '2025-05-24', 'A journey from the bustling streets of New York City to the glamour of Los Angeles. This trip is about experiencing two of America''s most iconic and contrasting urban centers.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (18, 4, 9, '2025-05-10', '2025-05-17', 1, 'Experience the non-stop energy of New York City. We’ll visit landmarks like the Empire State Building, Central Park, and the Statue of Liberty, and catch a Broadway show.'),
@@ -277,8 +279,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (59, 59, 19, 1, 'accepted');
 
 -- Trip 2: West Coast to Paradise
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(10, 10, 5, '2026-07-15', '2026-07-29', 'A trip from the sunny beaches of Los Angeles to the tropical oasis of Honolulu. We will combine the fun of city sightseeing with the relaxation of a beach holiday.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(10, 10, 'West Coast to Paradise', 5, '2026-07-15', '2026-07-29', 'A trip from the sunny beaches of Los Angeles to the tropical oasis of Honolulu. We will combine the fun of city sightseeing with the relaxation of a beach holiday.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (20, 5, 10, '2026-07-15', '2026-07-22', 1, 'Enjoy the sun-drenched coast of Los Angeles. We’ll hit up Santa Monica Pier, visit Venice Beach, and soak up the laid-back California vibe.'),
@@ -294,8 +296,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (66, 26, 21, 1, 'rejected');
 
 -- Trip 3: Coast-to-Coast Explorer
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(11, 32, 4, '2027-09-01', '2027-09-22', 'A cross-country American adventure. We will explore the iconic landmarks of New York, the glamour of Los Angeles, and the tropical beauty of Honolulu.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(11, 32, 'Coast-to-Coast Exploration', 4, '2027-09-01', '2027-09-22', 'A cross-country American adventure. We will explore the iconic landmarks of New York, the glamour of Los Angeles, and the tropical beauty of Honolulu.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (22, 4, 11, '2027-09-01', '2027-09-08', 1, 'Explore the cultural diversity and iconic landmarks of New York City. We’ll visit museums, explore different neighborhoods, and enjoy the city''s famous food scene.'),
@@ -312,8 +314,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (73, 45, 24, 1, 'rejected');
 
 -- Trip 4: The Ultimate USA Getaway
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(12, 3, 6, '2025-10-10', '2025-10-31', 'A comprehensive tour of the United States. This trip is for those who want to see it all, from the East Coast''s vibrant city life to the Pacific''s tropical beauty.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(12, 3, 'Ultimate USA Getaway', 6, '2025-10-10', '2025-10-31', 'A comprehensive tour of the United States. This trip is for those who want to see it all, from the East Coast''s vibrant city life to the Pacific''s tropical beauty.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (25, 4, 12, '2025-10-10', '2025-10-18', 1, 'Start the trip in New York City with an exploration of its many iconic neighborhoods and attractions.'),
@@ -330,8 +332,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (80, 80, 27, 1, 'accepted');
 
 -- Trip 5: The City & Beach Escape
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(13, 73, 3, '2026-03-05', '2026-03-19', 'A perfect escape from city life to a tropical paradise. This trip combines the excitement of New York City with the ultimate relaxation of Honolulu.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(13, 73, 'City & Beach Escape', 3, '2026-03-05', '2026-03-19', 'A perfect escape from city life to a tropical paradise. This trip combines the excitement of New York City with the ultimate relaxation of Honolulu.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (28, 4, 13, '2026-03-05', '2026-03-12', 1, 'Enjoy the culture and excitement of New York City, visiting museums, monuments, and iconic sights.'),
@@ -346,8 +348,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (86, 5, 29, 1, 'rejected');
 
 -- Trip 1: The Chinese Mega-Cities Tour
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(14, 12, 4, '2025-09-01', '2025-09-15', 'A journey through China''s two most iconic cities. This trip contrasts Beijing''s historical landmarks with Shanghai''s futuristic cityscape.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(14, 12, 'Chinese Mega-Cities Tour', 4, '2025-09-01', '2025-09-15', 'A journey through China''s two most iconic cities. This trip contrasts Beijing''s historical landmarks with Shanghai''s futuristic cityscape.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (30, 7, 14, '2025-09-01', '2025-09-08', 1, 'Explore the ancient wonders of Beijing, including the Great Wall, the Forbidden City, and Tiananmen Square. We will also discover the city''s culinary delights.'),
@@ -362,8 +364,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (92, 7, 31, 1, 'accepted');
 
 -- Trip 2: China's Cultural & Financial Hubs
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(15, 15, 3, '2026-04-10', '2026-04-24', 'An in-depth tour of China''s historical and economic powerhouses. We will delve into Beijing''s imperial past and Shanghai''s modern, vibrant present.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(15, 15, 'China''s Cultural and Financial Hubs ', 3, '2026-04-10', '2026-04-24', 'An in-depth tour of China''s historical and economic powerhouses. We will delve into Beijing''s imperial past and Shanghai''s modern, vibrant present.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (32, 7, 15, '2026-04-10', '2026-04-17', 1, 'Focus on Beijing''s cultural heritage. Our itinerary includes visits to the Summer Palace, the Temple of Heaven, and a walk through the historic hutongs.'),
@@ -378,8 +380,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (98, 14, 33, 1, 'accepted');
 
 -- Trip 3: Ancient Wonders & Modern Marvels
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(16, 45, 5, '2027-10-05', '2027-10-26', 'A comprehensive trip that contrasts ancient China with its modern advancements. We will delve into the history of Beijing and the future-forward energy of Shanghai.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(16, 45, 'Ancient Wonders and Modern Marvels', 5, '2027-10-05', '2027-10-26', 'A comprehensive trip that contrasts ancient China with its modern advancements. We will delve into the history of Beijing and the future-forward energy of Shanghai.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (34, 7, 16, '2027-10-05', '2027-10-15', 1, 'An extended stay in Beijing to fully experience its imperial history and cultural richness. Activities include visiting the Great Wall, Forbidden City, and exploring the city’s vibrant art scene.'),
@@ -395,8 +397,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (105, 35, 35, 1, 'rejected');
 
 -- Trip 4: The Best of China's East Coast
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(17, 73, 4, '2025-11-20', '2025-12-04', 'A concise but complete tour of China''s most important eastern cities. This trip is for those who want to experience the main highlights of Beijing and Shanghai in two weeks.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(17, 73, 'The Best of China''s East Coast' , 4, '2025-11-20', '2025-12-04', 'A concise but complete tour of China''s most important eastern cities. This trip is for those who want to experience the main highlights of Beijing and Shanghai in two weeks.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (36, 7, 17, '2025-11-20', '2025-11-27', 1, 'Take in the majestic sights of Beijing. We will focus on the Forbidden City, the Temple of Heaven, and experiencing the local culture through a Peking Duck dinner.'),
@@ -411,8 +413,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (111, 47, 37, 1, 'rejected');
 
 -- Trip 5: The China Discovery Trip
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(18, 3, 5, '2026-06-15', '2026-06-29', 'An immersive journey into the heart of China. We will combine the historical richness of Beijing with the modern, cosmopolitan flair of Shanghai.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(18, 3, 'China Discovery Trip', 5, '2026-06-15', '2026-06-29', 'An immersive journey into the heart of China. We will combine the historical richness of Beijing with the modern, cosmopolitan flair of Shanghai.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (38, 7, 18, '2026-06-15', '2026-06-22', 1, 'Focus on Beijing''s cultural and historical sites. We’ll visit the Great Wall, the Forbidden City, and explore the city''s hidden alleyways (hutongs) and vibrant food scene.'),
@@ -428,8 +430,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (118, 18, 39, 1, 'rejected');
 
 -- Trip 1: The Iconic Australia East Coast Tour
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(19, 27, 4, '2025-03-10', '2025-03-31', 'A classic Australian adventure combining the vibrant cities of Sydney and Melbourne with the natural wonder of the Great Barrier Reef.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(19, 27, 'Iconic Australia East Coast Tour', 4, '2025-03-10', '2025-03-31', 'A classic Australian adventure combining the vibrant cities of Sydney and Melbourne with the natural wonder of the Great Barrier Reef.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (40, 9, 19, '2025-03-10', '2025-03-17', 1, 'Explore iconic Sydney landmarks like the Sydney Opera House and Harbour Bridge. We’ll also visit Bondi Beach and enjoy the city''s incredible dining scene.'),
@@ -446,8 +448,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (125, 25, 42, 1, 'accepted');
 
 -- Trip 2: The Ultimate Australian Nature & City Escape
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(20, 15, 3, '2026-06-05', '2026-06-19', 'A trip offering the best of both worlds: the vibrant city life of Melbourne and the breathtaking natural beauty of the Great Barrier Reef.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(20, 15, 'Ultimate Australian Nature & City Escape', 3, '2026-06-05', '2026-06-19', 'A trip offering the best of both worlds: the vibrant city life of Melbourne and the breathtaking natural beauty of the Great Barrier Reef.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (43, 10, 20, '2026-06-05', '2026-06-12', 1, 'Explore Melbourne''s vibrant culture, street art, and world-class coffee shops. We will also take a day trip to see the penguins at St Kilda.'),
@@ -462,8 +464,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (131, 68, 44, 1, 'rejected');
 
 -- Trip 3: The Urban & Reef Explorer
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(21, 10, 5, '2027-01-20', '2027-02-03', 'A trip for those who want to see Australia''s most iconic cityscape and its most breathtaking natural wonder. It combines the fun of Sydney with the beauty of the Great Barrier Reef.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(21, 10, 'Urban & Reef Explorer',5, '2027-01-20', '2027-02-03', 'A trip for those who want to see Australia''s most iconic cityscape and its most breathtaking natural wonder. It combines the fun of Sydney with the beauty of the Great Barrier Reef.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (45, 9, 21, '2027-01-20', '2027-01-27', 1, 'Spend time exploring the famous sights of Sydney, including the Opera House, Harbour Bridge, and Darling Harbour. We''ll also take a ferry to Manly Beach.'),
@@ -479,8 +481,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (138, 28, 46, 1, 'rejected');
 
 -- Trip 4: The Southern & Northern Australia Trip
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(22, 68, 4, '2025-09-15', '2025-10-06', 'A comprehensive journey from the vibrant southern cities of Australia to the tropical north. We''ll explore both urban culture and natural beauty on this trip.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(22, 68, 'Southern & Northern Australia Trip',4, '2025-09-15', '2025-10-06', 'A comprehensive journey from the vibrant southern cities of Australia to the tropical north. We''ll explore both urban culture and natural beauty on this trip.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (47, 10, 22, '2025-09-15', '2025-09-22', 1, 'Start in Melbourne, exploring its unique laneways, street art, and culinary scene. We will also visit the famous Queen Victoria Market.'),
@@ -498,8 +500,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (146, 12, 49, 1, 'accepted');
 
 -- Trip 5: The Australian East Coast Trilogy
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(23, 76, 5, '2026-11-01', '2026-11-22', 'A complete exploration of Australia''s east coast, combining the cultural hubs of Sydney and Melbourne with the natural masterpiece of the Great Barrier Reef.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(23, 76, 'Australian East Coast Trilogy', 5, '2026-11-01', '2026-11-22', 'A complete exploration of Australia''s east coast, combining the cultural hubs of Sydney and Melbourne with the natural masterpiece of the Great Barrier Reef.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (50, 9, 23, '2026-11-01', '2026-11-08', 1, 'Dive into the city life of Sydney, from climbing the Harbour Bridge to relaxing at Bondi Beach and taking in the iconic Opera House.'),
@@ -517,8 +519,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (154, 32, 52, 1, 'rejected');
 
 -- Trip 1: Brazil's Natural Wonders & Urban Vibes
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(24, 68, 4, '2025-08-10', '2025-08-24', 'A perfect blend of Brazil''s iconic urban energy and its breathtaking natural beauty. This trip combines the vibrant culture of Rio with the awe-inspiring Iguazu Falls.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(24, 68, 'Brazil''s Natural Wonders & Urban Vibes', 4, '2025-08-10', '2025-08-24', 'A perfect blend of Brazil''s iconic urban energy and its breathtaking natural beauty. This trip combines the vibrant culture of Rio with the awe-inspiring Iguazu Falls.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (53, 12, 24, '2025-08-10', '2025-08-17', 1, 'Experience the vibrant spirit of Rio de Janeiro. We’ll visit Christ the Redeemer and Sugarloaf Mountain, relax on Copacabana and Ipanema beaches, and explore the city''s samba scene.'),
@@ -533,8 +535,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (160, 32, 54, 1, 'accepted');
 
 -- Trip 2: The Brazilian Adventure
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(25, 56, 3, '2026-03-05', '2026-03-19', 'An adventure trip combining the festive atmosphere of Rio de Janeiro with the natural splendor of Iguazu Falls. We''ll explore urban landscapes and stunning nature.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(25, 56, 'Brazilian Adventure', 3, '2026-03-05', '2026-03-19', 'An adventure trip combining the festive atmosphere of Rio de Janeiro with the natural splendor of Iguazu Falls. We''ll explore urban landscapes and stunning nature.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (55, 12, 25, '2026-03-05', '2026-03-12', 1, 'Immerse in the culture of Rio de Janeiro. We will visit the Escadaria Selarón, explore the Santa Teresa neighborhood, and enjoy a day at the beach.'),
@@ -549,8 +551,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (166, 57, 56, 1, 'rejected');
 
 -- Trip 3: Brazil's Best Kept Secret: The Falls & City Life
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(26, 48, 5, '2027-01-20', '2027-02-03', 'A captivating journey to witness one of the world''s greatest natural wonders and experience the lively atmosphere of Rio de Janeiro.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(26, 48, 'Brazil''s Best Kept Secret: The Falls & City Life', 5, '2027-01-20', '2027-02-03', 'A captivating journey to witness one of the world''s greatest natural wonders and experience the lively atmosphere of Rio de Janeiro.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (57, 13, 26, '2027-01-20', '2027-01-27', 1, 'Start the trip with the magnificent Iguazu Falls. We will spend a full week exploring the falls from different angles and enjoying the surrounding subtropical rainforest.'),
@@ -566,8 +568,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (173, 80, 58, 1, 'rejected');
 
 -- Trip 4: The Brazilian East Coast Trip
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(27, 27, 4, '2025-05-15', '2025-05-29', 'A concise but complete tour of Brazil''s most famous city and natural wonder. This trip is for those who want to experience the main highlights of Rio and Iguazu Falls in two weeks.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(27, 27, 'Brazilian East Coast Trip',4, '2025-05-15', '2025-05-29', 'A concise but complete tour of Brazil''s most famous city and natural wonder. This trip is for those who want to experience the main highlights of Rio and Iguazu Falls in two weeks.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (59, 12, 27, '2025-05-15', '2025-05-22', 1, 'Enjoy the stunning sights of Rio de Janeiro. We will focus on the famous beaches of Ipanema and Copacabana, and explore the city''s lively music and food scene.'),
@@ -582,8 +584,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (179, 59, 60, 1, 'rejected');
 
 -- Trip 5: The Ultimate Brazil Experience
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(28, 48, 5, '2026-07-10', '2026-07-24', 'A complete exploration of Brazil, combining the cultural hub of Rio de Janeiro with the natural masterpiece of Iguazu Falls.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(28, 48, 'Ultimate Brazil Experience', 5, '2026-07-10', '2026-07-24', 'A complete exploration of Brazil, combining the cultural hub of Rio de Janeiro with the natural masterpiece of Iguazu Falls.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (61, 12, 28, '2026-07-10', '2026-07-17', 1, 'Dive into the city life of Rio, from climbing Sugarloaf Mountain to relaxing at its iconic beaches and enjoying the vibrant nightlife.'),
@@ -599,8 +601,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (186, 11, 62, 1, 'rejected');
 
 -- Perjalanan 1: Petualangan Kuno & Kota Modern
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(29, 64, 4, '2025-09-05', '2025-09-26', 'Perjalanan yang menggabungkan keajaiban sejarah Cusco dengan kehidupan modern di Lima. Perpaduan sempurna antara budaya kuno dan suasana kota kontemporer.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(29, 64, 'Petualangan Kuno & Kota Modern',4, '2025-09-05', '2025-09-26', 'Perjalanan yang menggabungkan keajaiban sejarah Cusco dengan kehidupan modern di Lima. Perpaduan sempurna antara budaya kuno dan suasana kota kontemporer.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (63, 14, 29, '2025-09-05', '2025-09-19', 1, 'Habiskan dua minggu di Cusco untuk menjelajahi reruntuhan Inca di sekitarnya, termasuk benteng Sacsayhuamán dan situs-situs di Lembah Suci. Ini adalah titik awal untuk mendaki Machu Picchu.'),
@@ -615,8 +617,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (192, 29, 64, 1, 'accepted');
 
 -- Perjalanan 2: Jantung Budaya & Ibu Kota Kuliner
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(30, 75, 3, '2026-04-10', '2026-04-24', 'Perjalanan yang fokus pada kekayaan budaya dan masakan Peru. Kita akan menyelami sejarah kuno Cusco sebelum menikmati hidangan gastronomi kelas dunia di Lima.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(30, 75, 'Jantung Budaya & Ibu Kota Kuliner',3, '2026-04-10', '2026-04-24', 'Perjalanan yang fokus pada kekayaan budaya dan masakan Peru. Kita akan menyelami sejarah kuno Cusco sebelum menikmati hidangan gastronomi kelas dunia di Lima.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (65, 14, 30, '2026-04-10', '2026-04-17', 1, 'Mulailah di Cusco, jantung Kekaisaran Inca. Kita akan mengunjungi Kuil Matahari, Katedral Cusco, dan menjelajahi gang-gang sempit yang menawan.'),
@@ -632,8 +634,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (198, 80, 67, 1, 'accepted');
 
 -- Perjalanan 3: Tur Utama Peru
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(31, 15, 5, '2027-01-20', '2027-02-03', 'Perjalanan yang memukau untuk merasakan yang terbaik dari Peru, menggabungkan energi ibu kota dan pesona kuno Pegunungan Andes.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(31, 15, 'Tur Utama Peru',5, '2027-01-20', '2027-02-03', 'Perjalanan yang memukau untuk merasakan yang terbaik dari Peru, menggabungkan energi ibu kota dan pesona kuno Pegunungan Andes.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (68, 15, 31, '2027-01-20', '2027-01-27', 1, 'Mulai perjalanan di Lima untuk menjelajahi kekayaan budayanya. Kita akan mengunjungi museum, berjalan-jalan di sepanjang garis pantai Pasifik, dan makan di beberapa restoran terbaik di dunia.'),
@@ -648,8 +650,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (204, 61, 69, 1, 'accepted');
 
 -- Perjalanan 4: Penjelajahan Inca & Pesisir Peru
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(32, 59, 4, '2025-10-15', '2025-10-29', 'Perjalanan dari pegunungan Andes yang tinggi ke garis pantai Pasifik. Kombinasi yang sempurna antara situs sejarah dan pengalaman pantai.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(32, 59, 'Penjelajahan Inca & Pesisir Peru',4, '2025-10-15', '2025-10-29', 'Perjalanan dari pegunungan Andes yang tinggi ke garis pantai Pasifik. Kombinasi yang sempurna antara situs sejarah dan pengalaman pantai.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (70, 14, 32, '2025-10-15', '2025-10-22', 1, 'Menjelajahi keajaiban kuno Cusco. Fokus akan berada pada situs-situs Inca yang megah dan pasar-pasar lokal yang ramai.'),
@@ -664,8 +666,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (210, 10, 71, 1, 'rejected');
 
 -- Perjalanan 5: Perjalanan Kuliner & Sejarah Peru
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(33, 71, 5, '2026-08-01', '2026-08-22', 'Perjalanan mendalam yang merayakan sejarah dan masakan Peru. Kita akan meluangkan waktu untuk mengeksplorasi dua kota terpenting di Peru secara mendalam.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(33, 71, 'Perjalanan Kuliner & Sejarah Peru', 5, '2026-08-01', '2026-08-22', 'Perjalanan mendalam yang merayakan sejarah dan masakan Peru. Kita akan meluangkan waktu untuk mengeksplorasi dua kota terpenting di Peru secara mendalam.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (72, 14, 33, '2026-08-01', '2026-08-11', 1, 'Habiskan 10 hari penuh di Cusco untuk mendalami budaya Andes. Kita akan mengunjungi berbagai situs arkeologi, termasuk Machu Picchu, dan belajar tentang sejarah Inca.'),
@@ -681,8 +683,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (217, 17, 73, 1, 'rejected');
 
 -- Trip 1: The Land of the Pharaohs
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(34, 6, 4, '2025-10-10', '2025-10-24', 'A two-week journey into the heart of ancient Egypt. We will explore the iconic Pyramids of Giza in Cairo before heading south to the magnificent temples of Luxor.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(34, 6, 'The Land of the Pharaohs', 4, '2025-10-10', '2025-10-24', 'A two-week journey into the heart of ancient Egypt. We will explore the iconic Pyramids of Giza in Cairo before heading south to the magnificent temples of Luxor.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (74, 16, 34, '2025-10-10', '2025-10-17', 1, 'Explore Cairo, the largest city in Africa. We’ll visit the Pyramids of Giza and the Sphinx, the Egyptian Museum, and the vibrant Khan el-Khalili bazaar.'),
@@ -697,8 +699,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (223, 53, 75, 1, 'accepted');
 
 -- Trip 2: Nile River Journey
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(35, 76, 3, '2026-03-05', '2026-03-19', 'A trip focused on the historical heart of Egypt. We will visit the iconic monuments of Cairo and then explore Luxor, often as part of a classic Nile cruise.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(35, 76, 'Nile River Journey', 3, '2026-03-05', '2026-03-19', 'A trip focused on the historical heart of Egypt. We will visit the iconic monuments of Cairo and then explore Luxor, often as part of a classic Nile cruise.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (76, 16, 35, '2026-03-05', '2026-03-12', 1, 'Spend a week in Cairo exploring its magnificent historical sites, including the Pyramids of Giza and the Egyptian Museum. We’ll also wander through the old Islamic quarter.'),
@@ -713,8 +715,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (229, 32, 77, 1, 'rejected');
 
 -- Trip 3: Egypt’s Historical Capitals
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(36, 1, 5, '2027-01-20', '2027-02-03', 'A captivating journey that contrasts modern Egypt with its ancient past. We will explore the bustling life of Cairo before diving into the magnificent ruins of ancient Thebes (Luxor).');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(36, 1, 'Egypt’s Historical Capitals', 5, '2027-01-20', '2027-02-03', 'A captivating journey that contrasts modern Egypt with its ancient past. We will explore the bustling life of Cairo before diving into the magnificent ruins of ancient Thebes (Luxor).');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (78, 16, 36, '2027-01-20', '2027-01-27', 1, 'Begin the trip in Cairo, exploring modern life and ancient sites like the Citadel of Saladin and the Hanging Church. A day trip to the Pyramids is also on the itinerary.'),
@@ -729,8 +731,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (235, 4, 79, 1, 'accepted');
 
 -- Trip 4: The Egyptian Discovery Trip
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(37, 65, 4, '2025-02-15', '2025-03-01', 'A two-week comprehensive tour of Egypt''s most famous historical sites. This trip is for those who want to experience the main highlights of Cairo and Luxor.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(37, 65, 'Egyptian Discovery Trip', 4, '2025-02-15', '2025-03-01', 'A two-week comprehensive tour of Egypt''s most famous historical sites. This trip is for those who want to experience the main highlights of Cairo and Luxor.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (80, 16, 37, '2025-02-15', '2025-02-22', 1, 'Explore the stunning sights of Cairo, including the Pyramids of Giza, the Sphinx, and the historic Cairo Citadel.'),
@@ -745,8 +747,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (241, 21, 81, 1, 'rejected');
 
 -- Trip 5: The Egyptian Heritage Tour
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(38, 3, 5, '2026-11-10', '2026-11-24', 'An immersive journey into the heart of Egypt''s ancient history. This trip provides an in-depth exploration of the fascinating sites in both Cairo and Luxor.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(38, 3, 'Egyptian Heritage Tour', 5, '2026-11-10', '2026-11-24', 'An immersive journey into the heart of Egypt''s ancient history. This trip provides an in-depth exploration of the fascinating sites in both Cairo and Luxor.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (82, 16, 38, '2026-11-10', '2026-11-17', 1, 'Dive into the rich history of Cairo, visiting the Pyramids, the Egyptian Museum, and exploring Old Cairo with its Coptic and Islamic landmarks.'),
@@ -762,8 +764,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (248, 2, 83, 1, 'rejected');
 
 -- Trip 1: The Ultimate Japan Trilogy
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(44, 25, 4, '2026-05-15', '2026-06-05', 'A comprehensive journey that combines the vibrant life of Tokyo, the serene beauty of Kyoto, and the majestic presence of Mount Fuji.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(44, 25, 'Ultimate Japan Trilogy', 4, '2026-05-15', '2026-06-05', 'A comprehensive journey that combines the vibrant life of Tokyo, the serene beauty of Kyoto, and the majestic presence of Mount Fuji.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (94, 18, 44, '2026-05-15', '2026-05-22', 1, 'Explore the dynamic capital of Tokyo. We''ll visit iconic neighborhoods like Shibuya and Shinjuku, try incredible street food, and experience the city''s pop culture.'),
@@ -782,8 +784,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (289, 61, 96, 1, 'rejected');
 
 -- Trip 2: Nature & Tradition Tour
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(45, 15, 3, '2025-07-10', '2025-07-24', 'A journey for nature and culture lovers. This trip starts at the iconic Mount Fuji before delving into the historical heart of Kyoto and ending in the bustling capital, Tokyo.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(45, 15, 'Nature & Tradition Tour', 3, '2025-07-10', '2025-07-24', 'A journey for nature and culture lovers. This trip starts at the iconic Mount Fuji before delving into the historical heart of Kyoto and ending in the bustling capital, Tokyo.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (97, 20, 45, '2025-07-10', '2025-07-14', 1, 'Enjoy the stunning scenery and tranquility of Mount Fuji. We will explore the Fuji Five Lakes area and take a scenic bus tour.'),
@@ -801,8 +803,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (297, 32, 99, 1, 'rejected');
 
 -- Trip 3: The City & Mountain Escape
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(46, 16, 5, '2027-04-20', '2027-05-04', 'A captivating journey that contrasts modern Tokyo with the majestic beauty of Mount Fuji. It''s the perfect trip for those who want a mix of urban excitement and natural serenity.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(46, 16, 'City & Mountain Escape', 5, '2027-04-20', '2027-05-04', 'A captivating journey that contrasts modern Tokyo with the majestic beauty of Mount Fuji. It''s the perfect trip for those who want a mix of urban excitement and natural serenity.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (100, 18, 46, '2027-04-20', '2027-04-27', 1, 'Begin the trip in Tokyo, exploring modern life and ancient sites like the Imperial Palace and Senso-ji Temple.'),
@@ -817,8 +819,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (303, 67, 101, 1, 'accepted');
 
 -- Trip 4: The Historical & Natural Path
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(47, 47, 4, '2025-11-20', '2025-12-04', 'A journey focused on Japan''s historical heart and its most iconic natural landmark. This trip is for those who want a blend of culture and peace.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(47, 47, 'Historical & Natural Path', 4, '2025-11-20', '2025-12-04', 'A journey focused on Japan''s historical heart and its most iconic natural landmark. This trip is for those who want a blend of culture and peace.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (102, 19, 47, '2025-11-20', '2025-11-27', 1, 'Enjoy the serene and traditional atmosphere of Kyoto. We will explore the iconic Golden Pavilion, the Arashiyama Bamboo Grove, and the historic Gion district.'),
@@ -833,8 +835,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (309, 14, 103, 1, 'rejected');
 
 -- Trip 5: Japan's Golden Route Adventure
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(48, 71, 5, '2026-09-01', '2026-09-22', 'An immersive journey through Japan''s Golden Route. This trip combines the bustling energy of Tokyo, the serene beauty of Mount Fuji, and the historical charm of Kyoto.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(48, 71, 'Japan''s Golden Route Adventure', 5, '2026-09-01', '2026-09-22', 'An immersive journey through Japan''s Golden Route. This trip combines the bustling energy of Tokyo, the serene beauty of Mount Fuji, and the historical charm of Kyoto.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (104, 18, 48, '2026-09-01', '2026-09-08', 1, 'Begin the trip in Tokyo. We''ll explore its diverse neighborhoods, from the serene gardens of the Imperial Palace to the vibrant nightlife of Ginza.'),
@@ -853,8 +855,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (318, 65, 106, 1, 'rejected');
 
 -- Trip 1: The Classic Greece Tour
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(49, 42, 4, '2025-06-15', '2025-07-06', 'A comprehensive journey through Greece, from the historical heart of Athens to the iconic beauty of Santorini and the vibrant beaches of Mykonos.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(49, 42, 'Classic Greece Tour', 4, '2025-06-15', '2025-07-06', 'A comprehensive journey through Greece, from the historical heart of Athens to the iconic beauty of Santorini and the vibrant beaches of Mykonos.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (107, 22, 49, '2025-06-15', '2025-06-22', 1, 'Explore the ancient history of Athens. We''ll visit the Acropolis, the Parthenon, and the historic Plaka neighborhood.'),
@@ -873,8 +875,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (327, 80, 109, 1, 'rejected');
 
 -- Trip 2: Greek Island Hopping
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(50, 79, 3, '2026-08-10', '2026-08-24', 'A true island-hopping experience focusing on two of Greece''s most famous islands. This trip combines the romantic beauty of Santorini with the vibrant fun of Mykonos.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(50, 79, 'Greek Island Hopping', 3, '2026-08-10', '2026-08-24', 'A true island-hopping experience focusing on two of Greece''s most famous islands. This trip combines the romantic beauty of Santorini with the vibrant fun of Mykonos.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (110, 21, 50, '2026-08-10', '2026-08-17', 1, 'Spend a week in Santorini, exploring the unique beaches, enjoying a wine tasting tour, and capturing stunning photos of the island''s iconic architecture.'),
@@ -889,8 +891,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (333, 55, 111, 1, 'accepted');
 
 -- Trip 3: History & Romance Getaway
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(51, 1, 5, '2027-09-01', '2027-09-15', 'A captivating journey that contrasts the historical marvels of Athens with the breathtaking, romantic scenery of Santorini. Perfect for history lovers and couples.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(51, 1, 'History & Romance Getaway', 5, '2027-09-01', '2027-09-15', 'A captivating journey that contrasts the historical marvels of Athens with the breathtaking, romantic scenery of Santorini. Perfect for history lovers and couples.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (112, 22, 51, '2027-09-01', '2027-09-08', 1, 'Begin the trip in Athens, immersing in its rich past. We''ll explore the Acropolis Museum, the Ancient Agora, and the Temple of Olympian Zeus.'),
@@ -905,8 +907,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (339, 28, 113, 1, 'rejected');
 
 -- Trip 4: Athens & Mykonos: The City & Party Trip
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(52, 80, 4, '2025-05-20', '2025-06-03', 'A dynamic trip that combines the rich history of Athens with the energetic nightlife and beautiful beaches of Mykonos. It''s a perfect balance of culture and fun.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(52, 80, 'Athens & Mykonos: The City & Party Trip',4, '2025-05-20', '2025-06-03', 'A dynamic trip that combines the rich history of Athens with the energetic nightlife and beautiful beaches of Mykonos. It''s a perfect balance of culture and fun.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (114, 22, 52, '2025-05-20', '2025-05-27', 1, 'Explore the stunning sights of Athens, including the Acropolis, the Temple of Poseidon at Cape Sounion, and the charming streets of Plaka.'),
@@ -921,8 +923,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (345, 62, 115, 1, 'rejected');
 
 -- Trip 5: The Ultimate Greek Escape
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(53, 25, 5, '2026-07-01', '2026-07-22', 'An immersive journey designed to hit the best of Greece''s highlights. We''ll visit Athens, Mykonos, and Santorini for a full Greek experience.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(53, 25, 'Ultimate Greek Escape',5, '2026-07-01', '2026-07-22', 'An immersive journey designed to hit the best of Greece''s highlights. We''ll visit Athens, Mykonos, and Santorini for a full Greek experience.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (116, 22, 53, '2026-07-01', '2026-07-08', 1, 'Begin the trip in Athens to explore its ancient ruins and modern cultural scene.'),
@@ -941,8 +943,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (354, 39, 118, 1, 'rejected');
 
 -- Trip 1: The Cross-Canada Explorer
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(54, 19, 4, '2025-08-05', '2025-08-26', 'An unforgettable journey across Canada, showcasing the urban culture of Toronto, the stunning landscapes of Banff, and the Pacific charm of Vancouver.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(54, 19, 'Cross-Canada Explorer', 4, '2025-08-05', '2025-08-26', 'An unforgettable journey across Canada, showcasing the urban culture of Toronto, the stunning landscapes of Banff, and the Pacific charm of Vancouver.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (119, 26, 54, '2025-08-05', '2025-08-12', 1, 'Explore the multicultural city of Toronto. We’ll visit the CN Tower, explore the Distillery District, and enjoy a day trip to Niagara Falls.'),
@@ -961,8 +963,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (363, 80, 121, '1', 'rejected');
 
 -- Trip 2: Western Canada Adventure
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(55, 78, 3, '2026-07-10', '2026-07-24', 'A perfect journey combining the stunning Rocky Mountains with the vibrant coastal city of Vancouver. This trip is all about nature and urban exploration.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(55, 78, 'Western Canada Adventure',3, '2026-07-10', '2026-07-24', 'A perfect journey combining the stunning Rocky Mountains with the vibrant coastal city of Vancouver. This trip is all about nature and urban exploration.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (122, 24, 55, '2026-07-10', '2026-07-17', 1, 'Spend a week in Banff National Park, hiking, taking scenic drives, and exploring the charming town of Banff.'),
@@ -977,8 +979,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (369, 55, 123, 1, 'accepted');
 
 -- Trip 3: The Urban Canada Tour
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(56, 56, 5, '2027-04-10', '2027-04-24', 'A captivating journey that contrasts the cultural hub of Toronto with the scenic coastal city of Vancouver, showcasing the diversity of Canada''s urban centers.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(56, 56, 'Urban Canada Tour',5, '2027-04-10', '2027-04-24', 'A captivating journey that contrasts the cultural hub of Toronto with the scenic coastal city of Vancouver, showcasing the diversity of Canada''s urban centers.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (124, 26, 56, '2027-04-10', '2027-04-17', 1, 'Begin the trip in Toronto, exploring its famous landmarks, diverse neighborhoods like Kensington Market, and its world-class art and food scene.'),
@@ -993,8 +995,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (375, 28, 125, 1, 'rejected');
 
 -- Trip 4: Mountains & Metropolis Getaway
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(57, 43, 4, '2025-09-15', '2025-09-29', 'A trip offering a dramatic contrast between the majestic Rocky Mountains and the bustling urban energy of Toronto. It''s a perfect mix of peace and excitement.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(57, 43, 'Mountains & Metropolis Getaway', 4, '2025-09-15', '2025-09-29', 'A trip offering a dramatic contrast between the majestic Rocky Mountains and the bustling urban energy of Toronto. It''s a perfect mix of peace and excitement.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (126, 24, 57, '2025-09-15', '2025-09-22', 1, 'Enjoy a week in Banff National Park, hiking trails, taking in the serene beauty of the lakes, and wildlife spotting.'),
@@ -1009,8 +1011,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (381, 62, 127, 1, 'rejected');
 
 -- Trip 5: The Ultimate Canadian Journey
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(58, 55, 5, '2026-06-01', '2026-06-22', 'A complete exploration of Canada''s best, combining the coastal city of Vancouver, the multicultural hub of Toronto, and the stunning natural beauty of Banff.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(58, 55, 'Ultimate Canadian Journey',5, '2026-06-01', '2026-06-22', 'A complete exploration of Canada''s best, combining the coastal city of Vancouver, the multicultural hub of Toronto, and the stunning natural beauty of Banff.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (128, 25, 58, '2026-06-01', '2026-06-08', 1, 'Begin the trip in Vancouver. We''ll explore the city, visit Granville Island Market, and take a stroll along the seawall.'),
@@ -1029,8 +1031,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (390, 39, 130, 1, 'rejected');
 
 -- Trip 1: The Thailand Grand Tour
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(59, 11, 4, '2026-02-10', '2026-03-03', 'A complete journey through Thailand, showcasing the urban culture of Bangkok, the peaceful charm of Chiang Mai, and the stunning beaches of Phuket.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(59, 11, 'Thailand Grand Tour',4, '2026-02-10', '2026-03-03', 'A complete journey through Thailand, showcasing the urban culture of Bangkok, the peaceful charm of Chiang Mai, and the stunning beaches of Phuket.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (131, 51, 59, '2026-02-10', '2026-02-17', 1, 'Explore the dynamic capital of Bangkok. We’ll visit the Grand Palace, Wat Arun, and enjoy a vibrant street food tour.'),
@@ -1049,8 +1051,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (399, 80, 133, 1, 'rejected');
 
 -- Trip 2: Northern & Southern Thailand
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(60, 16, 3, '2025-11-05', '2025-11-19', 'A journey combining the serene, mountainous culture of Northern Thailand with the vibrant, tropical beaches of the South. A perfect blend of relaxation and adventure.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(60, 16, 'Northern & Southern Thailand',3, '2025-11-05', '2025-11-19', 'A journey combining the serene, mountainous culture of Northern Thailand with the vibrant, tropical beaches of the South. A perfect blend of relaxation and adventure.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (134, 52, 60, '2025-11-05', '2025-11-12', 1, 'Spend a week in Chiang Mai, exploring the temples and markets within the Old City walls and taking a cooking class to master Thai cuisine.'),
@@ -1065,8 +1067,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (405, 55, 135, 1, 'rejected');
 
 -- Trip 3: City & Beaches Getaway
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(61, 33, 5, '2027-04-10', '2027-04-24', 'A captivating journey that contrasts the cultural hub of Bangkok with the tropical, coastal beauty of Phuket. The perfect trip for those seeking both urban excitement and relaxation.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(61, 33, 'City & Beaches Getaway',5, '2027-04-10', '2027-04-24', 'A captivating journey that contrasts the cultural hub of Bangkok with the tropical, coastal beauty of Phuket. The perfect trip for those seeking both urban excitement and relaxation.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (136, 51, 61, '2027-04-10', '2027-04-17', 1, 'Begin the trip in Bangkok, exploring its famous landmarks, diverse markets, and the vibrant nightlife along Sukhumvit Road.'),
@@ -1081,8 +1083,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (411, 28, 137, 1, 'accepted');
 
 -- Trip 4: Culture & Capital Trip
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(62, 77, 4, '2025-09-15', '2025-09-29', 'A trip offering a deep dive into Thailand''s rich culture and urban energy. This is a perfect mix of ancient history and modern city life, from Chiang Mai to Bangkok.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(62, 77, 'Culture & Capital Trip',4, '2025-09-15', '2025-09-29', 'A trip offering a deep dive into Thailand''s rich culture and urban energy. This is a perfect mix of ancient history and modern city life, from Chiang Mai to Bangkok.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (138, 52, 62, '2025-09-15', '2025-09-22', 1, 'Enjoy a week in Chiang Mai, exploring the Old City temples like Wat Phra Singh and Wat Chedi Luang, and taking a Thai cooking class.'),
@@ -1097,8 +1099,8 @@ INSERT INTO buddy (buddy_id, user_id, trip_destination_id, person_count, request
 (417, 62, 139, 1, 'rejected');
 
 -- Trip 5: The Ultimate Thailand Escape
-INSERT INTO trip (trip_id, owner_id, max_buddies, start_date, end_date, description) VALUES
-(63, 23, 5, '2026-06-01', '2026-06-22', 'A complete exploration of Thailand''s best, combining the tropical beaches of Phuket, the vibrant hub of Bangkok, and the cultural heart of Chiang Mai.');
+INSERT INTO trip (trip_id, owner_id, trip_name, max_buddies, start_date, end_date, description) VALUES
+(63, 23, 'Ultimate Thailand Escape',5, '2026-06-01', '2026-06-22', 'A complete exploration of Thailand''s best, combining the tropical beaches of Phuket, the vibrant hub of Bangkok, and the cultural heart of Chiang Mai.');
 
 INSERT INTO trip_destination (trip_destination_id, destination_id, trip_id, start_date, end_date, sequence_number, description) VALUES
 (140, 50, 63, '2026-06-01', '2026-06-08', 1, 'Begin the trip in Phuket. We''ll explore the island''s beautiful beaches, enjoy water sports, and take a trip to the famous James Bond Island.'),

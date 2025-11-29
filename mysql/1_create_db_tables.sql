@@ -51,11 +51,12 @@ CREATE TABLE destination (
 CREATE TABLE IF NOT EXISTS trip (
     trip_id INT AUTO_INCREMENT PRIMARY KEY,
     owner_id INT,
+    trip_name VARCHAR(100),
     max_buddies INT CHECK (max_buddies >= 1),
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
     description VARCHAR(255),
-    is_archived BOOLEAN DEFAULT FALSE,
+    is_archived BOOLEAN DEFAULT FALSE NOT NULL,
     CONSTRAINT fk_trip_owner FOREIGN KEY (owner_id) REFERENCES user(user_id)
         ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT chk_trip_dates CHECK (end_date >= start_date)

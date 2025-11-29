@@ -32,6 +32,17 @@ public partial class TripsDbContext : DbContext
 
     public DbSet<PendingBuddyRequest> PendingBuddyRequests { get; set; }
 
+    public DbSet<TripDestinationInfo> TripDestinationInfo { get; set; }
+
+    public DbSet<BuddyInfo> BuddyInfo { get; set; }
+
+    public DbSet<BuddyRequestInfo> BuddyRequestInfo { get; set; }
+
+    public DbSet<SimplifiedTripDestination> SimplifiedTripDestination { get; set; }
+    public DbSet<TripHeaderInfo> TripHeaderInfo { get; set; }
+    public DbSet<TripOverview> TripOverview { get; set; }
+
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
@@ -270,6 +281,13 @@ public partial class TripsDbContext : DbContext
         modelBuilder.Entity<UserTripSummary>().HasNoKey();
 
         modelBuilder.Entity<PendingBuddyRequest>().HasNoKey();
+
+        modelBuilder.Entity<TripDestinationInfo>().HasNoKey();
+        modelBuilder.Entity<BuddyInfo>().HasNoKey();
+        modelBuilder.Entity<BuddyRequestInfo>().HasNoKey();
+        modelBuilder.Entity<SimplifiedTripDestination>().HasNoKey();
+        modelBuilder.Entity<TripOverview>().HasNoKey();
+        modelBuilder.Entity<TripHeaderInfo>().HasNoKey();
 
         OnModelCreatingPartial(modelBuilder);
     }

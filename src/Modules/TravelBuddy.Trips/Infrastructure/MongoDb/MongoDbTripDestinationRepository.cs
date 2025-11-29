@@ -33,6 +33,17 @@ public class MongoDbTripDestinationRepository : ITripDestinationRepository
         return await Task.FromResult<IEnumerable<UserTripSummary>>(new List<UserTripSummary>());
     }
 
+    public async Task<TripDestinationInfo?> GetTripDestinationInfoAsync(int tripDestinationId)
+    {
+        // TODO Placeholder: Return null, indicating no trip destination info found
+        return await Task.FromResult<TripDestinationInfo?>(null);
+    }
+    public async Task<TripOverview?> GetFullTripOverviewAsync(int tripId)
+    {
+        // TODO Placeholder: Return null, indicating no trip overview found
+        return await Task.FromResult<TripOverview?>(null);
+    }
+
     public async Task<int?> GetTripOwnerAsync(int tripDestinationId)
     {
         // TODO Placeholder: Return null, indicating the owner ID isn't found

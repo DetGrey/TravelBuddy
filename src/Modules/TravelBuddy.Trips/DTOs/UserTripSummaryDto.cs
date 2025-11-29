@@ -5,6 +5,9 @@ namespace TravelBuddy.Trips.DTOs
         int TripDestinationId,
         string DestinationName,
         string TripDescription,
+        DateOnly StartDate,
+        DateOnly EndDate,
+        bool IsArchived,
         string Role
     );
 }

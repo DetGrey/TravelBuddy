@@ -23,8 +23,24 @@ namespace TravelBuddy.Api.Controllers
         }
 
         [Authorize]
+        [HttpGet("{tripId}")]
+        [ProducesResponseType(typeof(TripOverviewDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> GetFullTripOverview([FromRoute] int userId, [FromRoute] int tripId)
+        {
+            if (!User.IsSelfOrAdmin(userId)) return Forbid();
+
+            var tripOverview = await _tripDestinationService.GetFullTripOverviewAsync(tripId);
+            if (tripOverview == null) return NoContent();
+
+            return Ok(tripOverview);
+        }
+
+        [Authorize]
         [HttpGet("trip-destinations")]
-        [ProducesResponseType(typeof(IEnumerable<UserDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<UserTripSummaryDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -36,6 +52,21 @@ namespace TravelBuddy.Api.Controllers
             if (!tripDestinations.Any()) return NoContent();
 
             return Ok(tripDestinations);
+        }
+
+        [HttpGet("trip-destinations/{tripDestinationId}")]
+        [ProducesResponseType(typeof(TripDestinationInfoDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> GetTripDestinationInfo([FromRoute] int userId, [FromRoute] int tripDestinationId)
+        {
+            if (!User.IsSelfOrAdmin(userId)) return Forbid();
+
+            var tripDestination = await _tripDestinationService.GetTripDestinationInfoAsync(tripDestinationId);
+            if (tripDestination == null) return NoContent();
+
+            return Ok(tripDestination);
         }
 
         [Authorize]

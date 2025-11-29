@@ -40,7 +40,11 @@ public class MongoDbUserRepository : IUserRepository
         // TODO Placeholder: Return a completed Task with no result
         await Task.CompletedTask;
     }
-
+    public async Task<User?> GetUserByIdAsync(int userId)
+    {
+        // TODO Placeholder: Return user
+        return await Task.FromResult<User?>(null);
+    }
     public async Task<IEnumerable<User>> GetAllAsync()
     {
         // TODO Placeholder: Return an empty list of Users

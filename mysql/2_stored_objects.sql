@@ -189,6 +189,9 @@ BEGIN
            td.trip_destination_id AS TripDestinationId,
            d.name AS DestinationName,
            t.description AS TripDescription,
+           td.start_date AS StartDate,
+           td.end_date AS EndDate,
+           td.is_archived AS IsArchived,
            'owner' AS Role
     FROM trip t
     JOIN trip_destination td ON td.trip_id = t.trip_id
@@ -202,6 +205,9 @@ BEGIN
            td.trip_destination_id  AS TripDestinationId,
            d.name AS DestinationName,
            t.description AS TripDescription,
+           td.start_date AS StartDate,
+           td.end_date AS EndDate,
+           td.is_archived AS IsArchived,
            'buddy' AS Role
     FROM trip t
     JOIN trip_destination td ON td.trip_id = t.trip_id
@@ -210,7 +216,7 @@ BEGIN
     WHERE get_user_id_from_buddy(b.buddy_id) = in_user_id
     AND b.is_active = TRUE
 
-    ORDER BY TripId, Role;
+    ORDER BY StartDate;
 END $$
 DELIMITER ;
 
@@ -899,11 +905,14 @@ BEGIN
     END IF;
 
     SELECT
-      td.trip_id AS TripId,
+      td.trip_destination_id AS TripDestinationId,
       d.name AS DestinationName,
+      td.start_date AS DestinationStartDate,
+      td.end_date AS DestinationEndDate,
+      t.trip_id AS TripId,
       b.buddy_id AS BuddyId,
-      u.user_id AS UserId,
-      u.name AS BuddyName,
+      u.user_id AS RequesterUserId,
+      u.name AS RequesterName,
       b.note AS BuddyNote,
       b.person_count AS PersonCount
     FROM trip t
@@ -912,7 +921,8 @@ BEGIN
     JOIN buddy b ON td.trip_destination_id = b.trip_destination_id
     JOIN user u ON b.user_id = u.user_id
     WHERE b.request_status = 'pending'
-      AND t.owner_id = p_user_id; # Example user 4
+      AND t.owner_id = p_user_id
+    ORDER BY td.start_date DESC ; # Example user 4
 END $$
 DELIMITER ;
 
@@ -944,3 +954,114 @@ BEGIN
     WHERE user_id = p_user_id;
 END $$
 DELIMITER ;
+
+# See trip destination info
+CREATE OR REPLACE VIEW V_TripDestinationInfo AS
+SELECT
+    td.trip_destination_id AS TripDestinationId,
+    td.start_date AS DestinationStartDate,
+    td.end_date AS DestinationEndDate,
+    td.description AS DestinationDescription,
+    td.is_archived AS DestinationIsArchived,
+    td.trip_id AS TripId,
+
+    t.max_buddies AS MaxBuddies,
+
+    d.destination_id AS DestinationId,
+    d.name AS DestinationName,
+    d.state AS DestinationState,
+    d.country AS DestinationCountry,
+    d.longitude AS Longitude,
+    d.latitude AS Latitude,
+
+    u_owner.user_id AS OwnerUserId,
+    u_owner.name AS OwnerName,
+
+    (
+        SELECT c.conversation_id
+        FROM conversation c
+        WHERE c.trip_destination_id = td.trip_destination_id
+          AND c.is_group = TRUE
+    ) AS GroupConversationId
+
+FROM
+    trip_destination td
+JOIN
+    trip t ON td.trip_id = t.trip_id
+JOIN
+    destination d ON td.destination_id = d.destination_id
+JOIN
+    user u_owner ON t.owner_id = u_owner.user_id;
+
+# See accepted buddies
+DROP VIEW IF EXISTS V_AcceptedBuddies;
+CREATE VIEW V_AcceptedBuddies AS
+SELECT
+    b.buddy_id AS BuddyId,
+    b.trip_destination_id AS TripDestinationId,
+    b.person_count AS PersonCount,
+    b.note AS BuddyNote,
+    u_buddy.user_id AS BuddyUserId,
+    u_buddy.name AS BuddyName
+FROM
+    buddy b
+JOIN
+    user u_buddy ON b.user_id = u_buddy.user_id
+WHERE
+    b.is_active = TRUE
+    AND b.request_status = 'accepted';
+
+# See pending requests
+DROP VIEW IF EXISTS V_PendingRequests;
+CREATE VIEW V_PendingRequests AS
+SELECT
+    b.buddy_id AS BuddyId,
+    b.trip_destination_id AS TripDestinationId,
+    b.person_count AS PersonCount,
+    b.note AS BuddyNote,
+    u_requester.user_id AS RequesterUserId,
+    u_requester.name AS RequesterName
+FROM
+    buddy b
+JOIN
+    user u_requester ON b.user_id = u_requester.user_id
+WHERE
+    b.request_status = 'pending';
+
+# --------------- SEE TRIP INFO
+CREATE OR REPLACE VIEW V_SimplifiedTripDest AS
+SELECT
+    td.trip_destination_id AS TripDestinationId,
+    td.trip_id AS TripId,
+    td.start_date AS DestinationStartDate,
+    td.end_date AS DestinationEndDate,
+    d.name AS DestinationName,
+    d.state AS DestinationState,
+    d.country AS DestinationCountry,
+    t.max_buddies AS MaxBuddies,
+    0 AS AcceptedBuddiesCount
+FROM
+    trip_destination td
+JOIN
+    destination d ON td.destination_id = d.destination_id
+JOIN
+    trip t ON td.trip_id = t.trip_id;
+
+CREATE OR REPLACE VIEW V_TripHeaderInfo AS
+SELECT
+    t.trip_id AS TripId,
+    t.trip_name AS TripName,
+    t.max_buddies AS MaxBuddies,
+    t.start_date AS TripStartDate,
+    t.end_date AS TripEndDate,
+    t.description AS TripDescription,
+    t.is_archived AS TripIsArchived,
+
+    u_owner.user_id AS OwnerUserId,
+    u_owner.name AS OwnerName
+FROM
+    trip t
+JOIN
+    user u_owner ON t.owner_id = u_owner.user_id;
+
+# --------------- CREATING A TRIP

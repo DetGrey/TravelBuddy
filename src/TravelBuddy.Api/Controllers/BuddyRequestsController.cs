@@ -42,7 +42,7 @@ namespace TravelBuddy.Api.Controllers
 
         [Authorize]
         [HttpGet("pending")]
-        [ProducesResponseType(typeof(IEnumerable<PendingBuddyRequestsDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<PendingBuddyRequestDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]

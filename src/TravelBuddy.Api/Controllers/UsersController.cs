@@ -114,6 +114,27 @@ namespace TravelBuddy.Api.Controllers
             Response.Cookies.Delete("access_token");
             return Ok("Logged out successfully.");
         }
+
+        [Authorize]
+        [HttpGet("{id}")]
+        [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> GetUser([FromRoute] int id)
+        {
+            if (!User.IsSelfOrAdmin(id))
+                return Forbid();
+        
+            var user = await _userService.GetUserByIdAsync(id);
+            
+            if (user == null)
+            {
+                return NoContent();
+            }
+
+            return Ok(user);
+        }
         
         [Authorize]
         [HttpDelete("{id}/delete-user")]

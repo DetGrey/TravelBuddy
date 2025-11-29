@@ -11,7 +11,6 @@ public interface IUserRepository
     Task AddAsync(User user);
     Task<bool> DeleteAsync(int userId, string passwordHash);
     Task UpdatePasswordAsync(int userId, string passwordHash);
-
-    // Method to get all User entities from the persistence store.
+    Task<User?> GetUserByIdAsync(int userId);
     Task<IEnumerable<User>> GetAllAsync();
 }

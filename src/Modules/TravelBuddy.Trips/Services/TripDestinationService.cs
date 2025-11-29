@@ -1,4 +1,5 @@
 using TravelBuddy.Trips.DTOs;
+using TravelBuddy.Trips.Models;
 
 namespace TravelBuddy.Trips
 {
@@ -16,6 +17,8 @@ namespace TravelBuddy.Trips
         );
 
         Task<IEnumerable<UserTripSummaryDto>> GetUserTripsAsync(int userId);
+        Task<TripDestinationInfoDto?> GetTripDestinationInfoAsync(int tripDestinationId);
+        Task<TripOverviewDto?> GetFullTripOverviewAsync(int tripId);
         Task<bool> IsTripOwnerAsync(int userId, int tripDestinationId);
         Task<(bool Success, string? ErrorMessage)> LeaveTripDestinationAsync(int userId, int tripDestinationId, int triggeredBy, string departureReason);
     }
@@ -71,8 +74,84 @@ namespace TravelBuddy.Trips
                 r.TripDestinationId,
                 r.DestinationName,
                 r.TripDescription,
+                r.StartDate,
+                r.EndDate,
+                r.IsArchived,
                 r.Role
             )).ToList();
+        }
+        public async Task<TripDestinationInfoDto?> GetTripDestinationInfoAsync(int tripDestinationId)
+        {
+            var tripDestinationRepository = GetRepo();
+            var result = await tripDestinationRepository.GetTripDestinationInfoAsync(tripDestinationId);
+
+            if (result == null)
+            {
+                return null;
+            }
+
+            return new TripDestinationInfoDto(
+                result.TripDestinationId,
+                result.DestinationStartDate,
+                result.DestinationEndDate,
+                result.DestinationDescription,
+                result.DestinationIsArchived,
+                result.TripId,
+                result.MaxBuddies,
+                result.DestinationId,
+                result.DestinationName,
+                result.DestinationState,
+                result.DestinationCountry,
+                result.Longitude,
+                result.Latitude,
+                result.OwnerUserId,
+                result.OwnerName,
+                result.GroupConversationId,
+                result.AcceptedBuddies.Select(b => new BuddyInfoDto(
+                    b.BuddyId,
+                    b.PersonCount,
+                    b.BuddyNote,
+                    b.BuddyUserId,
+                    b.BuddyName
+                )),
+                result.PendingRequests.Select(r => new BuddyRequestInfoDto(
+                    r.BuddyId,
+                    r.PersonCount,
+                    r.BuddyNote,
+                    r.RequesterUserId,
+                    r.RequesterName
+                ))
+            );
+        }
+        public async Task<TripOverviewDto?> GetFullTripOverviewAsync(int tripId)
+        {
+            var tripDestinationRepository = GetRepo();
+            var tripOverview = await tripDestinationRepository.GetFullTripOverviewAsync(tripId);
+            if (tripOverview == null)
+            {
+                return null;
+            }
+            return new TripOverviewDto(
+                tripOverview.TripId,
+                tripOverview.TripName,
+                tripOverview.TripStartDate,
+                tripOverview.TripEndDate,
+                tripOverview.MaxBuddies,
+                tripOverview.TripDescription,
+                tripOverview.OwnerUserId,
+                tripOverview.OwnerName,
+                tripOverview.Destinations.Select(d => new SimplifiedTripDestinationDto(
+                    d.TripDestinationId,
+                    d.TripId,
+                    d.DestinationStartDate,
+                    d.DestinationEndDate,
+                    d.DestinationName,
+                    d.DestinationState,
+                    d.DestinationCountry,
+                    d.MaxBuddies,
+                    d.AcceptedBuddiesCount
+                )).ToList()
+            );
         }
         public async Task<bool> IsTripOwnerAsync(int userId, int tripDestinationId)
         {

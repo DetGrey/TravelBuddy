@@ -175,6 +175,20 @@ builder.Services.AddControllers()
             new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
     });
 
+// Allow local dev frontend to access the API (used by the Vite dev server)
+// We allow http://localhost:5173 as the dev frontend origin and enable credentials
+// so cookies / auth flows can work when needed.
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("LocalDev", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173", "http://127.0.0.1:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 var app = builder.Build();
 
 // --- HTTP REQUEST PIPELINE CONFIGURATION ---
@@ -185,6 +199,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+// enable CORS for the dev frontend before authentication
+app.UseCors("LocalDev");
 
 app.UseHttpsRedirection();
 app.UseAuthentication();

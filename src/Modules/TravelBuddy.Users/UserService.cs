@@ -10,7 +10,7 @@ namespace TravelBuddy.Users
         Task<User?> AuthenticateAsync(string email, string password);
         Task<User?> RegisterAsync(RegisterRequestDto request);
         Task<bool> DeleteUser(int userId);
-
+        Task<UserDto?> GetUserByIdAsync(int userId);
         Task<bool> ChangePasswordAsync(PasswordChangeRequestDto request, string email, int userId);
 
         // Gets a list of all users from the database.
@@ -85,12 +85,22 @@ namespace TravelBuddy.Users
             if (!isValid) return false;
 
             var hashedPassword = PasswordHasher.HashPassword(request.NewPassword);
-
             await userRepository.UpdatePasswordAsync(userId, hashedPassword);
 
             return true;
         }
-
+        public async Task<UserDto?> GetUserByIdAsync(int userId)
+        {
+            var userRepository = GetRepo();
+            var user = await userRepository.GetUserByIdAsync(userId);
+            if (user == null) return null;
+            return new UserDto(
+                user.UserId,
+                user.Name,
+                user.Email,
+                user.Birthdate
+            );
+        }
         public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
         {
             var userRepository = GetRepo();

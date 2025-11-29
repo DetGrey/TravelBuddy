@@ -5,7 +5,7 @@ namespace TravelBuddy.Trips
     // INTERFACE
     public interface IBuddyService
     {
-        Task<IEnumerable<PendingBuddyRequestsDto>> GetPendingBuddyRequestsAsync(int userId);
+        Task<IEnumerable<PendingBuddyRequestDto>> GetPendingBuddyRequestsAsync(int userId);
         Task<bool> InsertBuddyRequestAsync(BuddyDto buddyDto);
         Task<bool> UpdateBuddyRequestAsync(UpdateBuddyRequestDto updateBuddyRequestDto);
     }
@@ -23,18 +23,21 @@ namespace TravelBuddy.Trips
         // Helper method to get the correct repository for the current request scope
         private IBuddyRepository GetRepo() => _tripRepositoryFactory.GetBuddyRepository();
 
-        public async Task<IEnumerable<PendingBuddyRequestsDto>> GetPendingBuddyRequestsAsync(int userId)
+        public async Task<IEnumerable<PendingBuddyRequestDto>> GetPendingBuddyRequestsAsync(int userId)
         {
             var buddyRepository = GetRepo();
 
             var results = await buddyRepository.GetPendingBuddyRequestsAsync(userId);
 
-            return results.Select(r => new PendingBuddyRequestsDto(
-                r.TripId,
+            return results.Select(r => new PendingBuddyRequestDto(
+                r.TripDestinationId,
                 r.DestinationName,
+                r.DestinationStartDate,
+                r.DestinationEndDate,
+                r.TripId,
                 r.BuddyId,
-                r.UserId,
-                r.BuddyName,
+                r.RequesterUserId,
+                r.RequesterName,
                 r.BuddyNote,
                 r.PersonCount
             )).ToList();
