@@ -3,8 +3,8 @@ namespace TravelBuddy.Trips.DTOs
     public record TripOverviewDto(
         int TripId,
         string TripName,
-        DateTime TripStartDate,
-        DateTime TripEndDate,
+        DateOnly TripStartDate,
+        DateOnly TripEndDate,
         int MaxBuddies,
         string TripDescription,
         int OwnerUserId,

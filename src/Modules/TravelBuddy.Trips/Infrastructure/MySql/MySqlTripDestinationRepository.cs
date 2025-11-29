@@ -22,8 +22,8 @@ public class MySqlTripDestinationRepository : ITripDestinationRepository
         int? partySize,
         string? q)
     {
-        var start = reqStart.HasValue ? reqStart.Value.ToDateTime(TimeOnly.MinValue) : (DateTime?)null;
-        var end = reqEnd.HasValue ? reqEnd.Value.ToDateTime(TimeOnly.MinValue) : (DateTime?)null;
+        var start = reqStart.HasValue ? reqStart.Value : (DateOnly?)null;
+        var end = reqEnd.HasValue ? reqEnd.Value : (DateOnly?)null;
         var countryParam = country ?? string.Empty;
         var stateParam = state ?? string.Empty;
         var nameParam = name ?? string.Empty;
@@ -45,11 +45,11 @@ public class MySqlTripDestinationRepository : ITripDestinationRepository
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<UserTripSummary>> GetUserTripsAsync(int userId)
+    public async Task<IEnumerable<BuddyTripSummary>> GetBuddyTripsAsync(int userId)
     {
-        return await _context.UserTripSummaries
+        return await _context.BuddyTripSummaries
             .FromSqlInterpolated($@"
-                CALL get_user_trips({userId})") // FromSqlInterpolated() automatically prevents SQL injections
+                CALL get_buddy_trips({userId})") // FromSqlInterpolated() automatically prevents SQL injections
             .AsNoTracking()
             .ToListAsync();
     }
@@ -155,6 +155,77 @@ public class MySqlTripDestinationRepository : ITripDestinationRepository
         };
 
         return tripOverview;
+    }
+    public async Task<List<TripOverview>> GetOwnedTripOverviewsAsync(int userId)
+    {
+        var tripHeaders = await _context.TripHeaderInfo
+            .FromSqlInterpolated($"SELECT * FROM V_TripHeaderInfo WHERE OwnerUserId = {userId}")
+            .AsNoTracking()
+            .ToListAsync();
+
+        if (!tripHeaders.Any()) return new List<TripOverview>();
+
+        // Fetch destinations for all trips in one go
+        var destinationsLookup = await GetTripsDestinationsWithCountsAsync(tripHeaders.Select(t => t.TripId).ToList());
+
+        var tripOverviews = tripHeaders.Select(tripHeader => new TripOverview
+        {
+            TripId = tripHeader.TripId,
+            TripName = tripHeader.TripName,
+            TripStartDate = tripHeader.TripStartDate,
+            TripEndDate = tripHeader.TripEndDate,
+            MaxBuddies = tripHeader.MaxBuddies,
+            TripDescription = tripHeader.TripDescription,
+            OwnerUserId = tripHeader.OwnerUserId,
+            OwnerName = tripHeader.OwnerName,
+            Destinations = destinationsLookup.TryGetValue(tripHeader.TripId, out var destinations)
+                ? destinations
+                : new List<SimplifiedTripDestination>()
+        }).ToList();
+
+        return tripOverviews;
+    }
+    private async Task<Dictionary<int, List<SimplifiedTripDestination>>> GetTripsDestinationsWithCountsAsync(List<int> tripIds)
+    {
+        // Fetch all destinations for the given trips in one query
+        var destinations = await _context.SimplifiedTripDestination
+            .Where(d => tripIds.Contains(d.TripId))
+            .AsNoTracking()
+            .ToListAsync();
+
+        if (!destinations.Any())
+            return new Dictionary<int, List<SimplifiedTripDestination>>();
+
+        // Collect all destination IDs across trips
+        var destinationIds = destinations.Select(d => d.TripDestinationId).ToList();
+
+        // Fetch buddy counts for all destinations in one query
+        var buddyCounts = await _context.Buddies
+            .Where(b => destinationIds.Contains(b.TripDestinationId) &&
+                        b.RequestStatus == "accepted" &&
+                        b.IsActive == true)
+            .GroupBy(b => b.TripDestinationId)
+            .Select(g => new
+            {
+                TripDestinationId = g.Key,
+                AcceptedCount = g.Sum(b => b.PersonCount)
+            })
+            .ToListAsync();
+
+        var countsDictionary = buddyCounts.ToDictionary(x => x.TripDestinationId, x => x.AcceptedCount);
+
+        // Enrich each destination with its buddy count
+        foreach (var dest in destinations)
+        {
+            dest.AcceptedBuddiesCount = countsDictionary.TryGetValue(dest.TripDestinationId, out var count) 
+                ? (count ?? 0) 
+                : 0;
+        }
+
+        // Group destinations back by TripId
+        return destinations
+            .GroupBy(d => d.TripId)
+            .ToDictionary(g => g.Key, g => g.ToList());
     }
     public async Task<int?> GetTripOwnerAsync(int tripDestinationId)
     {

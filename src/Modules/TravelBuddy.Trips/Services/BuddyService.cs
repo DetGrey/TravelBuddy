@@ -6,8 +6,8 @@ namespace TravelBuddy.Trips
     public interface IBuddyService
     {
         Task<IEnumerable<PendingBuddyRequestDto>> GetPendingBuddyRequestsAsync(int userId);
-        Task<bool> InsertBuddyRequestAsync(BuddyDto buddyDto);
-        Task<bool> UpdateBuddyRequestAsync(UpdateBuddyRequestDto updateBuddyRequestDto);
+        Task<(bool Success, string? ErrorMessage)> InsertBuddyRequestAsync(BuddyDto buddyDto);
+        Task<(bool Success, string? ErrorMessage)> UpdateBuddyRequestAsync(UpdateBuddyRequestDto updateBuddyRequestDto);
     }
 
     // CLASS
@@ -43,13 +43,13 @@ namespace TravelBuddy.Trips
             )).ToList();
         }
 
-        public async Task<bool> InsertBuddyRequestAsync(BuddyDto buddyDto)
+        public async Task<(bool Success, string? ErrorMessage)> InsertBuddyRequestAsync(BuddyDto buddyDto)
         {
             var buddyRepository = GetRepo();
             return await buddyRepository.InsertBuddyRequestAsync(buddyDto);
         }
 
-        public async Task<bool> UpdateBuddyRequestAsync(UpdateBuddyRequestDto updateBuddyRequestDto)
+        public async Task<(bool Success, string? ErrorMessage)> UpdateBuddyRequestAsync(UpdateBuddyRequestDto updateBuddyRequestDto)
         {
             var buddyRepository = GetRepo();
             return await buddyRepository.UpdateBuddyRequestAsync(updateBuddyRequestDto);

@@ -1,6 +1,6 @@
 namespace TravelBuddy.Trips.Models
 {
-    public class UserTripSummary
+    public class BuddyTripSummary
     {
         public int TripId { get; set; }
         public int TripDestinationId { get; set; }
@@ -9,6 +9,5 @@ namespace TravelBuddy.Trips.Models
         public DateOnly StartDate { get; set; }
         public DateOnly EndDate { get; set; }
         public bool IsArchived { get; set; }
-        public string Role { get; set; } = string.Empty; // "owner" or "buddy"
     }
 }

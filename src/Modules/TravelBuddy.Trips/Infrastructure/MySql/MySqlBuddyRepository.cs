@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using MySqlConnector;
 using TravelBuddy.Trips.Models;
 using TravelBuddy.Trips.Infrastructure;
 using TravelBuddy.Trips.DTOs;
@@ -23,25 +24,39 @@ public class MySqlBuddyRepository : IBuddyRepository
             .ToListAsync();
     }
 
-    public async Task<bool> InsertBuddyRequestAsync(BuddyDto buddyDto)
+    public async Task<(bool Success, string? ErrorMessage)> InsertBuddyRequestAsync(BuddyDto buddyDto)
     {
         try
         {
-            await _context.Database.ExecuteSqlInterpolatedAsync($@"CALL request_to_join_trip_destination(
-                {buddyDto.UserId}, 
-                {buddyDto.TripDestinationId},
-                {buddyDto.PersonCount},
-                {buddyDto.Note}
-            )");
+            var noteParam = new MySqlParameter { 
+                MySqlDbType = MySqlDbType.VarChar, 
+                Size = 255, 
+                Value = (object?)buddyDto.Note ?? DBNull.Value 
+            };
 
-            return true;
+            await _context.Database.ExecuteSqlRawAsync(
+                "CALL request_to_join_trip_destination({0}, {1}, {2}, {3})",
+                buddyDto.UserId,
+                buddyDto.TripDestinationId,
+                buddyDto.PersonCount,
+                noteParam
+            );
+
+            return (true, null);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return false;
+            // If it's a MySqlException, get the real message
+            if (ex is MySqlException mysqlEx)
+            {
+                return (false, "Error: " + mysqlEx.Message);
+            }
+
+            // Otherwise fall back to generic
+            return (false, "Error: " + ex.Message);
         }
     }
-    public async Task<bool> UpdateBuddyRequestAsync(UpdateBuddyRequestDto updateBuddyRequestDto)
+    public async Task<(bool Success, string? ErrorMessage)> UpdateBuddyRequestAsync(UpdateBuddyRequestDto updateBuddyRequestDto)
     {
         try
         {
@@ -52,11 +67,11 @@ public class MySqlBuddyRepository : IBuddyRepository
                     {updateBuddyRequestDto.NewStatus.ToString().ToLower()}
                 )");
 
-            return true;
+            return (true, null);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return false;
+             return (false, "Error: " + ex.Message); 
         }
     }
 }

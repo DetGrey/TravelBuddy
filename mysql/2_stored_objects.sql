@@ -99,7 +99,8 @@ BEGIN
 
     SELECT SUM(b.person_count) INTO v_accepted_buddies
     FROM buddy b
-    WHERE b.trip_destination_id = f_trip_destination_id;
+    WHERE b.trip_destination_id = f_trip_destination_id
+        AND b.request_status = 'accepted';
 
     SET v_remaining_capacity = COALESCE(v_max_buddies, 0) - COALESCE(v_accepted_buddies, 0);
 
@@ -209,6 +210,30 @@ BEGIN
            td.end_date AS EndDate,
            td.is_archived AS IsArchived,
            'buddy' AS Role
+    FROM trip t
+    JOIN trip_destination td ON td.trip_id = t.trip_id
+    JOIN destination d ON d.destination_id = td.destination_id
+    JOIN buddy b ON b.trip_destination_id = td.trip_destination_id
+    WHERE get_user_id_from_buddy(b.buddy_id) = in_user_id
+    AND b.is_active = TRUE
+
+    ORDER BY StartDate;
+END $$
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS get_buddy_trips;
+DELIMITER $$
+CREATE PROCEDURE get_buddy_trips (
+    IN in_user_id INT
+)
+BEGIN
+    SELECT t.trip_id AS TripId,
+           td.trip_destination_id  AS TripDestinationId,
+           d.name AS DestinationName,
+           t.description AS TripDescription,
+           td.start_date AS StartDate,
+           td.end_date AS EndDate,
+           td.is_archived AS IsArchived
     FROM trip t
     JOIN trip_destination td ON td.trip_id = t.trip_id
     JOIN destination d ON d.destination_id = td.destination_id
@@ -1046,6 +1071,10 @@ JOIN
     destination d ON td.destination_id = d.destination_id
 JOIN
     trip t ON td.trip_id = t.trip_id;
+
+SELECT *
+FROM V_SimplifiedTripDest
+WHERE TripId = 51;
 
 CREATE OR REPLACE VIEW V_TripHeaderInfo AS
 SELECT

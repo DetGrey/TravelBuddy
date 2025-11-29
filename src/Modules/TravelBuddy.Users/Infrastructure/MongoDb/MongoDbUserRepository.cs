@@ -22,7 +22,7 @@ namespace TravelBuddy.Users
         public string Name { get; set; } = null!;
         public string Email { get; set; } = null!;
         public string PasswordHash { get; set; } = null!;
-        public DateTime? Birthdate { get; set; }
+        public DateOnly? Birthdate { get; set; }
         public bool IsDeleted { get; set; }
         public string Role { get; set; } = null!;
     }
@@ -50,7 +50,7 @@ namespace TravelBuddy.Users
                 Email = doc.Email,
                 PasswordHash = doc.PasswordHash,
                 Birthdate = doc.Birthdate.HasValue
-                    ? DateOnly.FromDateTime(doc.Birthdate.Value)
+                    ? doc.Birthdate.Value
                     : default,
                 IsDeleted = doc.IsDeleted,
                 Role = doc.Role
@@ -94,7 +94,7 @@ namespace TravelBuddy.Users
         public async Task<User?> GetUserByIdAsync(int userId)
         {
             // TODO: implement
-            return null;
+            return await Task.FromResult<User?>(null);
         }
 
         // --------------------------------------------------------
@@ -115,7 +115,7 @@ namespace TravelBuddy.Users
                 Email = user.Email,
                 PasswordHash = user.PasswordHash,
                 Birthdate = user.Birthdate != default
-                    ? user.Birthdate.ToDateTime(TimeOnly.MinValue)
+                    ? user.Birthdate
                     : null,
                 IsDeleted = user.IsDeleted,
                 Role = user.Role

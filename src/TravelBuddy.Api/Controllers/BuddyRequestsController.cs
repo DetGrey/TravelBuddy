@@ -34,8 +34,9 @@ namespace TravelBuddy.Api.Controllers
 
             dto.UserId = userId;
 
-            var success = await _buddyService.InsertBuddyRequestAsync(dto);
-            if (!success) return BadRequest("Buddy request failed");
+            var (success, errorMessage) = await _buddyService.InsertBuddyRequestAsync(dto);
+            
+            if (!success) return BadRequest(errorMessage ?? "Buddy request failed");
 
             return Created();
         }
@@ -69,12 +70,12 @@ namespace TravelBuddy.Api.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            if (!User.IsSelfOrAdmin(updateBuddyRequestDto.UserId)) return Forbid();
-
             updateBuddyRequestDto.UserId = userId;
 
-            var success = await _buddyService.UpdateBuddyRequestAsync(updateBuddyRequestDto);
-            if (!success) return BadRequest("Updating buddy request status failed");
+            if (!User.IsSelfOrAdmin(updateBuddyRequestDto.UserId)) return Forbid();
+
+            var (success, errorMessage) = await _buddyService.UpdateBuddyRequestAsync(updateBuddyRequestDto);
+            if (!success) return BadRequest(errorMessage ?? "Updating buddy request status failed");
 
             return Ok($"Buddy with buddy id {updateBuddyRequestDto.BuddyId} has been {updateBuddyRequestDto.NewStatus}");
         }

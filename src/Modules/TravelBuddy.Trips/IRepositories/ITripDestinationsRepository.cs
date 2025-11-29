@@ -15,9 +15,10 @@ public interface ITripDestinationRepository
         string? q
     );
 
-    Task<IEnumerable<UserTripSummary>> GetUserTripsAsync(int userId);
+    Task<IEnumerable<BuddyTripSummary>> GetBuddyTripsAsync(int userId);
     Task<TripDestinationInfo?> GetTripDestinationInfoAsync(int tripDestinationId);
     Task<TripOverview?> GetFullTripOverviewAsync(int tripId);
+    Task<List<TripOverview>> GetOwnedTripOverviewsAsync(int userId);
     Task<int?> GetTripOwnerAsync(int tripDestinationId);
     Task<(bool Success, string? ErrorMessage)> LeaveTripDestinationAsync(int userId, int tripDestinationId, int triggeredBy, string departureReason);
 }

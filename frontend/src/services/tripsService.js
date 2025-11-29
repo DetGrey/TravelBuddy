@@ -41,19 +41,48 @@ const tripsService = {
     },
 
     // Get the trips for a specific user: GET /api/users/{userId}/trips/trip-destinations
-    async getMyTrips(userId) {
-      const res = await api.get(`/users/${userId}/trips/trip-destinations`);
-      console.log("getMyTrips: ", res.data)
+    async getBuddyTrips(userId) {
+      const res = await api.get(`/users/${userId}/trips/trip-destinations/buddy`);
+      console.log("getBuddyTrips: ", res.data)
+      return res.data;
+    },
+    async getOwnedTrips(userId) {
+      const res = await api.get(`/users/${userId}/trips/trip-destinations/owned`);
+      console.log("getOwnedTrips: ", res.data)
       return res.data;
     },
 
     // Request to join for a specific user: POST /api/users/{userId}/buddy-requests
     // Body should be a BuddyDto (backend will set the UserId from the route).
-    async requestJoin(userId, tripDestinationId, payload = {}) {
-      const body = { tripDestinationId, ...payload };
-      const res = await api.post(`/users/${userId}/buddy-requests`, body);
-      console.log("requestJoin: ", res.data)
-      return res.data;
+    async requestJoin(userId, tripDestinationId, personCount, note) {
+        // 1. Construct the BuddyDto body structure
+        const body = { 
+            userId: userId,
+            tripDestinationId: tripDestinationId,
+            personCount: personCount,
+            note: note.length > 0 ? note : null
+        };
+        console.log("requestJoin body: ", body);
+        // 2. Make the POST request to the correct endpoint path
+        try {
+          const res = await api.post(`/users/${userId}/buddy-requests`, body);
+          console.log("requestJoin status:", res.status);
+          return res.status === 201;
+        } catch (error) {
+          // Axios error shape: error.response.data contains your server's message
+          const status = error.response?.status;
+          const data = error.response?.data;
+
+          console.error("requestJoin failed:", {
+            status,
+            data,
+            message: error.message,
+          });
+
+          // Return false or rethrow, depending on your flow
+          return false;
+        }
+
     },
 
     // Leave trip or remove buddy. Route: DELETE /api/users/{userId}/trips/trip-destinations/{tripDestinationId}/leave
@@ -66,20 +95,29 @@ const tripsService = {
     // Accept/reject map to: POST /api/users/{userId}/buddy-requests/update
     // Body: { userId, buddyId, newStatus }
     async acceptRequest(userId, buddyId) {
-      const res = await api.post(`/users/${userId}/buddy-requests/update`, {
-        userId,
-        buddyId,
-        newStatus: 'Accepted'
-      });
-      console.log("acceptRequest: ", res.data)
-      return res.data;
-    },
+      console.log("acceptRequest called with userId:", userId, "buddyId:", buddyId);
+      try {
+        const res = await api.post(`/users/${userId}/buddy-requests/update`, {
+          buddyId,
+          newStatus: 'accepted'
+        });
+        console.log("acceptRequest: ", res.data)
+        return res.data;
+
+      } catch (error) {
+        const status = error.response?.status;
+        const data = error.response?.data;
+
+        console.error("acceptRequest failed with status:", status, "data:", data);
+        return false;
+      }
+  },
 
     async rejectRequest(userId, buddyId) {
+      console.log("rejectRequest called with userId:", userId, "buddyId:", buddyId);
       const res = await api.post(`/users/${userId}/buddy-requests/update`, {
-        userId,
         buddyId,
-        newStatus: 'Rejected'
+        newStatus: 'rejected'
       });
       console.log("rejectRequest: ", res.data)
       return res.data;

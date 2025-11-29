@@ -8,6 +8,6 @@ namespace TravelBuddy.Trips;
 public interface IBuddyRepository
 {
     Task<IEnumerable<PendingBuddyRequest>> GetPendingBuddyRequestsAsync(int userId);
-    Task<bool> InsertBuddyRequestAsync(BuddyDto buddyDto);
-    Task<bool> UpdateBuddyRequestAsync(UpdateBuddyRequestDto updateBuddyRequestDto);
+    Task<(bool Success, string? ErrorMessage)> InsertBuddyRequestAsync(BuddyDto buddyDto);
+    Task<(bool Success, string? ErrorMessage)> UpdateBuddyRequestAsync(UpdateBuddyRequestDto updateBuddyRequestDto);
 }

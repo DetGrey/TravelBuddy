@@ -3,25 +3,11 @@ show tables;
 
 SELECT *
 FROM buddy
-JOIN travel_buddy.user u on u.user_id = buddy.user_id
-WHERE u.user_id = 1;
+WHERE trip_destination_id = 78;
 
 SELECT *
 FROM conversation_participant
 WHERE conversation_id = 9;
-
-# td id: 28, 23, 21, 19
-SELECT trip_id
-FROM trip_destination
-WHERE trip_destination_id = 21;
-# trip id: 13
-SELECT owner_id
-FROM trip
-WHERE trip_id = 10;
-# owner 73
-
-CALL remove_buddy_from_trip_destination(1, 129, 1, 'trying');
-CALL get_user_trips(1);
 
 
 DELETE from buddy where buddy_id = 431;

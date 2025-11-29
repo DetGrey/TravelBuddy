@@ -27,10 +27,10 @@ public class Neo4jTripDestinationRepository : ITripDestinationRepository
         return await Task.FromResult<IEnumerable<TripDestinationSearchResult>>(new List<TripDestinationSearchResult>());
     }
 
-    public async Task<IEnumerable<UserTripSummary>> GetUserTripsAsync(int userId)
+    public async Task<IEnumerable<BuddyTripSummary>> GetBuddyTripsAsync(int userId)
     {
         // TODO Placeholder: Return an empty list of user trip summaries
-        return await Task.FromResult<IEnumerable<UserTripSummary>>(new List<UserTripSummary>());
+        return await Task.FromResult<IEnumerable<BuddyTripSummary>>(new List<BuddyTripSummary>());
     }
 
     public async Task<TripDestinationInfo?> GetTripDestinationInfoAsync(int tripDestinationId)
@@ -42,6 +42,11 @@ public class Neo4jTripDestinationRepository : ITripDestinationRepository
     {
         // TODO Placeholder: Return null, indicating no trip overview found
         return await Task.FromResult<TripOverview?>(null);
+    }
+    public async Task<List<TripOverview>> GetOwnedTripOverviewsAsync(int userId)
+    {
+        // TODO Placeholder: Return an empty list of trip overviews
+        return await Task.FromResult<List<TripOverview>>(new List<TripOverview>());
     }
 
     public async Task<int?> GetTripOwnerAsync(int tripDestinationId)

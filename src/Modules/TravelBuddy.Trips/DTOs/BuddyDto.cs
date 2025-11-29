@@ -10,7 +10,6 @@ namespace TravelBuddy.Trips.DTOs
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "PersonCount must be at least 1")]
         public int PersonCount { get; set; }
-        [Required]
         [MaxLength(255)]
         public string? Note { get; set; }
     }

@@ -28,8 +28,8 @@ namespace TravelBuddy.Trips
     {
         public int TripDestinationId { get; set; }
         public int DestinationId { get; set; }
-        public DateTime StartDate { get; set; }   // stored as DateTime in Mongo
-        public DateTime EndDate { get; set; }
+        public DateOnly StartDate { get; set; }   // stored as DateOnly in Mongo
+        public DateOnly EndDate { get; set; }
         public int SequenceNumber { get; set; }
         public string? Description { get; set; }
         public bool? IsArchived { get; set; }
@@ -43,8 +43,8 @@ namespace TravelBuddy.Trips
         public int TripId { get; set; }
         public int? OwnerId { get; set; }
         public int? MaxBuddies { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
+        public DateOnly StartDate { get; set; }
+        public DateOnly EndDate { get; set; }
         public string? Description { get; set; }
         public bool? IsArchived { get; set; }
 
@@ -124,8 +124,8 @@ namespace TravelBuddy.Trips
                     if (!destMap.TryGetValue(td.DestinationId, out var destDoc))
                         continue;
 
-                    var destStart = DateOnly.FromDateTime(td.StartDate);
-                    var destEnd = DateOnly.FromDateTime(td.EndDate);
+                    var destStart = td.StartDate;
+                    var destEnd = td.EndDate;
 
                     // --- date overlap filter ---
                     if (reqStart.HasValue && destEnd < reqStart.Value)
@@ -195,10 +195,10 @@ namespace TravelBuddy.Trips
         // ---------------------------------------------------------
         // Get trips that a user owns or is buddy on
         // ---------------------------------------------------------
-        public async Task<IEnumerable<UserTripSummary>> GetUserTripsAsync(int userId)
+        public async Task<IEnumerable<BuddyTripSummary>> GetBuddyTripsAsync(int userId)
         {
             var (trips, destMap) = await LoadTripsAndDestinationsAsync();
-            var summaries = new List<UserTripSummary>();
+            var summaries = new List<BuddyTripSummary>();
 
             foreach (var trip in trips)
             {
@@ -207,29 +207,18 @@ namespace TravelBuddy.Trips
                     if (!destMap.TryGetValue(td.DestinationId, out var destDoc))
                         continue;
 
-                    string? role = null;
-
-                    if (trip.OwnerId == userId)
-                    {
-                        role = "owner";
-                    }
-                    else if (td.Buddies.Any(b =>
-                        b.UserId == userId &&
-                        string.Equals(b.RequestStatus, "accepted", StringComparison.OrdinalIgnoreCase)))
-                    {
-                        role = "buddy";
-                    }
-
-                    if (role == null)
+                    if (!td.Buddies.Any(b =>
+                            b.UserId == userId &&
+                            string.Equals(b.RequestStatus, "accepted", StringComparison.OrdinalIgnoreCase)
+                        ))
                         continue;
 
-                    summaries.Add(new UserTripSummary
+                    summaries.Add(new BuddyTripSummary
                     {
                         TripId = trip.TripId,
                         TripDestinationId = td.TripDestinationId,
                         DestinationName = destDoc.Name,
-                        TripDescription = trip.Description ?? string.Empty,
-                        Role = role
+                        TripDescription = trip.Description ?? string.Empty
                     });
                 }
             }
@@ -243,7 +232,7 @@ namespace TravelBuddy.Trips
         public async Task<TripDestinationInfo?> GetTripDestinationInfoAsync(int tripDestinationId)
         {
             // TODO implement
-            return null;
+            return await Task.FromResult<TripDestinationInfo?>(null);
         }
 
         // ---------------------------------------------------------
@@ -252,7 +241,16 @@ namespace TravelBuddy.Trips
         public async Task<TripOverview?> GetFullTripOverviewAsync(int tripId)
         {
             // TODO implement
-            return null;
+            return await Task.FromResult<TripOverview?>(null);
+        }
+
+        // ---------------------------------------------------------
+        // Get all trip overviews owned by a user
+        // ---------------------------------------------------------
+        public async Task<List<TripOverview>> GetOwnedTripOverviewsAsync(int userId)
+        {
+            // TODO implement
+            return await Task.FromResult(new List<TripOverview>());
         }
 
         // ---------------------------------------------------------

@@ -28,7 +28,7 @@ public partial class TripsDbContext : DbContext
 
     public DbSet<TripDestinationSearchResult> TripDestinationSearchResults { get; set; }
 
-    public DbSet<UserTripSummary> UserTripSummaries { get; set; }
+    public DbSet<BuddyTripSummary> BuddyTripSummaries { get; set; }
 
     public DbSet<PendingBuddyRequest> PendingBuddyRequests { get; set; }
 
@@ -278,14 +278,16 @@ public partial class TripsDbContext : DbContext
 
         modelBuilder.Entity<TripDestinationSearchResult>().HasNoKey();
 
-        modelBuilder.Entity<UserTripSummary>().HasNoKey();
+        modelBuilder.Entity<BuddyTripSummary>().HasNoKey();
 
         modelBuilder.Entity<PendingBuddyRequest>().HasNoKey();
 
         modelBuilder.Entity<TripDestinationInfo>().HasNoKey();
         modelBuilder.Entity<BuddyInfo>().HasNoKey();
         modelBuilder.Entity<BuddyRequestInfo>().HasNoKey();
-        modelBuilder.Entity<SimplifiedTripDestination>().HasNoKey();
+        modelBuilder.Entity<SimplifiedTripDestination>()
+            .HasNoKey()
+            .ToView("V_SimplifiedTripDest");
         modelBuilder.Entity<TripOverview>().HasNoKey();
         modelBuilder.Entity<TripHeaderInfo>().HasNoKey();
 

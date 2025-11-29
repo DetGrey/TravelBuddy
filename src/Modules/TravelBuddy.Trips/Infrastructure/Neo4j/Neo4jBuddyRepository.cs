@@ -21,15 +21,15 @@ public class Neo4jBuddyRepository : IBuddyRepository
         return await Task.FromResult<IEnumerable<PendingBuddyRequest>>(new List<PendingBuddyRequest>());
     }
 
-    public async Task<bool> InsertBuddyRequestAsync(BuddyDto buddyDto)
+    public async Task<(bool Success, string? ErrorMessage)> InsertBuddyRequestAsync(BuddyDto buddyDto)
     {
         // TODO Placeholder: Return true to simulate a successful insertion
-        return await Task.FromResult(true);
+        return await Task.FromResult<(bool, string?)>((true, null));
     }
 
-    public async Task<bool> UpdateBuddyRequestAsync(UpdateBuddyRequestDto updateBuddyRequestDto)
+    public async Task<(bool Success, string? ErrorMessage)> UpdateBuddyRequestAsync(UpdateBuddyRequestDto updateBuddyRequestDto)
     {
         // TODO Placeholder: Return false to simulate a failed or neutral update (can be true if needed)
-        return await Task.FromResult(false);
+        return await Task.FromResult<(bool, string?)>((true, null));
     }
 }

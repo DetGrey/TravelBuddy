@@ -3,8 +3,8 @@ namespace TravelBuddy.Trips.DTOs
     public record PendingBuddyRequestDto(
         int TripDestinationId,
         string DestinationName,
-        DateTime DestinationStartDate,
-        DateTime DestinationEndDate,
+        DateOnly DestinationStartDate,
+        DateOnly DestinationEndDate,
         int TripId,
         int BuddyId,
         int RequesterUserId,

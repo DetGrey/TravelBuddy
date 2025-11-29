@@ -39,16 +39,31 @@ namespace TravelBuddy.Api.Controllers
         }
 
         [Authorize]
-        [HttpGet("trip-destinations")]
-        [ProducesResponseType(typeof(IEnumerable<UserTripSummaryDto>), StatusCodes.Status200OK)]
+        [HttpGet("trip-destinations/buddy")]
+        [ProducesResponseType(typeof(IEnumerable<BuddyTripSummaryDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> GetUserTrips([FromRoute] int userId)
+        public async Task<IActionResult> GetBuddyTrips([FromRoute] int userId)
         {
             if (!User.IsSelfOrAdmin(userId)) return Forbid();
 
-            var tripDestinations = await _tripDestinationService.GetUserTripsAsync(userId);
+            var tripDestinations = await _tripDestinationService.GetBuddyTripsAsync(userId);
+            if (!tripDestinations.Any()) return NoContent();
+
+            return Ok(tripDestinations);
+        }
+        [Authorize]
+        [HttpGet("trip-destinations/owned")]
+        [ProducesResponseType(typeof(IEnumerable<TripOverviewDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> GetOwnedTrips([FromRoute] int userId)
+        {
+            if (!User.IsSelfOrAdmin(userId)) return Forbid();
+
+            var tripDestinations = await _tripDestinationService.GetOwnedTripOverviewsAsync(userId);
             if (!tripDestinations.Any()) return NoContent();
 
             return Ok(tripDestinations);

@@ -117,8 +117,8 @@ namespace TravelBuddy.Trips
                             TripId = trip.TripId,
                             DestinationName = destDoc.Name,
                             BuddyId = b.BuddyId,
-                            UserId = b.UserId,
-                            BuddyName = uDoc?.Name ?? string.Empty,
+                            RequesterUserId = b.UserId,
+                            RequesterName = uDoc?.Name ?? string.Empty,
                             BuddyNote = b.Note,
                             PersonCount = b.PersonCount ?? 1
                         });
@@ -132,7 +132,7 @@ namespace TravelBuddy.Trips
         // ---------------------------------------------------------
         // User sends a new buddy request
         // ---------------------------------------------------------
-        public async Task<bool> InsertBuddyRequestAsync(BuddyDto buddyDto)
+        public async Task<(bool Success, string? ErrorMessage)> InsertBuddyRequestAsync(BuddyDto buddyDto)
         {
             // Find the trip containing this TripDestination
             var filter = Builders<TripDocument>.Filter
@@ -140,16 +140,16 @@ namespace TravelBuddy.Trips
 
             var trip = await _tripsCollection.Find(filter).FirstOrDefaultAsync();
             if (trip == null)
-                return false;
+                return (false, "Trip destination not found");
 
             var td = trip.Destinations.FirstOrDefault(d => d.TripDestinationId == buddyDto.TripDestinationId);
             if (td == null)
-                return false;
+                return (false, "Trip destination not found");
 
             // Check if user already has a request for this destination
             var existing = td.Buddies.FirstOrDefault(b => b.UserId == buddyDto.UserId);
             if (existing != null)
-                return false; // already requested / member
+                return (false, "Buddy request already exists or user is already a member");
 
             var newBuddyId = await GetNextBuddyIdAsync();
 
@@ -170,13 +170,13 @@ namespace TravelBuddy.Trips
                 t => t.TripId == trip.TripId,
                 trip);
 
-            return replaceResult.IsAcknowledged && replaceResult.ModifiedCount > 0;
+            return (replaceResult.IsAcknowledged && replaceResult.ModifiedCount > 0, null);
         }
 
         // ---------------------------------------------------------
         // Owner accepts/rejects a buddy request
         // ---------------------------------------------------------
-        public async Task<bool> UpdateBuddyRequestAsync(UpdateBuddyRequestDto updateBuddyRequestDto)
+        public async Task<(bool Success, string? ErrorMessage)> UpdateBuddyRequestAsync(UpdateBuddyRequestDto updateBuddyRequestDto)
         {
             // Load all trips (small dataset assumption)
             var trips = await LoadTripsAsync();
@@ -202,11 +202,11 @@ namespace TravelBuddy.Trips
             }
 
             if (tripWithBuddy == null || tdWithBuddy == null || buddy == null)
-                return false;
+                return (false, "Buddy request not found");
 
             // Optional: ensure the caller is the owner of this trip
             if (tripWithBuddy.OwnerId != updateBuddyRequestDto.UserId)
-                return false;
+                return (false, "Unauthorized: not the owner of the trip");
 
             var newStatus = updateBuddyRequestDto.NewStatus switch
             {
@@ -231,7 +231,7 @@ namespace TravelBuddy.Trips
                 t => t.TripId == tripWithBuddy.TripId,
                 tripWithBuddy);
 
-            return replaceResult.IsAcknowledged && replaceResult.ModifiedCount > 0;
+            return (replaceResult.IsAcknowledged && replaceResult.ModifiedCount > 0, null);
         }
     }
 }
