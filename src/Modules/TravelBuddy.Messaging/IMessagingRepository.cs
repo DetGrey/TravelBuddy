@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 namespace TravelBuddy.Messaging;
 public interface IMessagingRepository
 {
-    Task<IEnumerable<Conversation>> GetConversationsForUserAsync(int userId);
+    Task<IEnumerable<ConversationOverview>> GetConversationsForUserAsync(int userId);
 
     Task<Conversation?> GetConversationParticipantAsync(int conversationId);
 

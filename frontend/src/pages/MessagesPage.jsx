@@ -56,37 +56,44 @@ const MessagesPage = () => {
             )}
             
             {conversations.map(c => {
-                // Determine display name: If not a group, try to find the other participant's name
-                const otherParticipant = c.participants?.find(p => p.id !== user.id);
-                const displayName = c.isGroup 
-                    ? c.name || `Group Chat (${c.participantCount})` 
-                    : otherParticipant?.name || `Conversation (${c.participantCount})`;
+              const displayName = c.isGroup
+                  ? c.conversationName || `Group Chat (${c.participantCount})`
+                  : c.conversationName || `Conversation (${c.participantCount})`;
 
-                // Determine last message snippet and sender
-                const lastMessage = c.messages?.length > 0 ? c.messages[c.messages.length - 1] : null;
-                const lastMessageSnippet = lastMessage ? `${lastMessage.senderName}: ${lastMessage.content.substring(0, 50)}...` : 'No messages yet';
+              return (
+                  <Link
+                      key={c.conversationId}
+                      to={`/messages/${c.conversationId}`}
+                      className="list-group-item list-group-item-action py-3"
+                  >
+                      <div className="d-flex w-100 justify-content-between">
+                          {/* Main Title and Archived Status */}
+                          <h5 className="mb-1 fw-bold">
+                              {displayName}
+                              <span className="ms-2">({c.participantCount})</span>
+                              {c.isArchived && (
+                                  <span className="badge bg-secondary ms-2">Archived</span>
+                              )}
+                          </h5>
+                          <small className="text-muted">
+                              {formatTime(c.lastMessageAt || c.createdAt)}
+                          </small>
+                      </div>
 
-                return (
-                    <Link 
-                        key={c.id} 
-                        to={`/messages/${c.id}`} 
-                        className="list-group-item list-group-item-action py-3"
-                    >
-                        <div className="d-flex w-100 justify-content-between">
-                            {/* Main Title and Unread Status */}
-                            <h5 className="mb-1 fw-bold">{displayName}</h5>
-                            <small className="text-muted">{formatTime(c.lastMessageSentAt || c.createdAt)}</small>
-                        </div>
-                        
-                        {/* Participants/Status and Last Message Snippet */}
-                        <div className="d-flex w-100 justify-content-between">
-                            <p className="mb-1 text-muted small">{lastMessageSnippet}</p>
-                            {/* Example badge for unread status, assuming you have an unread count/status in 'c' */}
-                            {c.unreadCount > 0 && <span className="badge bg-danger rounded-pill">{c.unreadCount}</span>}
-                        </div>
-                    </Link>
-                );
-            })}
+                      {/* Participants, Destination, Last Message Preview */}
+                      <div className="d-flex w-100 justify-content-between">
+                          <div>
+                              <p className="mb-1 text-muted small">
+                                  {c.lastMessagePreview || 'No messages yet'}
+                              </p>
+                          </div>
+                          {c.unreadCount > 0 && (
+                              <span className="badge bg-danger rounded-pill">{c.unreadCount}</span>
+                          )}
+                      </div>
+                  </Link>
+              );
+          })}
           </div>
         </div>
         

@@ -6,7 +6,7 @@ namespace TravelBuddy.Messaging
 {
     public interface IMessagingService
     {
-        Task<IEnumerable<ConversationSummaryDto>> GetConversationsForUserAsync(int userId);
+        Task<IEnumerable<ConversationOverviewDto>> GetConversationsForUserAsync(int userId);
 
         Task<ConversationDetailDto?> GetConversationDetailAsync(int userId, int conversationId);
 
@@ -27,18 +27,22 @@ namespace TravelBuddy.Messaging
         // Helper method to get the correct repository for the current request scope
         private IMessagingRepository GetRepo() => _messagingRepositoryFactory.GetMessagingRepository();
 
-        public async Task<IEnumerable<ConversationSummaryDto>> GetConversationsForUserAsync(int userId)
+        public async Task<IEnumerable<ConversationOverviewDto>> GetConversationsForUserAsync(int userId)
         {
             var messagingRepository = GetRepo();
             var conversations = await messagingRepository.GetConversationsForUserAsync(userId);
 
             return conversations 
-                .Select(c => new ConversationSummaryDto(
-                    Id: c.ConversationId,
+                .Select(c => new ConversationOverviewDto(
+                    ConversationId: c.ConversationId,
+                    TripDestinationId: c.TripDestinationId,
                     IsGroup: c.IsGroup,
+                    CreatedAt: c.CreatedAt,
                     IsArchived: c.IsArchived,
-                    ParticipantCount: c.ConversationParticipants.Count,
-                    CreatedAt: c.CreatedAt
+                    ParticipantCount: c.ParticipantCount,
+                    LastMessagePreview: c.LastMessagePreview,
+                    LastMessageAt: c.LastMessageAt,
+                    ConversationName: c.ConversationName
                 ))
                 .ToList();
         }

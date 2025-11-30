@@ -1222,12 +1222,12 @@ INSERT INTO message (sender_id, content, sent_at, conversation_id) VALUES
 
 -- Convo 12: Trip to Bangkok (TD 141, Owner: ID 23, Buddies: ID 49, 56, 62)
 INSERT INTO conversation (conversation_id, trip_destination_id, is_group) VALUES (12, 141, TRUE);
-INSERT INTO conversation_participant (conversation_id, user_id) VALUES (12, 23), (12, 49), (12, 56), (12, 62);
+INSERT INTO conversation_participant (conversation_id, user_id) VALUES (12, 23), (12, 7), (12, 11), (12, 1);
 INSERT INTO message (sender_id, content, sent_at, conversation_id) VALUES
 (23, 'Next up, Bangkok! We can coordinate our visits to temples and night markets here.', '2025-06-09 11:00:00', 12),
-(49, 'I can''t wait to see the Grand Palace! What''s the best way to get around the city, do you think?', '2025-06-09 14:30:00', 12),
-(56, 'I''m ready to eat all the street food! I found a food tour that looks awesome. Should I book it?', '2025-06-10 08:15:00', 12),
-(62, 'I found a great walking tour we could do! I think we should also try to fit in a river cruise.', '2025-06-10 19:05:00', 12);
+(11, 'I can''t wait to see the Grand Palace! What''s the best way to get around the city, do you think?', '2025-06-09 14:30:00', 12),
+(1, 'I''m ready to eat all the street food! I found a food tour that looks awesome. Should I book it?', '2025-06-10 08:15:00', 12),
+(7, 'I found a great walking tour we could do! I think we should also try to fit in a river cruise.', '2025-06-10 19:05:00', 12);
 
 -- Convo 13: Trip to Chiang Mai (TD 142, Owner: ID 23, Buddies: ID 49, 56, 62)
 INSERT INTO conversation (conversation_id, trip_destination_id, is_group) VALUES (13, 142, TRUE);

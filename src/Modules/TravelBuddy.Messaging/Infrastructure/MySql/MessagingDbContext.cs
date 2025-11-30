@@ -20,6 +20,9 @@ public partial class MessagingDbContext : DbContext
     // Needed for sender_id and user_id
     public DbSet<User> Users { get; set; }
 
+    // Custom
+    public DbSet<ConversationOverview> ConversationOverviews { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // --- Conversation ---
@@ -101,6 +104,9 @@ public partial class MessagingDbContext : DbContext
         // Vi bruger ikke ConversationAudit i Messaging
         modelBuilder.Ignore<ConversationAudit>();
         modelBuilder.Entity<Conversation>().Ignore(c => c.ConversationAudits);
+
+        // -------- Custom Models --------
+        modelBuilder.Entity<ConversationOverview>().HasNoKey();
     }
 
 }

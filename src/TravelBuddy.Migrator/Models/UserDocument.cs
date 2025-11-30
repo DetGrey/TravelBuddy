@@ -6,9 +6,7 @@ namespace TravelBuddy.Migrator.Models;
 public class UserDocument
 {
     [BsonId]
-    public ObjectId Id { get; set; }
-
-    public int LegacyUserId { get; set;}
+    public int UserId { get; set;}
 
     public string Name { get; set;} = default!;
     public string Email { get; set; } = default!;

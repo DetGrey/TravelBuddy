@@ -160,6 +160,9 @@ public partial class TripsDbContext : DbContext
             entity.Property(e => e.Description)
                 .HasMaxLength(255)
                 .HasColumnName("description");
+            entity.Property(e => e.TripName)
+                .HasMaxLength(100)
+                .HasColumnName("trip_name");
             entity.Property(e => e.EndDate).HasColumnName("end_date");
             entity.Property(e => e.IsArchived)
                 .HasDefaultValueSql("'0'")

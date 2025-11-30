@@ -17,8 +17,8 @@ namespace TravelBuddy.Messaging
     [BsonIgnoreExtraElements]
     internal class UserDocument
     {
-        [BsonElement("LegacyUserId")]
-        public int LegacyUserId { get; set; }
+        [BsonElement("UserId")]
+        public int UserId { get; set; }
         public string Name { get; set; } = null!;
         public string Email { get; set; } = null!;
         public string PasswordHash { get; set; } = null!;
@@ -58,6 +58,19 @@ namespace TravelBuddy.Messaging
         public DateTime? SentAt { get; set; }
     }
 
+    [BsonIgnoreExtraElements]
+    internal class TripDestinationNameDocument
+    {
+        public int TripDestinationId { get; set; }
+        public int DestinationId { get; set; }
+    }
+    [BsonIgnoreExtraElements]
+    internal class DestinationNameDocument
+    {
+        public int DestinationId { get; set; }
+        public string Name { get; set; } = null!;
+    }
+
     // -----------------------------
     // Repository implementation
     // -----------------------------
@@ -67,6 +80,8 @@ namespace TravelBuddy.Messaging
         private readonly IMongoCollection<ConversationDocument> _conversationCollection;
         private readonly IMongoCollection<MessageDocument> _messageCollection;
         private readonly IMongoCollection<UserDocument> _userCollection;
+        private readonly IMongoCollection<TripDestinationNameDocument> _tripCollection;
+        private readonly IMongoCollection<DestinationNameDocument> _destinationCollection;
 
         public MongoDbMessagingRepository(IMongoClient client)
         {
@@ -74,43 +89,51 @@ namespace TravelBuddy.Messaging
             _conversationCollection = database.GetCollection<ConversationDocument>("conversations");
             _messageCollection = database.GetCollection<MessageDocument>("messages");
             _userCollection = database.GetCollection<UserDocument>("users");
+            _tripCollection = database.GetCollection<TripDestinationNameDocument>("trips");
+            _destinationCollection = database.GetCollection<DestinationNameDocument>("destinations");
         }
 
         // -----------------------------
         // Mapping helpers
         // -----------------------------
 
-        private static Conversation MapConversationBasic(ConversationDocument doc)
+        private static ConversationOverview MapConversationOverview(
+            ConversationDocument doc,
+            MessageDocument? lastMessageDoc,
+            int currentUserId,
+            DestinationNameDocument? destination = null,
+            IEnumerable<UserDocument>? users = null)
         {
-            var conversation = new Conversation
-            {
-                ConversationId = doc.ConversationId,
-                TripDestinationId = doc.TripDestinationId,
-                IsGroup = doc.IsGroup,
-                CreatedAt = doc.CreatedAt,
-                IsArchived = doc.IsArchived,
-                ConversationParticipants = new List<ConversationParticipant>(),
-                Messages = new List<Message>()
-            };
+            string conversationName;
 
-            foreach (var p in doc.Participants)
+            if (doc.IsGroup)
             {
-                conversation.ConversationParticipants.Add(new ConversationParticipant
-                {
-                    ConversationId = conversation.ConversationId,
-                    UserId = p.UserId,
-                    JoinedAt = p.JoinedAt,
-                    Conversation = conversation,
-                    User = new User
-                    {
-                        UserId = p.UserId,
-                        Name = string.Empty,
-                        Email = string.Empty
-                    }
-                });
+                conversationName = destination != null
+                    ? $"Group for {destination.Name}"
+                    : "Group Conversation";
+            }
+            else
+            {
+                var otherUserId = doc.Participants
+                    .FirstOrDefault(p => p.UserId != currentUserId)?.UserId;
+
+                conversationName = users?
+                    .FirstOrDefault(u => u.UserId == otherUserId)?.Name
+                    ?? "Direct Message";
             }
 
-            return conversation;
+            return new ConversationOverview
+            {
+                ConversationId    = doc.ConversationId,
+                TripDestinationId = doc.TripDestinationId,
+                IsGroup           = doc.IsGroup,
+                CreatedAt         = doc.CreatedAt,
+                IsArchived        = doc.IsArchived,
+                ParticipantCount  = doc.Participants.Count,
+                LastMessagePreview= lastMessageDoc?.Content,
+                LastMessageAt     = lastMessageDoc?.SentAt,
+                ConversationName  = conversationName
+            };
         }
 
         private async Task<Conversation?> MapConversationWithUsersAsync(ConversationDocument? doc)
@@ -121,10 +144,10 @@ namespace TravelBuddy.Messaging
             var userIds = doc.Participants.Select(p => p.UserId).Distinct().ToList();
 
             var userDocs = await _userCollection
-                .Find(Builders<UserDocument>.Filter.In(u => u.LegacyUserId, userIds))
+                .Find(Builders<UserDocument>.Filter.In(u => u.UserId, userIds))
                 .ToListAsync();
 
-            var userMap = userDocs.ToDictionary(u => u.LegacyUserId, u => u);
+            var userMap = userDocs.ToDictionary(u => u.UserId, u => u);
 
             var conversation = new Conversation
             {
@@ -174,14 +197,62 @@ namespace TravelBuddy.Messaging
         // CRUD operations
         // -----------------------------
 
-        public async Task<IEnumerable<Conversation>> GetConversationsForUserAsync(int userId)
+        public async Task<IEnumerable<ConversationOverview>> GetConversationsForUserAsync(int userId)
         {
+            // 1. Find conversations for this user
             var filter = Builders<ConversationDocument>.Filter
                 .ElemMatch(c => c.Participants, p => p.UserId == userId);
 
             var docs = await _conversationCollection.Find(filter).ToListAsync();
+            var conversationIds = docs.Select(d => d.ConversationId).ToList();
 
-            return docs.Select(MapConversationBasic).ToList();
+            // 2. Find last message per conversation
+            var lastMessages = await _messageCollection
+                .Aggregate()
+                .Match(m => conversationIds.Contains(m.ConversationId))
+                .SortByDescending(m => m.SentAt)
+                .Group(m => m.ConversationId,
+                    g => g.First()) // first after sort = latest
+                .ToListAsync();
+
+            var lastMessageByConvId = lastMessages.ToDictionary(m => m.ConversationId);
+
+            // 3. Optionally load trip destinations and users if you want names            
+            var tripDestIds = docs
+                .Where(d => d.TripDestinationId.HasValue)
+                .Select(d => d.TripDestinationId)
+                .ToList();
+
+            var tripDestDocs = await _tripCollection
+                .Find(td => tripDestIds.Contains(td.TripDestinationId))
+                .ToListAsync();
+
+            var destinationIds = tripDestDocs.Select(td => td.DestinationId).ToList();
+
+            var destinations = await _destinationCollection
+                .Find(d => destinationIds.Contains(d.DestinationId))
+                .ToListAsync();
+
+            var destById = destinations.ToDictionary(d => d.DestinationId);
+            var tripDestById = tripDestDocs.ToDictionary(td => td.TripDestinationId);
+
+            var users = await _userCollection.Find(_ => true).ToListAsync();
+
+            // 4. Map to DTOs
+            return docs.Select(doc =>
+            {
+                lastMessageByConvId.TryGetValue(doc.ConversationId, out var lastMsg);
+
+                DestinationNameDocument? destination = null;
+                if (doc.TripDestinationId.HasValue &&
+                    tripDestById.TryGetValue(doc.TripDestinationId.Value, out var tripDest) &&
+                    destById.TryGetValue(tripDest.DestinationId, out var dest))
+                {
+                    destination = dest;
+                }
+
+                return MapConversationOverview(doc, lastMsg, userId, destination, users);
+            }).ToList();
         }
 
         public async Task<Conversation?> GetConversationParticipantAsync(int conversationId)

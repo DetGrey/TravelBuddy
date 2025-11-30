@@ -8,6 +8,17 @@ public record ConversationSummaryDto (
     DateTime? CreatedAt
 );
 
+public record ConversationOverviewDto (
+    int ConversationId,
+    int? TripDestinationId,
+    bool IsGroup,
+    DateTime? CreatedAt,
+    bool IsArchived,
+    int ParticipantCount,
+    string? LastMessagePreview,
+    DateTime? LastMessageAt,
+    string? ConversationName
+);
 public record ConversationParticipantDto (
     int UserId,
     string Name,

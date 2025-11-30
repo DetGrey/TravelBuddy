@@ -14,10 +14,10 @@ public class Neo4jMessagingRepository : IMessagingRepository
         _driver = driver;
     }
 
-    public async Task<IEnumerable<Conversation>> GetConversationsForUserAsync(int userId)
+    public async Task<IEnumerable<ConversationOverview>> GetConversationsForUserAsync(int userId)
     {
         // TODO Placeholder: Return an empty collection of conversations
-        return await Task.FromResult<IEnumerable<Conversation>>(new List<Conversation>());
+        return await Task.FromResult<IEnumerable<ConversationOverview>>(new List<ConversationOverview>());
     }
 
     public async Task<Conversation?> GetConversationParticipantAsync(int conversationId)

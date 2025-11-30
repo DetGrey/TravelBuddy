@@ -13,12 +13,10 @@ public class MySqlMessagingRepository : IMessagingRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Conversation>> GetConversationsForUserAsync(int userId)
+    public async Task<IEnumerable<ConversationOverview>> GetConversationsForUserAsync(int userId)
     {
-        return await _context.Conversations
-            .Include(c => c.ConversationParticipants)
-            .Where(c => c.ConversationParticipants.Any(cp => cp.UserId == userId))
-            .AsNoTracking()
+        return await _context.ConversationOverviews
+            .FromSqlInterpolated($"CALL get_user_conversations({userId})")
             .ToListAsync();
     }
 

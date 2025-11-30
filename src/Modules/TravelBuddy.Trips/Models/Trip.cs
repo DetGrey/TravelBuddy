@@ -7,6 +7,8 @@ public partial class Trip
     public int TripId { get; set; }
 
     public int? OwnerId { get; set; }
+    
+    public string? TripName { get; set; }
 
     public int? MaxBuddies { get; set; }
 

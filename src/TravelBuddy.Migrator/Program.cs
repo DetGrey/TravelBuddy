@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Globalization;
 using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -188,9 +189,7 @@ if (users.Count == 0)
 // Map from your EF User entity to Mongo UserDocument
 var userDocs = users.Select(u => new UserDocument
 {
-    Id = MongoDB.Bson.ObjectId.GenerateNewId(),
-
-    LegacyUserId = u.UserId,          
+    UserId       = u.UserId,          
     Name         = u.Name,        
     Email        = u.Email,
     PasswordHash = u.PasswordHash,
@@ -261,6 +260,7 @@ var tripDocs = trips.Select(t =>
     {
         TripId      = t.TripId,
         OwnerId     = t.OwnerId,
+        TripName    = t.TripName,
         MaxBuddies  = t.MaxBuddies,
         StartDate   = t.StartDate,
         EndDate     = t.EndDate,
@@ -464,6 +464,7 @@ await using (var tripSession = neo4j.AsyncSession(o => o.WithDefaultAccessMode(A
         {
             tripId      = t.TripId,
             ownerId     = t.OwnerId ?? 0, // if OwnerId is int? in EF
+            tripName    = t.TripName,
             maxBuddies  = t.MaxBuddies,
             startDate   = t.StartDate.ToString("yyyy-MM-dd"),
             endDate     = t.EndDate.ToString("yyyy-MM-dd"),
@@ -474,7 +475,8 @@ await using (var tripSession = neo4j.AsyncSession(o => o.WithDefaultAccessMode(A
         // Trip node + OWNS relationship
         await tripSession.RunAsync(@"
             MERGE (t:Trip { tripId: $tripId })
-            SET t.maxBuddies  = $maxBuddies,
+            SET t.tripName    = $tripName,
+                t.maxBuddies  = $maxBuddies,
                 t.startDate   = $startDate,
                 t.endDate     = $endDate,
                 t.description = $description,
@@ -555,5 +557,97 @@ await using (var buddySession = neo4j.AsyncSession(o => o.WithDefaultAccessMode(
 
 Console.WriteLine("Neo4j: buddies migrated.");
 
+// ===== Neo4j: CONVERSATIONS =====
+Console.WriteLine("Migrating conversations to Neo4j...");
+
+await using (var convSession = neo4j.AsyncSession(o => o.WithDefaultAccessMode(AccessMode.Write)))
+{
+    foreach (var c in conversations)
+    {
+        var convParams = new
+        {
+            conversationId    = c.ConversationId,
+            tripDestinationId = c.TripDestinationId,
+            isGroup           = c.IsGroup,
+            // Use ISO 8601 and handle nulls
+            createdAt         = c.CreatedAt?.ToUniversalTime().ToString("o", CultureInfo.InvariantCulture),
+            isArchived        = c.IsArchived
+        };
+
+        await convSession.RunAsync(@"
+            MERGE (c:Conversation { conversationId: $conversationId })
+            SET c.tripDestinationId = $tripDestinationId,
+                c.isGroup           = $isGroup,
+                c.isArchived        = $isArchived
+            // Only set temporal properties when values are provided
+            WITH c, $createdAt AS createdAtIso, $tripDestinationId AS tdId
+            FOREACH (_ IN CASE WHEN createdAtIso IS NULL THEN [] ELSE [1] END |
+                SET c.createdAt = datetime(createdAtIso)
+            )
+            // Optional link to TripDestination if present
+            FOREACH (_ IN CASE WHEN tdId IS NULL THEN [] ELSE [1] END |
+                MATCH (td:TripDestination { tripDestinationId: tdId })
+                MERGE (c)-[:RELATES_TO]->(td)
+            )
+        ", convParams);
+    }
+}
+Console.WriteLine($"Neo4j: migrated {conversations.Count} conversations.");
+
+
+// ===== Neo4j: CONVERSATION PARTICIPANTS =====
+Console.WriteLine("Migrating conversation participants to Neo4j...");
+
+await using (var cpSession = neo4j.AsyncSession(o => o.WithDefaultAccessMode(AccessMode.Write)))
+{
+    foreach (var cp in convParticipants)
+    {
+        var cpParams = new
+        {
+            conversationId = cp.ConversationId,
+            userId         = cp.UserId,
+            joinedAtIso    = cp.JoinedAt?.ToUniversalTime().ToString("o", CultureInfo.InvariantCulture)
+        };
+
+        await cpSession.RunAsync(@"
+            MATCH (u:User { userId: $userId })
+            MATCH (c:Conversation { conversationId: $conversationId })
+            MERGE (u)-[r:PARTICIPATES_IN]->(c)
+            SET r.joinedAt = datetime($joinedAtIso)
+        ", cpParams);
+    }
+}
+Console.WriteLine($"Neo4j: migrated {convParticipants.Count} conversation participants.");
+
+
+// ===== Neo4j: MESSAGES =====
+Console.WriteLine("Migrating messages to Neo4j...");
+
+await using (var msgSession = neo4j.AsyncSession(o => o.WithDefaultAccessMode(AccessMode.Write)))
+{
+    foreach (var m in messages)
+    {
+        var msgParams = new
+        {
+            messageId      = m.MessageId,
+            conversationId = m.ConversationId,
+            senderId       = m.SenderId ?? throw new InvalidOperationException($"Message {m.MessageId} missing SenderId"),
+            content        = m.Content,
+            sentAtIso      = m.SentAt?.ToUniversalTime().ToString("o", CultureInfo.InvariantCulture)
+        };
+
+        await msgSession.RunAsync(@"
+            MERGE (m:Message { messageId: $messageId })
+            SET m.content = $content,
+                m.sentAt  = datetime($sentAtIso)
+            WITH m
+            MATCH (u:User { userId: $senderId })
+            MATCH (c:Conversation { conversationId: $conversationId })
+            MERGE (u)-[:SENT]->(m)
+            MERGE (m)-[:IN_CONVERSATION]->(c)
+        ", msgParams);
+    }
+}
+Console.WriteLine($"Neo4j: migrated {messages.Count} messages.");
 
 Console.WriteLine("Migration complete.");

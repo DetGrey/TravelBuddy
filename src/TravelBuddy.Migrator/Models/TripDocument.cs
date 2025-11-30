@@ -6,7 +6,7 @@ public class TripDocument
 {
     [BsonId]
     public int TripId { get; set; }      // same as MySQL PK
-
+    public string? TripName { get; set; }
     public int? OwnerId { get; set; }
     public int? MaxBuddies { get; set; }
     public DateOnly StartDate { get; set; }

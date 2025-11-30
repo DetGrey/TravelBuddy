@@ -252,23 +252,46 @@ CREATE PROCEDURE get_user_conversations(IN p_user_id INT)
 BEGIN
     SELECT
         c.conversation_id AS ConversationId,
-        m.content AS Content,
+        c.trip_destination_id AS TripDestinationId,
+        c.is_group AS IsGroup,
+        c.created_at AS CreatedAt,
+        c.is_archived AS IsArchived,
+
+        -- Count all participants in this conversation
+        (SELECT COUNT(*)
+         FROM conversation_participant cp_all
+         WHERE cp_all.conversation_id = c.conversation_id) AS ParticipantCount,
+
+        m.content AS LastMessagePreview,
+        m.sent_at AS LastMessageAt,
+
         CASE
-            WHEN DATE(sent_at) = CURDATE() THEN DATE_FORMAT(sent_at, '%H:%i')
-            WHEN DATE(sent_at) = CURDATE() - INTERVAL 1 DAY THEN 'Yesterday'
-            WHEN YEAR(sent_at) = YEAR(CURDATE()) THEN DATE_FORMAT(sent_at, '%d/%m')
-            ELSE DATE_FORMAT(sent_at, '%Y')
-        END AS formatted_sent_at
+            WHEN c.is_group = TRUE THEN CONCAT('Group for ', d.name)
+            ELSE (
+                SELECT u.name
+                FROM conversation_participant cp
+                JOIN user u ON u.user_id = cp.user_id
+                WHERE cp.conversation_id = c.conversation_id
+                  AND cp.user_id <> p_user_id
+                LIMIT 1
+            )
+        END AS ConversationName
     FROM conversation c
-    JOIN conversation_participant p ON c.conversation_id = p.conversation_id
-    LEFT JOIN message m ON m.message_id = (
-        SELECT m2.message_id
-        FROM message m2
-        WHERE m2.conversation_id = c.conversation_id
-        ORDER BY m2.sent_at DESC
-        LIMIT 1
-    )
-    WHERE p.user_id = p_user_id; # Example user 49 has 3 convos
+    JOIN conversation_participant p
+        ON c.conversation_id = p.conversation_id
+    LEFT JOIN trip_destination td
+        ON c.trip_destination_id = td.trip_destination_id
+    INNER JOIN destination d
+        ON td.destination_id = d.destination_id
+    LEFT JOIN message m
+        ON m.message_id = (
+            SELECT m2.message_id
+            FROM message m2
+            WHERE m2.conversation_id = c.conversation_id
+            ORDER BY m2.sent_at DESC
+            LIMIT 1
+        )
+    WHERE p.user_id = p_user_id;
 END $$
 DELIMITER ;
 
@@ -1071,10 +1094,6 @@ JOIN
     destination d ON td.destination_id = d.destination_id
 JOIN
     trip t ON td.trip_id = t.trip_id;
-
-SELECT *
-FROM V_SimplifiedTripDest
-WHERE TripId = 51;
 
 CREATE OR REPLACE VIEW V_TripHeaderInfo AS
 SELECT

@@ -2,12 +2,13 @@ USE travel_buddy;
 show tables;
 
 SELECT *
-FROM buddy
-WHERE trip_destination_id = 78;
+FROM conversation
+WHERE trip_destination_id = 141;
 
 SELECT *
 FROM conversation_participant
-WHERE conversation_id = 9;
+JOIN user ON conversation_participant.user_id = user.user_id
+WHERE conversation_id = 12;
 
 
 DELETE from buddy where buddy_id = 431;
