@@ -517,7 +517,7 @@ await using (var tripSession = neo4j.AsyncSession(o => o.WithDefaultAccessMode(A
     }
 }
 
-Console.WriteLine("Neo4j: trips and HAS_STOP relationships migrated.");
+Console.WriteLine($"Neo4j: migrated {trips.Count} trips and HAS_STOP relationships.");
 
 // ===== Neo4j: BUDDIES =====
 Console.WriteLine("Migrating buddies to Neo4j...");
@@ -555,7 +555,7 @@ await using (var buddySession = neo4j.AsyncSession(o => o.WithDefaultAccessMode(
     }
 }
 
-Console.WriteLine("Neo4j: buddies migrated.");
+Console.WriteLine($"Neo4j: migrated {buddies.Count} buddies.");
 
 // ===== Neo4j: CONVERSATIONS =====
 Console.WriteLine("Migrating conversations to Neo4j...");
@@ -579,16 +579,17 @@ await using (var convSession = neo4j.AsyncSession(o => o.WithDefaultAccessMode(A
             SET c.tripDestinationId = $tripDestinationId,
                 c.isGroup           = $isGroup,
                 c.isArchived        = $isArchived
-            // Only set temporal properties when values are provided
+
+            // carry forward values for conditional createdAt
             WITH c, $createdAt AS createdAtIso, $tripDestinationId AS tdId
-            FOREACH (_ IN CASE WHEN createdAtIso IS NULL THEN [] ELSE [1] END |
-                SET c.createdAt = datetime(createdAtIso)
-            )
-            // Optional link to TripDestination if present
-            FOREACH (_ IN CASE WHEN tdId IS NULL THEN [] ELSE [1] END |
-                MATCH (td:TripDestination { tripDestinationId: tdId })
-                MERGE (c)-[:RELATES_TO]->(td)
-            )
+            UNWIND CASE WHEN createdAtIso IS NULL THEN [] ELSE [createdAtIso] END AS createdAtVal
+            SET c.createdAt = datetime(createdAtVal)
+
+            // carry forward again before next UNWIND
+            WITH c, tdId
+            UNWIND CASE WHEN tdId IS NULL THEN [] ELSE [tdId] END AS destId
+            MATCH (td:TripDestination { tripDestinationId: destId })
+            MERGE (c)-[:RELATES_TO]->(td)
         ", convParams);
     }
 }
