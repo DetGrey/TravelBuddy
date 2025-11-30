@@ -4,7 +4,7 @@ using TravelBuddy.Trips.Models;
 namespace TravelBuddy.Trips
 {
     // INTERFACE
-    public interface ITripDestinationService
+    public interface ITripService
     {
         Task<IEnumerable<TripDestinationSearchDto>> SearchTripsAsync(
             DateOnly? reqStart,
@@ -22,20 +22,23 @@ namespace TravelBuddy.Trips
         Task<IEnumerable<TripOverviewDto>> GetOwnedTripOverviewsAsync(int userId);
         Task<bool> IsTripOwnerAsync(int userId, int tripDestinationId);
         Task<(bool Success, string? ErrorMessage)> LeaveTripDestinationAsync(int userId, int tripDestinationId, int triggeredBy, string departureReason);
-    }
+        Task<IEnumerable<PendingBuddyRequestDto>> GetPendingBuddyRequestsAsync(int userId);
+        Task<(bool Success, string? ErrorMessage)> InsertBuddyRequestAsync(BuddyDto buddyDto);
+        Task<(bool Success, string? ErrorMessage)> UpdateBuddyRequestAsync(UpdateBuddyRequestDto updateBuddyRequestDto);
+   }
 
     // CLASS
-    public class TripDestinationService : ITripDestinationService
+    public class TripService : ITripService
     {
         private readonly ITripRepositoryFactory _tripRepositoryFactory;
 
-        public TripDestinationService(ITripRepositoryFactory tripRepositoryFactory)
+        public TripService(ITripRepositoryFactory tripRepositoryFactory)
         {
             _tripRepositoryFactory = tripRepositoryFactory;
         }
 
         // Helper method to get the correct repository for the current request scope
-        private ITripDestinationRepository GetRepo() => _tripRepositoryFactory.GetTripDestinationRepository();
+        private ITripRepository GetRepo() => _tripRepositoryFactory.GetTripRepository();
 
         public async Task<IEnumerable<TripDestinationSearchDto>> SearchTripsAsync(
             DateOnly? reqStart,
@@ -46,8 +49,8 @@ namespace TravelBuddy.Trips
             int? partySize,
             string? q)
         {
-            var tripDestinationRepository = GetRepo();
-            var results = await tripDestinationRepository.SearchTripsAsync(reqStart, reqEnd, country, state, name, partySize, q);
+            var tripRepository = GetRepo();
+            var results = await tripRepository.SearchTripsAsync(reqStart, reqEnd, country, state, name, partySize, q);
 
             return results.Select(r => new TripDestinationSearchDto(
               r.TripDestinationId,
@@ -67,8 +70,8 @@ namespace TravelBuddy.Trips
 
         public async Task<IEnumerable<BuddyTripSummaryDto>> GetBuddyTripsAsync(int userId)
         {
-            var tripDestinationRepository = GetRepo();
-            var results = await tripDestinationRepository.GetBuddyTripsAsync(userId);
+            var tripRepository = GetRepo();
+            var results = await tripRepository.GetBuddyTripsAsync(userId);
 
             return results.Select(r => new BuddyTripSummaryDto(
                 r.TripId,
@@ -82,8 +85,8 @@ namespace TravelBuddy.Trips
         }
         public async Task<TripDestinationInfoDto?> GetTripDestinationInfoAsync(int tripDestinationId)
         {
-            var tripDestinationRepository = GetRepo();
-            var result = await tripDestinationRepository.GetTripDestinationInfoAsync(tripDestinationId);
+            var tripRepository = GetRepo();
+            var result = await tripRepository.GetTripDestinationInfoAsync(tripDestinationId);
 
             if (result == null)
             {
@@ -125,8 +128,8 @@ namespace TravelBuddy.Trips
         }
         public async Task<TripOverviewDto?> GetFullTripOverviewAsync(int tripId)
         {
-            var tripDestinationRepository = GetRepo();
-            var tripOverview = await tripDestinationRepository.GetFullTripOverviewAsync(tripId);
+            var tripRepository = GetRepo();
+            var tripOverview = await tripRepository.GetFullTripOverviewAsync(tripId);
             if (tripOverview == null)
             {
                 return null;
@@ -155,8 +158,8 @@ namespace TravelBuddy.Trips
         }
         public async Task<IEnumerable<TripOverviewDto>> GetOwnedTripOverviewsAsync(int userId)
         {
-            var tripDestinationRepository = GetRepo();
-            var tripOverviews = await tripDestinationRepository.GetOwnedTripOverviewsAsync(userId);
+            var tripRepository = GetRepo();
+            var tripOverviews = await tripRepository.GetOwnedTripOverviewsAsync(userId);
 
             return tripOverviews.Select(tripOverview => new TripOverviewDto(
                 tripOverview.TripId,
@@ -182,8 +185,8 @@ namespace TravelBuddy.Trips
         }
         public async Task<bool> IsTripOwnerAsync(int userId, int tripDestinationId)
         {
-            var tripDestinationRepository = GetRepo();
-            var tripOwner = await tripDestinationRepository.GetTripOwnerAsync(tripDestinationId);
+            var tripRepository = GetRepo();
+            var tripOwner = await tripRepository.GetTripOwnerAsync(tripDestinationId);
             return tripOwner == userId;
         }
         public async Task<(bool Success, string? ErrorMessage)> LeaveTripDestinationAsync(
@@ -192,8 +195,39 @@ namespace TravelBuddy.Trips
             int triggeredBy, 
             string departureReason
         ) {
-            var tripDestinationRepository = GetRepo();
-            return await tripDestinationRepository.LeaveTripDestinationAsync(userId, tripDestinationId, triggeredBy, departureReason);
+            var tripRepository = GetRepo();
+            return await tripRepository.LeaveTripDestinationAsync(userId, tripDestinationId, triggeredBy, departureReason);
+        }
+        public async Task<IEnumerable<PendingBuddyRequestDto>> GetPendingBuddyRequestsAsync(int userId)
+        {
+            var buddyRepository = GetRepo();
+
+            var results = await buddyRepository.GetPendingBuddyRequestsAsync(userId);
+
+            return results.Select(r => new PendingBuddyRequestDto(
+                r.TripDestinationId,
+                r.DestinationName,
+                r.DestinationStartDate,
+                r.DestinationEndDate,
+                r.TripId,
+                r.BuddyId,
+                r.RequesterUserId,
+                r.RequesterName,
+                r.BuddyNote,
+                r.PersonCount
+            )).ToList();
+        }
+
+        public async Task<(bool Success, string? ErrorMessage)> InsertBuddyRequestAsync(BuddyDto buddyDto)
+        {
+            var buddyRepository = GetRepo();
+            return await buddyRepository.InsertBuddyRequestAsync(buddyDto);
+        }
+
+        public async Task<(bool Success, string? ErrorMessage)> UpdateBuddyRequestAsync(UpdateBuddyRequestDto updateBuddyRequestDto)
+        {
+            var buddyRepository = GetRepo();
+            return await buddyRepository.UpdateBuddyRequestAsync(updateBuddyRequestDto);
         }
     }
 }

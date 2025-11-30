@@ -26,24 +26,14 @@ public class TripRepositoryFactory : ITripRepositoryFactory
                             ?.ToLowerInvariant() ?? "mysql"; // Defaults to MySQL if header is missing
     }
 
-    public ITripDestinationRepository GetTripDestinationRepository()
+    public ITripRepository GetTripRepository()
     {
         return _dbType switch
         {
             // Note: We use GetRequiredService<T>() here to resolve the concrete Transient registrations
-            "mongodb" => _serviceProvider.GetRequiredService<MongoDbTripDestinationRepository>(),
-            "neo4j" => _serviceProvider.GetRequiredService<Neo4jTripDestinationRepository>(),
-            _ => _serviceProvider.GetRequiredService<MySqlTripDestinationRepository>() // Defaults to MySQL
-        };
-    }
-    public IBuddyRepository GetBuddyRepository()
-    {
-        return _dbType switch
-        {
-            // Note: We use GetRequiredService<T>() here to resolve the concrete Transient registrations
-            "mongodb" => _serviceProvider.GetRequiredService<MongoDbBuddyRepository>(),
-            "neo4j" => _serviceProvider.GetRequiredService<Neo4jBuddyRepository>(),
-            _ => _serviceProvider.GetRequiredService<MySqlBuddyRepository>() // Defaults to MySQL
+            "mongodb" => _serviceProvider.GetRequiredService<MongoDbTripRepository>(),
+            "neo4j" => _serviceProvider.GetRequiredService<Neo4jTripRepository>(),
+            _ => _serviceProvider.GetRequiredService<MySqlTripRepository>() // Defaults to MySQL
         };
     }
 }

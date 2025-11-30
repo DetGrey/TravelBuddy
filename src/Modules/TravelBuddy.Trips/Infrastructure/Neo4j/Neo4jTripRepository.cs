@@ -1,15 +1,16 @@
 using Neo4j.Driver;
 using Microsoft.EntityFrameworkCore;
 using TravelBuddy.Trips.Models;
+using TravelBuddy.Trips.DTOs;
 using TravelBuddy.Trips.Infrastructure;
 
 namespace TravelBuddy.Trips;
 // CLASS
-public class Neo4jTripDestinationRepository : ITripDestinationRepository
+public class Neo4jTripRepository : ITripRepository
 {
     private readonly IDriver _driver;
 
-    public Neo4jTripDestinationRepository(IDriver driver)
+    public Neo4jTripRepository(IDriver driver)
     {
         _driver = driver;
     }
@@ -64,5 +65,22 @@ public class Neo4jTripDestinationRepository : ITripDestinationRepository
     {
         // TODO Placeholder: Return a successful result tuple with no error message
         return await Task.FromResult((Success: true, ErrorMessage: (string?)null));
+    }
+    public async Task<IEnumerable<PendingBuddyRequest>> GetPendingBuddyRequestsAsync(int userId)
+    {
+        // TODO Placeholder: Return an empty list of PendingBuddyRequest
+        return await Task.FromResult<IEnumerable<PendingBuddyRequest>>(new List<PendingBuddyRequest>());
+    }
+
+    public async Task<(bool Success, string? ErrorMessage)> InsertBuddyRequestAsync(BuddyDto buddyDto)
+    {
+        // TODO Placeholder: Return true to simulate a successful insertion
+        return await Task.FromResult<(bool, string?)>((true, null));
+    }
+
+    public async Task<(bool Success, string? ErrorMessage)> UpdateBuddyRequestAsync(UpdateBuddyRequestDto updateBuddyRequestDto)
+    {
+        // TODO Placeholder: Return false to simulate a failed or neutral update (can be true if needed)
+        return await Task.FromResult<(bool, string?)>((true, null));
     }
 }

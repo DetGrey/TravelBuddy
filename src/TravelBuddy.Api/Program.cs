@@ -138,13 +138,9 @@ builder.Services.AddTransient<MongoDbUserRepository>();
 builder.Services.AddTransient<Neo4jUserRepository>(); 
 
 // Trips Module
-builder.Services.AddTransient<MySqlTripDestinationRepository>();
-builder.Services.AddTransient<MongoDbTripDestinationRepository>();
-builder.Services.AddTransient<Neo4jTripDestinationRepository>();
-// ... Add other Trip repositories (e.g., Trip, Buddy)
-builder.Services.AddTransient<MySqlBuddyRepository>();
-builder.Services.AddTransient<MongoDbBuddyRepository>();
-builder.Services.AddTransient<Neo4jBuddyRepository>();
+builder.Services.AddTransient<MySqlTripRepository>();
+builder.Services.AddTransient<MongoDbTripRepository>();
+builder.Services.AddTransient<Neo4jTripRepository>();
 
 // Messaging Module
 builder.Services.AddTransient<MySqlMessagingRepository>();
@@ -163,8 +159,7 @@ builder.Services.AddScoped<IMessagingRepositoryFactory, MessagingRepositoryFacto
 
 // --- Register the Services (Binds IUserService to UserService) ---
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<ITripDestinationService, TripDestinationService>();
-builder.Services.AddScoped<IBuddyService, BuddyService>();
+builder.Services.AddScoped<ITripService, TripService>();
 builder.Services.AddScoped<IMessagingService, MessagingService>();
 
 builder.Services.AddScoped<JwtTokenGenerator>();

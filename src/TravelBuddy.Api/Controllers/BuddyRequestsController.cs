@@ -13,13 +13,13 @@ namespace TravelBuddy.Api.Controllers
     [Route("api/users/{userId}/buddy-requests")]
     public class BuddyRequestsController : ControllerBase
     {
-        private readonly IBuddyService _buddyService;
+        private readonly ITripService _tripService;
 
         public BuddyRequestsController(
-            IBuddyService buddyService
+            ITripService tripService
         )
         {
-            _buddyService = buddyService;
+            _tripService = tripService;
         }
 
         [Authorize]
@@ -34,7 +34,7 @@ namespace TravelBuddy.Api.Controllers
 
             dto.UserId = userId;
 
-            var (success, errorMessage) = await _buddyService.InsertBuddyRequestAsync(dto);
+            var (success, errorMessage) = await _tripService.InsertBuddyRequestAsync(dto);
             
             if (!success) return BadRequest(errorMessage ?? "Buddy request failed");
 
@@ -51,7 +51,7 @@ namespace TravelBuddy.Api.Controllers
         {
             if (!User.IsSelfOrAdmin(userId)) return Forbid();
 
-            var pendingBuddyRequests = await _buddyService.GetPendingBuddyRequestsAsync(userId);
+            var pendingBuddyRequests = await _tripService.GetPendingBuddyRequestsAsync(userId);
             if (!pendingBuddyRequests.Any()) return NoContent();
 
             return Ok(pendingBuddyRequests);
@@ -74,7 +74,7 @@ namespace TravelBuddy.Api.Controllers
 
             if (!User.IsSelfOrAdmin(updateBuddyRequestDto.UserId)) return Forbid();
 
-            var (success, errorMessage) = await _buddyService.UpdateBuddyRequestAsync(updateBuddyRequestDto);
+            var (success, errorMessage) = await _tripService.UpdateBuddyRequestAsync(updateBuddyRequestDto);
             if (!success) return BadRequest(errorMessage ?? "Updating buddy request status failed");
 
             return Ok($"Buddy with buddy id {updateBuddyRequestDto.BuddyId} has been {updateBuddyRequestDto.NewStatus}");

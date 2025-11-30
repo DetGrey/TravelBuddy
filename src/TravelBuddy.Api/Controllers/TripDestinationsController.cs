@@ -9,10 +9,10 @@ namespace TravelBuddy.Api.Controllers
     [Route("api/trip-destinations")] 
     public class TripDestinationsController : ControllerBase
     {
-        private readonly ITripDestinationService _tripDestinationService;
+        private readonly ITripService _tripDestinationService;
 
         // Constructor: ASP.NET Core automatically injects the ITripDestinationService implementation here.
-        public TripDestinationsController(ITripDestinationService TripDestinationService)
+        public TripDestinationsController(ITripService TripDestinationService)
         {
             _tripDestinationService = TripDestinationService;
         }

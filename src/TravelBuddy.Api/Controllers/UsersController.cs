@@ -17,22 +17,19 @@ namespace TravelBuddy.Api.Controllers
         private readonly JwtTokenGenerator _jwtTokenGenerator;
         // This is the dependency on the business logic layer (UserService).
         private readonly IUserService _userService;
-        private readonly ITripDestinationService _tripDestinationService;    
-        private readonly IBuddyService _buddyService;
+        private readonly ITripService _tripDestinationService;    
 
 
         // Constructor: ASP.NET Core automatically injects the IUserService implementation here.
         public UsersController(
             JwtTokenGenerator jwtTokenGenerator,
             IUserService userService,
-            ITripDestinationService tripDestinationService,
-            IBuddyService buddyService
+            ITripService tripDestinationService
         )
         {
             _jwtTokenGenerator = jwtTokenGenerator;
             _userService = userService;
             _tripDestinationService = tripDestinationService;
-            _buddyService = buddyService;
         }
 
         [HttpPost("login")]
@@ -109,7 +106,7 @@ namespace TravelBuddy.Api.Controllers
         [HttpPost("logout")]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<string>> Logout()
+        public ActionResult<string> Logout()
         {
             Response.Cookies.Delete("access_token");
             return Ok("Logged out successfully.");

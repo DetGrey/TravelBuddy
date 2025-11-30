@@ -13,10 +13,10 @@ namespace TravelBuddy.Api.Controllers
     [Route("api/users/{userId}/trips")]
     public class UserTripsController : ControllerBase
     {
-        private readonly ITripDestinationService _tripDestinationService;
+        private readonly ITripService _tripDestinationService;
 
         public UserTripsController(
-            ITripDestinationService tripDestinationService
+            ITripService tripDestinationService
         )
         {
             _tripDestinationService = tripDestinationService;
