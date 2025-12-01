@@ -13,13 +13,13 @@ namespace TravelBuddy.Api.Controllers
     [Route("api/users/{userId}/trips")]
     public class UserTripsController : ControllerBase
     {
-        private readonly ITripService _tripDestinationService;
+        private readonly ITripService _tripService;
 
         public UserTripsController(
             ITripService tripDestinationService
         )
         {
-            _tripDestinationService = tripDestinationService;
+            _tripService = tripDestinationService;
         }
 
         [Authorize]
@@ -56,7 +56,7 @@ namespace TravelBuddy.Api.Controllers
                 return BadRequest("New destination fields are incomplete.");
             }
 
-            var (success, errorMessage) = await _tripDestinationService
+            var (success, errorMessage) = await _tripService
                 .CreateTripWithDestinationsAsync(createTripWithDestinationsDto);
             
             if (!success)
@@ -77,7 +77,7 @@ namespace TravelBuddy.Api.Controllers
         {
             if (!User.IsSelfOrAdmin(userId)) return Forbid();
 
-            var tripOverview = await _tripDestinationService.GetFullTripOverviewAsync(tripId);
+            var tripOverview = await _tripService.GetFullTripOverviewAsync(tripId);
             if (tripOverview == null) return NoContent();
 
             return Ok(tripOverview);
@@ -93,7 +93,7 @@ namespace TravelBuddy.Api.Controllers
         {
             if (!User.IsSelfOrAdmin(userId)) return Forbid();
 
-            var tripDestinations = await _tripDestinationService.GetBuddyTripsAsync(userId);
+            var tripDestinations = await _tripService.GetBuddyTripsAsync(userId);
             if (!tripDestinations.Any()) return NoContent();
 
             return Ok(tripDestinations);
@@ -108,7 +108,7 @@ namespace TravelBuddy.Api.Controllers
         {
             if (!User.IsSelfOrAdmin(userId)) return Forbid();
 
-            var tripDestinations = await _tripDestinationService.GetOwnedTripOverviewsAsync(userId);
+            var tripDestinations = await _tripService.GetOwnedTripOverviewsAsync(userId);
             if (!tripDestinations.Any()) return NoContent();
 
             return Ok(tripDestinations);
@@ -123,7 +123,7 @@ namespace TravelBuddy.Api.Controllers
         {
             if (!User.IsSelfOrAdmin(userId)) return Forbid();
 
-            var tripDestination = await _tripDestinationService.GetTripDestinationInfoAsync(tripDestinationId);
+            var tripDestination = await _tripService.GetTripDestinationInfoAsync(tripDestinationId);
             if (tripDestination == null) return NoContent();
 
             return Ok(tripDestination);
@@ -144,7 +144,7 @@ namespace TravelBuddy.Api.Controllers
             if (triggeredBy == null) return Unauthorized();
 
             var isSelfOrAdmin = User.IsSelfOrAdmin(userId);
-            var isOwner = await _tripDestinationService.IsTripOwnerAsync(triggeredBy.Value, tripDestinationId);
+            var isOwner = await _tripService.IsTripOwnerAsync(triggeredBy.Value, tripDestinationId);
 
             if (!isSelfOrAdmin && !isOwner)
                 return Forbid();
@@ -156,7 +156,7 @@ namespace TravelBuddy.Api.Controllers
                     : "Removed by owner";
             }
 
-            var (success, errorMessage) = await _tripDestinationService.LeaveTripDestinationAsync(
+            var (success, errorMessage) = await _tripService.LeaveTripDestinationAsync(
                 userId,
                 tripDestinationId,
                 triggeredBy.Value,

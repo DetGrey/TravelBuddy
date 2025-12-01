@@ -13,4 +13,7 @@ public interface IMessagingRepository
     Task<IReadOnlyList<Message>> GetMessagesForConversationAsync(int conversationId);
 
     Task<Message> AddMessageAsync(Message message);
+
+    // Audit related
+    Task<IEnumerable<ConversationAudit>> GetConversationAuditsAsync();
 }

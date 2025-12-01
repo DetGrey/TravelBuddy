@@ -100,4 +100,17 @@ public class Neo4jTripRepository : ITripRepository
         // TODO Placeholder: Return false to simulate a failed or neutral update (can be true if needed)
         return await Task.FromResult<(bool, string?)>((true, null));
     }
+
+    // ------------------------------- AUDIT TABLES -------------------------------
+    public async Task<IEnumerable<TripAudit>> GetTripAuditsAsync()
+    {
+        // TODO Placeholder: Return an empty collection of TripAudit records
+        return await Task.FromResult<IEnumerable<TripAudit>>(new List<TripAudit>());
+    }
+
+    public async Task<IEnumerable<BuddyAudit>> GetBuddyAuditsAsync()
+    {
+        // TODO Placeholder: Return an empty collection of BuddyAudit records
+        return await Task.FromResult<IEnumerable<BuddyAudit>>(new List<BuddyAudit>());
+    }
 }

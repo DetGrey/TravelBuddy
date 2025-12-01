@@ -524,5 +524,17 @@ namespace TravelBuddy.Trips
 
             return (replaceResult.IsAcknowledged && replaceResult.ModifiedCount > 0, null);
         }
+
+        // ------------------------------- AUDIT TABLES -------------------------------
+        public async Task<IEnumerable<TripAudit>> GetTripAuditsAsync()
+        {
+            // TODO Placeholder: Return an empty collection of TripAudit records
+            return await Task.FromResult<IEnumerable<TripAudit>>(new List<TripAudit>());
+        }
+        public async Task<IEnumerable<BuddyAudit>> GetBuddyAuditsAsync()
+        {
+            // TODO Placeholder: Return an empty collection of BuddyAudit records
+            return await Task.FromResult<IEnumerable<BuddyAudit>>(new List<BuddyAudit>());
+        }
     }
 }

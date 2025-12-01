@@ -2,7 +2,7 @@ USE travel_buddy;
 show tables;
 
 SELECT *
-FROM destination;
+FROM conversation_audit;
 
 SELECT *
 FROM conversation_participant

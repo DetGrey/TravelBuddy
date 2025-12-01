@@ -44,4 +44,12 @@ public class MySqlMessagingRepository : IMessagingRepository
         await _context.SaveChangesAsync();
         return message;
     }
+
+    // ------------------------------- AUDIT TABLES -------------------------------
+    public async Task<IEnumerable<ConversationAudit>> GetConversationAuditsAsync()
+    {
+        return await _context.ConversationAudits
+            .AsNoTracking()
+            .ToListAsync();
+    }
 }
