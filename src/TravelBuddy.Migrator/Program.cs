@@ -645,8 +645,9 @@ await using (var msgSession = neo4j.AsyncSession(o => o.WithDefaultAccessMode(Ac
             MATCH (u:User { userId: $senderId })
             MATCH (c:Conversation { conversationId: $conversationId })
             MERGE (u)-[:SENT]->(m)
-            MERGE (m)-[:IN_CONVERSATION]->(c)
+            MERGE (c)-[:HAS_MESSAGE]->(m)
         ", msgParams);
+
     }
 }
 Console.WriteLine($"Neo4j: migrated {messages.Count} messages.");
