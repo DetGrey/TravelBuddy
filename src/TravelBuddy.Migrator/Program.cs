@@ -532,25 +532,27 @@ await using (var buddySession = neo4j.AsyncSession(o => o.WithDefaultAccessMode(
 
         var buddyParams = new
         {
-            userId           = b.UserId,
-            tripId           = td.TripId,
-            tripDestinationId= b.TripDestinationId,
-            personCount      = b.PersonCount,
-            note             = b.Note,
-            isActive         = b.IsActive,
-            departureReason  = b.DepartureReason,
-            requestStatus    = b.RequestStatus
+            userId            = b.UserId,
+            tripId            = td.TripId,
+            tripDestinationId = b.TripDestinationId,
+            buddyId           = b.BuddyId,         
+            personCount       = b.PersonCount,
+            note              = b.Note,
+            isActive          = b.IsActive,
+            departureReason   = b.DepartureReason,
+            requestStatus     = b.RequestStatus
         };
 
         await buddySession.RunAsync(@"
             MATCH (u:User { userId: $userId })
             MATCH (t:Trip { tripId: $tripId })
             MERGE (u)-[r:BUDDY_ON { tripDestinationId: $tripDestinationId }]->(t)
-            SET r.personCount     = $personCount,
-                r.note            = $note,
-                r.isActive        = $isActive,
-                r.departureReason = $departureReason,
-                r.requestStatus   = $requestStatus
+            SET  r.buddyId         = $buddyId,       
+                 r.personCount     = $personCount,
+                 r.note            = $note,
+                 r.isActive        = $isActive,
+                 r.departureReason = $departureReason,
+                 r.requestStatus   = $requestStatus
         ", buddyParams);
     }
 }
