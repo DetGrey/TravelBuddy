@@ -46,7 +46,12 @@ public class MySqlTripRepository : ITripRepository
             .AsNoTracking()
             .ToListAsync();
     }
-
+    public async Task<IEnumerable<Destination>> GetDestinationsAsync()
+    {
+        return await _context.Destinations
+            .AsNoTracking()
+            .ToListAsync();
+    }
     public async Task<IEnumerable<BuddyTripSummary>> GetBuddyTripsAsync(int userId)
     {
         return await _context.BuddyTripSummaries
@@ -241,6 +246,113 @@ public class MySqlTripRepository : ITripRepository
                 LIMIT 1")
             .SingleOrDefaultAsync();
     }
+
+    public async Task<(bool Success, string? ErrorMessage)> CreateTripWithDestinationsAsync(CreateTripWithDestinationsDto createTripWithDestinationsDto)
+    {   
+        // SHow a list of all lat long
+        Console.WriteLine($"Long and lats: {string.Join(", ", createTripWithDestinationsDto.TripDestinations.Select(td => $"({td.Longitude}, {td.Latitude})"))}");
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            // Create Trip
+            var (tripSuccess, tripError, newTripId) = await CreateTripAsync(createTripWithDestinationsDto.CreateTrip);
+            if (!tripSuccess || newTripId == null)
+            {
+                await transaction.RollbackAsync();
+                return (false, tripError);
+            }
+
+            var tripDestinationsWithId = createTripWithDestinationsDto.TripDestinations.Select(td => {
+                td.TripId = newTripId.Value;
+                return td;
+            }).ToList();
+
+            if (!tripDestinationsWithId.Any())
+            {
+                await transaction.RollbackAsync();
+                return (false, "At least one trip destination is required.");
+            }
+            // Create Trip Destinations
+            var (destSuccess, destError) = await CreateTripDestinationsAsync(tripDestinationsWithId);
+            if (!destSuccess)
+            {
+                await transaction.RollbackAsync();
+                return (false, destError);
+            }
+
+            await transaction.CommitAsync();
+            return (true, null);
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            return (false, "Error: " + ex.Message);
+        }
+    }
+    private async Task<(bool Success, string? ErrorMessage, int? NewTripId)> CreateTripAsync(CreateTripDto trip)
+    {
+        try
+        {
+            var result = await _context.NewTripIds.FromSqlInterpolated($@"
+                CALL create_trip(
+                    {trip.OwnerId},
+                    {trip.TripName},
+                    {trip.MaxBuddies},
+                    {trip.StartDate},
+                    {trip.EndDate},
+                    {trip.Description},
+                    {trip.ChangedBy}
+                )")
+                .ToListAsync();
+
+            int newTripId = result.FirstOrDefault()?.TripId ?? 0;
+
+            if (newTripId > 0)
+            {
+                return (true, null, newTripId);
+            }
+            
+            return (false, "Trip creation succeeded but ID was not returned.", null);
+        }
+        catch (Exception ex)
+        {
+            return (false, "Error: " + ex.Message, null);
+        }
+    }
+
+    private async Task<(bool Success, string? ErrorMessage)> CreateTripDestinationsAsync(IEnumerable<CreateTripDestinationDto> tripDestinations)
+    {
+        try
+        {
+            foreach (var dest in tripDestinations)
+            {
+                await _context.Database.ExecuteSqlInterpolatedAsync($@"
+                    CALL create_trip_destination(
+                        {dest.TripId},
+                        {dest.DestinationId},
+                        {dest.Name},
+                        {dest.State},
+                        {dest.Country},
+                        {dest.Longitude},
+                        {dest.Latitude},
+                        {dest.DestinationStartDate},
+                        {dest.DestinationEndDate},
+                        {dest.SequenceNumber},
+                        {dest.Description}
+                    )");    
+            }
+
+            return (true, null);
+        }
+        catch (Exception ex)
+        {
+            return (false, "Error: " + ex.Message);
+        }
+    }
+
+    // ----------------------------------------------------------------------------------
+    // BUDDY RELATED METHODS
+    // ----------------------------------------------------------------------------------
     public async Task<(bool Success, string? ErrorMessage)> LeaveTripDestinationAsync(
         int userId,
         int tripDestinationId,

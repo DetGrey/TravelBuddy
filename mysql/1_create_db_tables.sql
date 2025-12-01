@@ -97,7 +97,7 @@ CREATE TABLE IF NOT EXISTS buddy (
         ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT fk_buddy_tripDestination FOREIGN KEY (trip_destination_id) REFERENCES trip_destination(trip_destination_id)
         ON DELETE CASCADE ON UPDATE CASCADE
-    );
+);
 
 -- =====================================
 -- Conversation Table

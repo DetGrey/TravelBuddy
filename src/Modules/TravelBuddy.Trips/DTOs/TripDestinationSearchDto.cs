@@ -6,7 +6,7 @@ namespace TravelBuddy.Trips.DTOs
         int DestinationId,
         string DestinationName,
         string Country,
-        string State,
+        string? State,
         DateOnly DestinationStart,
         DateOnly DestinationEnd,
         int MaxBuddies,

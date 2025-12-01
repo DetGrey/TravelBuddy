@@ -2,8 +2,7 @@ USE travel_buddy;
 show tables;
 
 SELECT *
-FROM conversation
-WHERE trip_destination_id = 141;
+FROM destination;
 
 SELECT *
 FROM conversation_participant

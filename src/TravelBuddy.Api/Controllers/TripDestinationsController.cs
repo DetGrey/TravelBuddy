@@ -9,12 +9,12 @@ namespace TravelBuddy.Api.Controllers
     [Route("api/trip-destinations")] 
     public class TripDestinationsController : ControllerBase
     {
-        private readonly ITripService _tripDestinationService;
+        private readonly ITripService _tripService;
 
         // Constructor: ASP.NET Core automatically injects the ITripDestinationService implementation here.
-        public TripDestinationsController(ITripService TripDestinationService)
+        public TripDestinationsController(ITripService tripService)
         {
-            _tripDestinationService = TripDestinationService;
+            _tripService = tripService;
         }
 
         [HttpGet("search")]
@@ -29,7 +29,7 @@ namespace TravelBuddy.Api.Controllers
             [FromQuery] int? partySize,
             [FromQuery] string? q)
         {
-            var trips = await _tripDestinationService.SearchTripsAsync(
+            var trips = await _tripService.SearchTripsAsync(
                 reqStart, reqEnd, country, state, name, partySize, q);
 
             if (trips == null || !trips.Any())

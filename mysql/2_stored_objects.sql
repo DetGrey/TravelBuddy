@@ -1113,3 +1113,135 @@ JOIN
     user u_owner ON t.owner_id = u_owner.user_id;
 
 # --------------- CREATING A TRIP
+DROP PROCEDURE IF EXISTS create_trip;
+DELIMITER $$
+CREATE PROCEDURE create_trip (
+    IN p_owner_id INT,
+    IN p_trip_name VARCHAR(100),
+    IN p_max_buddies INT,
+    IN p_start_date DATE,
+    IN p_end_date DATE,
+    IN p_description VARCHAR(255),
+    IN p_changed_by INT
+)
+BEGIN
+    DECLARE new_trip_id INT;
+
+    -- Validate inputs
+    IF p_owner_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Owner ID cannot be NULL';
+    END IF;
+
+    IF p_trip_name IS NULL OR p_trip_name = '' THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Trip name is required';
+    END IF;
+
+    IF p_max_buddies IS NULL OR p_max_buddies < 1 THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Max buddies must be >= 1';
+    END IF;
+
+    IF p_start_date IS NULL OR p_end_date IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Start and end dates are required';
+    END IF;
+
+    IF p_end_date < p_start_date THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'End date must be after start date';
+    END IF;
+
+    -- Insert trip
+    INSERT INTO trip (owner_id, trip_name, max_buddies, start_date, end_date, description)
+    VALUES (p_owner_id, p_trip_name, p_max_buddies, p_start_date, p_end_date, p_description);
+
+    SET new_trip_id = LAST_INSERT_ID();
+
+    -- Audit log
+    INSERT INTO trip_audit (trip_id, action, field_changed, old_value, new_value, changed_by)
+    VALUES (new_trip_id, 'created', NULL, NULL, CONCAT('Trip created: ', p_trip_name), p_changed_by);
+
+    -- Return the new tripId
+    SELECT new_trip_id AS TripId;
+END $$
+DELIMITER ;
+
+# Add trip destination to trip
+DROP PROCEDURE IF EXISTS create_trip_destination;
+DELIMITER $$
+CREATE PROCEDURE create_trip_destination (
+    IN p_trip_id INT,
+    IN p_destination_id INT,
+    IN p_name VARCHAR(255),
+    IN p_state VARCHAR(100),
+    IN p_country VARCHAR(100),
+    IN p_longitude DECIMAL(10,7),
+    IN p_latitude DECIMAL(10,7),
+    IN p_start_date DATE,
+    IN p_end_date DATE,
+    IN p_sequence_number INT,
+    IN p_description VARCHAR(255)
+)
+BEGIN
+    DECLARE new_destination_id INT;
+
+    -- Validate trip
+    IF p_trip_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Trip ID cannot be NULL';
+    END IF;
+
+    -- If no destination_id, create one
+    IF p_destination_id IS NULL THEN
+        IF p_name IS NULL OR p_name = '' THEN
+            SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'Destination name required when creating new destination';
+        END IF;
+
+        IF p_country IS NULL OR p_country = '' THEN
+            SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'Country required when creating new destination';
+        END IF;
+
+        -- Validate coordinates
+        IF p_longitude IS NOT NULL AND (p_longitude < -180 OR p_longitude > 180) THEN
+            SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'Longitude must be between -180 and 180';
+        END IF;
+
+        IF p_latitude IS NOT NULL AND (p_latitude < -90 OR p_latitude > 90) THEN
+            SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'Latitude must be between -90 and 90';
+        END IF;
+
+        INSERT INTO destination (name, state, country, longitude, latitude)
+        VALUES (p_name, p_state, p_country, p_longitude, p_latitude);
+
+        SET new_destination_id = LAST_INSERT_ID();
+    ELSE
+        SET new_destination_id = p_destination_id;
+    END IF;
+
+    -- Validate dates
+    IF p_start_date IS NULL OR p_end_date IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Start and end dates are required';
+    END IF;
+
+    IF p_end_date < p_start_date THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'End date must be after start date';
+    END IF;
+
+    IF p_sequence_number IS NULL OR p_sequence_number < 1 THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Sequence number must be >= 1';
+    END IF;
+
+    -- Insert trip destination
+    INSERT INTO trip_destination (trip_id, destination_id, start_date, end_date, sequence_number, description)
+    VALUES (p_trip_id, new_destination_id, p_start_date, p_end_date, p_sequence_number, p_description);
+END $$
+DELIMITER ;

@@ -23,6 +23,51 @@ namespace TravelBuddy.Api.Controllers
         }
 
         [Authorize]
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> CreateTripWithTripDestinations(
+            [FromRoute] int userId,
+            [FromBody] CreateTripWithDestinationsDto createTripWithDestinationsDto
+        )
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            
+            if (!User.IsSelfOrAdmin(userId)) return Forbid();
+
+
+            int? changedById = User.GetUserId();
+            if (changedById != null) {
+                createTripWithDestinationsDto.CreateTrip.ChangedBy = changedById.Value;
+            }
+
+            // Check that for new destinations, either destinationId is provided 
+            // or all new destination fields are filled
+            if (createTripWithDestinationsDto.TripDestinations.Any(td => 
+                td.DestinationId == null &&
+                (string.IsNullOrWhiteSpace(td.Name) ||
+                 string.IsNullOrWhiteSpace(td.Country) ||
+                 td.Longitude == null ||
+                 td.Latitude == null)))
+            {
+                return BadRequest("New destination fields are incomplete.");
+            }
+
+            var (success, errorMessage) = await _tripDestinationService
+                .CreateTripWithDestinationsAsync(createTripWithDestinationsDto);
+            
+            if (!success)
+            {
+                return BadRequest(errorMessage ?? "Failed to create trip.");
+            }
+
+            return Created();
+        }
+
+        [Authorize]
         [HttpGet("{tripId}")]
         [ProducesResponseType(typeof(TripOverviewDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]

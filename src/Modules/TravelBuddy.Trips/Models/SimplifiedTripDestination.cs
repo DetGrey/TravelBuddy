@@ -7,7 +7,7 @@ public class SimplifiedTripDestination
     public DateOnly DestinationStartDate { get; set; }
     public DateOnly DestinationEndDate { get; set; }
     public string DestinationName { get; set; } = null!;
-    public string DestinationState { get; set; } = null!;
+    public string? DestinationState { get; set; } = null!;
     public string DestinationCountry { get; set; } = null!;
     public int MaxBuddies { get; set; }
 

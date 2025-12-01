@@ -15,12 +15,14 @@ namespace TravelBuddy.Trips
             int? partySize,
             string? q
         );
-
+        Task<IEnumerable<DestinationDto>> GetDestinationsAsync();
         Task<IEnumerable<BuddyTripSummaryDto>> GetBuddyTripsAsync(int userId);
         Task<TripDestinationInfoDto?> GetTripDestinationInfoAsync(int tripDestinationId);
         Task<TripOverviewDto?> GetFullTripOverviewAsync(int tripId);
         Task<IEnumerable<TripOverviewDto>> GetOwnedTripOverviewsAsync(int userId);
         Task<bool> IsTripOwnerAsync(int userId, int tripDestinationId);
+        Task<(bool Success, string? ErrorMessage)> CreateTripWithDestinationsAsync(CreateTripWithDestinationsDto createTripWithDestinationsDto);
+        // Buddy related
         Task<(bool Success, string? ErrorMessage)> LeaveTripDestinationAsync(int userId, int tripDestinationId, int triggeredBy, string departureReason);
         Task<IEnumerable<PendingBuddyRequestDto>> GetPendingBuddyRequestsAsync(int userId);
         Task<(bool Success, string? ErrorMessage)> InsertBuddyRequestAsync(BuddyDto buddyDto);
@@ -67,7 +69,20 @@ namespace TravelBuddy.Trips
           )).ToList();
 
         }
+        public async Task<IEnumerable<DestinationDto>> GetDestinationsAsync()
+        {
+            var tripRepository = GetRepo();
+            var results = await tripRepository.GetDestinationsAsync();
 
+            return results.Select(r => new DestinationDto(
+                r.DestinationId,
+                r.Name,
+                r.State,
+                r.Country,
+                r.Longitude,
+                r.Latitude
+            )).ToList();
+        }
         public async Task<IEnumerable<BuddyTripSummaryDto>> GetBuddyTripsAsync(int userId)
         {
             var tripRepository = GetRepo();
@@ -189,6 +204,16 @@ namespace TravelBuddy.Trips
             var tripOwner = await tripRepository.GetTripOwnerAsync(tripDestinationId);
             return tripOwner == userId;
         }
+
+        public async Task<(bool Success, string? ErrorMessage)> CreateTripWithDestinationsAsync(CreateTripWithDestinationsDto createTripWithDestinationsDto)
+        {
+            var tripRepository = GetRepo();
+            return await tripRepository.CreateTripWithDestinationsAsync(createTripWithDestinationsDto);
+        }
+
+        // --------------------------------------------------------------------------
+        // BUDDY RELATED METHODS
+        // --------------------------------------------------------------------------
         public async Task<(bool Success, string? ErrorMessage)> LeaveTripDestinationAsync(
             int userId,
             int tripDestinationId,

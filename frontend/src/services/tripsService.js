@@ -1,12 +1,22 @@
 import api from './api';
 
 const tripsService = {
-    // NOTE: Backend does not expose a create trip/trip-destination endpoint right now.
-    // TODO: Add POST /api/trip-destinations on backend and enable this helper.
-    async createTrip(payload) {
-      const res = await api.post('/trip-destinations', payload);
-      console.log("createTrip: ", res.data)
-      return res.data;
+    // Create a new trip for a user: POST /api/users/{userId}/trips
+    async createTrip(userId, payload) {
+      try {
+        console.log("createTrip payload: ", payload);
+        const res = await api.post(`/users/${userId}/trips`, payload);
+        return;
+      } catch (err) {
+        console.error("Failed to create trip:", err.response?.data || err.message);
+        throw err;
+      }
+    },
+
+    async getDestinations() {
+      const res = await api.get('/destinations');
+      console.log("getDestinations: ", res.data)
+      return res.data; // returns array of DestinationDto
     },
 
     // Search trips using backend endpoint: GET /api/trip-destinations/search

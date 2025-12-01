@@ -28,6 +28,12 @@ public class Neo4jTripRepository : ITripRepository
         return await Task.FromResult<IEnumerable<TripDestinationSearchResult>>(new List<TripDestinationSearchResult>());
     }
 
+    public async Task<IEnumerable<Destination>> GetDestinationsAsync()
+    {
+        // TODO Placeholder: Return an empty collection of destinations
+        return await Task.FromResult<IEnumerable<Destination>>(new List<Destination>());
+    }
+
     public async Task<IEnumerable<BuddyTripSummary>> GetBuddyTripsAsync(int userId)
     {
         // TODO Placeholder: Return an empty list of user trip summaries
@@ -56,6 +62,17 @@ public class Neo4jTripRepository : ITripRepository
         return await Task.FromResult<int?>(null);
     }
 
+    // ---------------------------------------------------------
+    // Create a new trip with destinations
+    // ---------------------------------------------------------
+    public async Task<(bool Success, string? ErrorMessage)> CreateTripWithDestinationsAsync(CreateTripWithDestinationsDto createTripWithDestinationsDto)
+    {
+        // TODO implement
+        return await Task.FromResult((false, "Not implemented"));
+    }
+
+    // -----------------------------------------------------------------------------------------------
+    // Buddy related
     public async Task<(bool Success, string? ErrorMessage)> LeaveTripDestinationAsync(
         int userId,
         int tripDestinationId,

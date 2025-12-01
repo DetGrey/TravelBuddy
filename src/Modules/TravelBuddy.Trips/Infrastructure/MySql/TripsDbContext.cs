@@ -41,6 +41,7 @@ public partial class TripsDbContext : DbContext
     public DbSet<SimplifiedTripDestination> SimplifiedTripDestination { get; set; }
     public DbSet<TripHeaderInfo> TripHeaderInfo { get; set; }
     public DbSet<TripOverview> TripOverview { get; set; }
+    public DbSet<NewTripId> NewTripIds { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -293,6 +294,8 @@ public partial class TripsDbContext : DbContext
             .ToView("V_SimplifiedTripDest");
         modelBuilder.Entity<TripOverview>().HasNoKey();
         modelBuilder.Entity<TripHeaderInfo>().HasNoKey();
+
+        modelBuilder.Entity<NewTripId>().HasNoKey();
 
         OnModelCreatingPartial(modelBuilder);
     }

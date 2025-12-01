@@ -224,6 +224,12 @@ namespace TravelBuddy.Trips
             return results;
         }
 
+        public async Task<IEnumerable<Destination>> GetDestinationsAsync()
+        {
+            // TODO: implement 
+            return await Task.FromResult<IEnumerable<Destination>>(new List<Destination>());
+        }
+
         // ---------------------------------------------------------
         // Get trips that a user owns or is buddy on
         // ---------------------------------------------------------
@@ -295,6 +301,15 @@ namespace TravelBuddy.Trips
 
             var trip = await _tripsCollection.Find(filter).FirstOrDefaultAsync();
             return trip?.OwnerId;
+        }
+
+        // ---------------------------------------------------------
+        // Create a new trip with destinations
+        // ---------------------------------------------------------
+        public async Task<(bool Success, string? ErrorMessage)> CreateTripWithDestinationsAsync(CreateTripWithDestinationsDto createTripWithDestinationsDto)
+        {
+            // TODO implement
+            return await Task.FromResult((false, "Not implemented"));
         }
 
         // ---------------------------------------------------------
