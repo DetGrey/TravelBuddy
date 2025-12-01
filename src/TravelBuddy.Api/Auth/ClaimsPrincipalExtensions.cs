@@ -4,6 +4,15 @@ namespace TravelBuddy.Api.Auth
 {
     public static class ClaimsPrincipalExtensions
     {
+        public static bool IsAdmin(this ClaimsPrincipal user, int targetUserId)
+        {
+            var roleClaim = user.FindFirst(ClaimTypes.Role)?.Value;
+
+            if (roleClaim == null)
+                return false;
+
+            return roleClaim.Equals("admin", StringComparison.OrdinalIgnoreCase);
+        }
         public static bool IsSelfOrAdmin(this ClaimsPrincipal user, int targetUserId)
         {
             var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;

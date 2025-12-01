@@ -113,17 +113,17 @@ namespace TravelBuddy.Api.Controllers
         }
 
         [Authorize]
-        [HttpGet("{id}")]
+        [HttpGet("{userId}")]
         [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> GetUser([FromRoute] int id)
+        public async Task<IActionResult> GetUser([FromRoute] int userId)
         {
-            if (!User.IsSelfOrAdmin(id))
+            if (!User.IsSelfOrAdmin(userId))
                 return Forbid();
         
-            var user = await _userService.GetUserByIdAsync(id);
+            var user = await _userService.GetUserByIdAsync(userId);
             
             if (user == null)
             {
@@ -134,47 +134,48 @@ namespace TravelBuddy.Api.Controllers
         }
         
         [Authorize]
-        [HttpDelete("{id}/delete-user")]
+        [HttpDelete("{userId}/delete-user")]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> DeleteUser([FromRoute] int id)
+        public async Task<IActionResult> DeleteUser([FromRoute] int userId)
         {
-            if (!User.IsSelfOrAdmin(id))
+            if (!User.IsSelfOrAdmin(userId))
                 return Forbid();
 
-            var success = await _userService.DeleteUser(id);
+            var success = await _userService.DeleteUser(userId);
             if (!success)
                  return BadRequest("User deletion failed due to invalid input or policy violation.");
 
-            Response.Cookies.Delete("access_token");
+            if (!User.IsAdmin(userId))
+                Response.Cookies.Delete("access_token");
 
             return Ok("User deleted successfully.");
         }
 
         [Authorize]
-        [HttpPost("{id}/change-password")]
+        [HttpPost("{userId}/change-password")]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> ChangePassword([FromRoute] int id, [FromBody] PasswordChangeRequestDto request)
+        public async Task<IActionResult> ChangePassword([FromRoute] int userId, [FromBody] PasswordChangeRequestDto request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             // Note: this means that admin can change other people's passwords
             // This is not ideal for a real project but used here to access our generated data
-            if (!User.IsSelfOrAdmin(id))
+            if (!User.IsSelfOrAdmin(userId))
                 return Forbid();
 
             var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
             if (userEmail == null)
                 return NotFound("User email not found in claims.");
 
-            var success = await _userService.ChangePasswordAsync(request, userEmail, id);
+            var success = await _userService.ChangePasswordAsync(request, userEmail, userId);
             if (!success)
                  return BadRequest("Password change failed due to invalid input or policy violation.");
 
