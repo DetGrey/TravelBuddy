@@ -1,10 +1,15 @@
 using Neo4j.Driver;
-using Microsoft.EntityFrameworkCore;
+using TravelBuddy.Trips.Models;
+using TravelBuddy.Trips.DTOs;
+using TravelBuddy.Trips.Infrastructure;
+
+using Neo4j.Driver;
 using TravelBuddy.Trips.Models;
 using TravelBuddy.Trips.DTOs;
 using TravelBuddy.Trips.Infrastructure;
 
 namespace TravelBuddy.Trips;
+
 // CLASS
 public class Neo4jTripRepository : ITripRepository
 {
@@ -15,6 +20,49 @@ public class Neo4jTripRepository : ITripRepository
         _driver = driver;
     }
 
+    // --------------------------------------------------------------------
+    // Helpers
+    // --------------------------------------------------------------------
+
+    // Parse various Neo4j date representations into DateOnly
+    private static DateOnly ParseIsoDate(object value)
+    {
+        if (value == null)
+            throw new InvalidOperationException("Null date value from Neo4j");
+
+        switch (value)
+        {
+            case LocalDate ld:
+                return new DateOnly(ld.Year, ld.Month, ld.Day);
+
+            case DateTime dt:
+                return DateOnly.FromDateTime(dt);
+
+            case string s:
+                // Expecting ISO date like "2024-01-31"
+                return DateOnly.Parse(s);
+
+            default:
+                return DateOnly.Parse(value.ToString()!);
+        }
+    }
+
+    // Helper: generate next BuddyId (global over all BUDDY_ON relationships)
+    private async Task<int> GetNextBuddyIdAsync()
+    {
+        await using var session = _driver.AsyncSession();
+        var cursor = await session.RunAsync(@"
+            MATCH ()-[b:BUDDY_ON]->()
+            RETURN coalesce(max(b.buddyId), 0) AS MaxId
+        ");
+        var record = await cursor.SingleAsync();
+        var maxId = record["MaxId"].As<int>();
+        return maxId + 1;
+    }
+
+    // --------------------------------------------------------------------
+    // Search available trips / destinations
+    // --------------------------------------------------------------------
     public async Task<IEnumerable<TripDestinationSearchResult>> SearchTripsAsync(
         DateOnly? reqStart,
         DateOnly? reqEnd,
@@ -24,93 +72,720 @@ public class Neo4jTripRepository : ITripRepository
         int? partySize,
         string? q)
     {
-        // TODO Placeholder: Return an empty collection of search results
-        return await Task.FromResult<IEnumerable<TripDestinationSearchResult>>(new List<TripDestinationSearchResult>());
+        await using var session = _driver.AsyncSession();
+
+        var cypher = @"
+MATCH (t:Trip)-[hs:HAS_STOP]->(d:Destination)
+OPTIONAL MATCH (u:User)-[b:BUDDY_ON { tripDestinationId: hs.tripDestinationId }]->(t)
+WITH t, hs, d,
+     sum(
+        CASE WHEN toLower(b.requestStatus) = 'accepted'
+             THEN coalesce(b.personCount, 1)
+             ELSE 0
+        END
+     ) AS acceptedPersons
+WITH t, hs, d, acceptedPersons,
+     CASE
+       WHEN t.maxBuddies IS NULL THEN 0
+       WHEN t.maxBuddies - acceptedPersons < 0 THEN 0
+       ELSE t.maxBuddies - acceptedPersons
+     END AS remaining
+WHERE
+  ($reqStart IS NULL OR date(hs.endDate) >= date($reqStart)) AND
+  ($reqEnd   IS NULL OR date(hs.startDate) <= date($reqEnd)) AND
+  ($country  IS NULL OR toLower(d.country) = toLower($country)) AND
+  ($state    IS NULL OR toLower(coalesce(d.state, '')) = toLower($state)) AND
+  ($name     IS NULL OR toLower(d.name) CONTAINS toLower($name)) AND
+  ($q        IS NULL OR toLower(
+                        d.name + ' ' +
+                        d.country + ' ' +
+                        coalesce(d.state, '') + ' ' +
+                        coalesce(t.description, '') + ' ' +
+                        coalesce(t.tripName, '')
+                    ) CONTAINS toLower($q)) AND
+  ($partySize IS NULL OR remaining >= $partySize)
+RETURN
+  hs.tripDestinationId AS TripDestinationId,
+  t.tripId             AS TripId,
+  d.destinationId      AS DestinationId,
+  d.name               AS DestinationName,
+  d.country            AS Country,
+  coalesce(d.state, '') AS State,
+  hs.startDate         AS DestinationStart,
+  hs.endDate           AS DestinationEnd,
+  coalesce(t.maxBuddies, 0) AS MaxBuddies,
+  acceptedPersons      AS AcceptedPersons,
+  remaining            AS RemainingCapacity
+";
+
+        var cursor = await session.RunAsync(cypher, new
+        {
+            reqStart = reqStart?.ToString("yyyy-MM-dd"),
+            reqEnd   = reqEnd?.ToString("yyyy-MM-dd"),
+            country,
+            state,
+            name,
+            partySize,
+            q
+        });
+
+        var records = await cursor.ToListAsync();
+        var results = new List<TripDestinationSearchResult>();
+
+        foreach (var record in records)
+        {
+            results.Add(new TripDestinationSearchResult
+            {
+                TripDestinationId = record["TripDestinationId"].As<int>(),
+                TripId            = record["TripId"].As<int>(),
+                DestinationId     = record["DestinationId"].As<int>(),
+                DestinationName   = record["DestinationName"].As<string>(),
+                Country           = record["Country"].As<string>(),
+                State             = record["State"].As<string>(),
+                DestinationStart  = ParseIsoDate(record["DestinationStart"]),
+                DestinationEnd    = ParseIsoDate(record["DestinationEnd"]),
+                MaxBuddies        = record["MaxBuddies"].As<int>(),
+                AcceptedPersons   = record["AcceptedPersons"].As<int>(),
+                RemainingCapacity = record["RemainingCapacity"].As<int>()
+            });
+        }
+
+        return results;
     }
 
+    // --------------------------------------------------------------------
+    // Get all destinations
+    // --------------------------------------------------------------------
     public async Task<IEnumerable<Destination>> GetDestinationsAsync()
     {
-        // TODO Placeholder: Return an empty collection of destinations
-        return await Task.FromResult<IEnumerable<Destination>>(new List<Destination>());
+        await using var session = _driver.AsyncSession();
+
+        var cypher = @"
+MATCH (d:Destination)
+RETURN
+  d.destinationId AS DestinationId,
+  d.name          AS Name,
+  d.state         AS State,
+  d.country       AS Country,
+  d.longitude     AS Longitude,
+  d.latitude      AS Latitude
+ORDER BY d.country, coalesce(d.state, ''), d.name
+";
+
+        var cursor = await session.RunAsync(cypher);
+        var records = await cursor.ToListAsync();
+
+        var list = new List<Destination>();
+
+        foreach (var record in records)
+        {
+            double? lon = record["Longitude"].As<double?>();
+            double? lat = record["Latitude"].As<double?>();
+
+            list.Add(new Destination
+            {
+                DestinationId = record["DestinationId"].As<int>(),
+                Name          = record["Name"].As<string>(),
+                State         = record["State"].As<string?>(),
+                Country       = record["Country"].As<string>(),
+                Longitude     = lon.HasValue ? (decimal?)Convert.ToDecimal(lon.Value) : null,
+                Latitude      = lat.HasValue ? (decimal?)Convert.ToDecimal(lat.Value) : null
+            });
+        }
+
+        return list;
     }
 
+    // --------------------------------------------------------------------
+    // Get trips that a user is buddy on (accepted)
+    // --------------------------------------------------------------------
     public async Task<IEnumerable<BuddyTripSummary>> GetBuddyTripsAsync(int userId)
     {
-        // TODO Placeholder: Return an empty list of user trip summaries
-        return await Task.FromResult<IEnumerable<BuddyTripSummary>>(new List<BuddyTripSummary>());
+        await using var session = _driver.AsyncSession();
+
+        var cypher = @"
+MATCH (u:User { userId: $userId })-[b:BUDDY_ON]->(t:Trip)
+WHERE toLower(b.requestStatus) = 'accepted'
+MATCH (t)-[hs:HAS_STOP { tripDestinationId: b.tripDestinationId }]->(d:Destination)
+RETURN
+  t.tripId             AS TripId,
+  hs.tripDestinationId AS TripDestinationId,
+  d.name               AS DestinationName,
+  coalesce(t.description, '') AS TripDescription,
+  hs.startDate         AS StartDate,
+  hs.endDate           AS EndDate,
+  coalesce(t.isArchived, false) AS IsArchived
+";
+
+        var cursor = await session.RunAsync(cypher, new { userId });
+        var records = await cursor.ToListAsync();
+
+        var result = new List<BuddyTripSummary>();
+
+        foreach (var record in records)
+        {
+            result.Add(new BuddyTripSummary
+            {
+                TripId            = record["TripId"].As<int>(),
+                TripDestinationId = record["TripDestinationId"].As<int>(),
+                DestinationName   = record["DestinationName"].As<string>(),
+                TripDescription   = record["TripDescription"].As<string>(),
+                StartDate         = ParseIsoDate(record["StartDate"]),
+                EndDate           = ParseIsoDate(record["EndDate"]),
+                IsArchived        = record["IsArchived"].As<bool>()
+            });
+        }
+
+        return result;
     }
 
+    // --------------------------------------------------------------------
+    // Trip destination info (with buddies even if buddyId is null in Neo4j)
+    // --------------------------------------------------------------------
     public async Task<TripDestinationInfo?> GetTripDestinationInfoAsync(int tripDestinationId)
     {
-        // TODO Placeholder: Return null, indicating no trip destination info found
-        return await Task.FromResult<TripDestinationInfo?>(null);
+        await using var session = _driver.AsyncSession();
+
+        // 1) Header / main info
+        var headerCypher = @"
+MATCH (t:Trip)-[hs:HAS_STOP { tripDestinationId: $tripDestinationId }]->(d:Destination)
+OPTIONAL MATCH (owner:User)-[:OWNS]->(t)
+RETURN
+  hs.tripDestinationId                 AS TripDestinationId,
+  hs.startDate                         AS DestinationStartDate,
+  hs.endDate                           AS DestinationEndDate,
+  hs.description                       AS DestinationDescription,
+  coalesce(hs.isArchived, false)       AS DestinationIsArchived,
+  t.tripId                             AS TripId,
+  t.maxBuddies                         AS MaxBuddies,
+  d.destinationId                      AS DestinationId,
+  d.name                               AS DestinationName,
+  d.state                              AS DestinationState,
+  d.country                            AS DestinationCountry,
+  d.longitude                          AS Longitude,
+  d.latitude                           AS Latitude,
+  owner.userId                         AS OwnerUserId,
+  owner.name                           AS OwnerName
+";
+
+        var headerCursor = await session.RunAsync(headerCypher, new { tripDestinationId });
+        var headerRecords = await headerCursor.ToListAsync();
+        var headerRecord = headerRecords.SingleOrDefault();
+
+        if (headerRecord == null)
+            return null;
+
+        double? lon = headerRecord["Longitude"].As<double?>();
+        double? lat = headerRecord["Latitude"].As<double?>();
+
+        var info = new TripDestinationInfo
+        {
+            TripDestinationId      = headerRecord["TripDestinationId"].As<int>(),
+            DestinationStartDate   = ParseIsoDate(headerRecord["DestinationStartDate"]),
+            DestinationEndDate     = ParseIsoDate(headerRecord["DestinationEndDate"]),
+            DestinationDescription = headerRecord["DestinationDescription"].As<string?>(),
+            DestinationIsArchived  = headerRecord["DestinationIsArchived"].As<bool?>(),
+
+            TripId     = headerRecord["TripId"].As<int>(),
+            MaxBuddies = headerRecord["MaxBuddies"].As<int?>(),
+
+            DestinationId      = headerRecord["DestinationId"].As<int>(),
+            DestinationName    = headerRecord["DestinationName"].As<string>(),
+            DestinationState   = headerRecord["DestinationState"].As<string?>(),
+            DestinationCountry = headerRecord["DestinationCountry"].As<string>(),
+            Longitude          = lon.HasValue ? (decimal?)Convert.ToDecimal(lon.Value) : null,
+            Latitude           = lat.HasValue ? (decimal?)Convert.ToDecimal(lat.Value) : null,
+
+            OwnerUserId        = headerRecord["OwnerUserId"].As<int?>() ?? 0,
+            OwnerName          = headerRecord["OwnerName"].As<string?>() ?? string.Empty,
+
+            GroupConversationId = null,
+            AcceptedBuddies     = new List<BuddyInfo>(),
+            PendingRequests     = new List<BuddyRequestInfo>()
+        };
+
+        // 2) Accepted buddies – allow null buddyId, fallback to 0
+        var acceptedCypher = @"
+MATCH (u:User)-[b:BUDDY_ON { tripDestinationId: $tripDestinationId }]->(t:Trip)
+WHERE toLower(b.requestStatus) = 'accepted'
+  AND coalesce(b.isActive, true)
+RETURN
+  b.buddyId                      AS BuddyId,
+  coalesce(b.personCount, 1)     AS PersonCount,
+  b.note                         AS BuddyNote,
+  u.userId                       AS BuddyUserId,
+  u.name                         AS BuddyName
+";
+
+        var acceptedCursor = await session.RunAsync(acceptedCypher, new { tripDestinationId });
+        var acceptedRecords = await acceptedCursor.ToListAsync();
+
+        foreach (var r in acceptedRecords)
+        {
+            int? buddyIdNullable = r["BuddyId"].As<int?>();
+            int buddyId = buddyIdNullable ?? 0; // fallback for migrated data
+
+            info.AcceptedBuddies.Add(new BuddyInfo
+            {
+                BuddyId     = buddyId,
+                PersonCount = r["PersonCount"].As<int>(),
+                BuddyNote   = r["BuddyNote"].As<string?>(),
+                BuddyUserId = r["BuddyUserId"].As<int>(),
+                BuddyName   = r["BuddyName"].As<string>()
+            });
+        }
+
+        // 3) Pending requests – same trick for BuddyId
+        var pendingCypher = @"
+MATCH (u:User)-[b:BUDDY_ON { tripDestinationId: $tripDestinationId }]->(t:Trip)
+WHERE toLower(b.requestStatus) = 'pending'
+RETURN
+  b.buddyId                      AS BuddyId,
+  coalesce(b.personCount, 1)     AS PersonCount,
+  b.note                         AS BuddyNote,
+  u.userId                       AS RequesterUserId,
+  u.name                         AS RequesterName
+";
+
+        var pendingCursor = await session.RunAsync(pendingCypher, new { tripDestinationId });
+        var pendingRecords = await pendingCursor.ToListAsync();
+
+        foreach (var r in pendingRecords)
+        {
+            int? buddyIdNullable = r["BuddyId"].As<int?>();
+            int buddyId = buddyIdNullable ?? 0;
+
+            info.PendingRequests.Add(new BuddyRequestInfo
+            {
+                BuddyId         = buddyId,
+                PersonCount     = r["PersonCount"].As<int>(),
+                BuddyNote       = r["BuddyNote"].As<string?>(),
+                RequesterUserId = r["RequesterUserId"].As<int>(),
+                RequesterName   = r["RequesterName"].As<string>()
+            });
+        }
+
+        return info;
     }
+
+    // --------------------------------------------------------------------
+    // Full trip overview (header + destinations with counts)
+    // --------------------------------------------------------------------
     public async Task<TripOverview?> GetFullTripOverviewAsync(int tripId)
     {
-        // TODO Placeholder: Return null, indicating no trip overview found
-        return await Task.FromResult<TripOverview?>(null);
+        await using var session = _driver.AsyncSession();
+
+        // Header: use min/max of HAS_STOP dates like the SQL view
+        var headerCypher = @"
+MATCH (owner:User)-[:OWNS]->(t:Trip { tripId: $tripId })
+MATCH (t)-[hs:HAS_STOP]->(:Destination)
+WITH owner, t,
+     min(hs.startDate) AS TripStart,
+     max(hs.endDate)   AS TripEnd
+RETURN
+  t.tripId                         AS TripId,
+  coalesce(t.tripName, '')         AS TripName,
+  TripStart                        AS TripStartDate,
+  TripEnd                          AS TripEndDate,
+  coalesce(t.maxBuddies, 0)        AS MaxBuddies,
+  coalesce(t.description, '')      AS TripDescription,
+  owner.userId                     AS OwnerUserId,
+  owner.name                       AS OwnerName
+LIMIT 1
+";
+
+        var headerCursor = await session.RunAsync(headerCypher, new { tripId });
+        var headerRecords = await headerCursor.ToListAsync();
+        var header = headerRecords.SingleOrDefault();
+
+        if (header == null)
+            return null;
+
+        var overview = new TripOverview
+        {
+            TripId          = header["TripId"].As<int>(),
+            TripName        = header["TripName"].As<string>(),
+            TripStartDate   = ParseIsoDate(header["TripStartDate"]),
+            TripEndDate     = ParseIsoDate(header["TripEndDate"]),
+            MaxBuddies      = header["MaxBuddies"].As<int>(),
+            TripDescription = header["TripDescription"].As<string>(),
+            OwnerUserId     = header["OwnerUserId"].As<int>(),
+            OwnerName       = header["OwnerName"].As<string>(),
+            Destinations    = new List<SimplifiedTripDestination>()
+        };
+
+        // Destinations + accepted persons per destination
+        var destCypher = @"
+MATCH (t:Trip { tripId: $tripId })-[hs:HAS_STOP]->(d:Destination)
+OPTIONAL MATCH (u:User)-[b:BUDDY_ON { tripDestinationId: hs.tripDestinationId }]->(t)
+WHERE toLower(b.requestStatus) = 'accepted' AND coalesce(b.isActive, true)
+WITH t, hs, d,
+     coalesce(sum(coalesce(b.personCount, 1)), 0) AS acceptedPersons
+RETURN
+  t.tripId             AS TripId,
+  hs.tripDestinationId AS TripDestinationId,
+  hs.startDate         AS DestinationStartDate,
+  hs.endDate           AS DestinationEndDate,
+  d.name               AS DestinationName,
+  d.state              AS DestinationState,
+  d.country            AS DestinationCountry,
+  coalesce(t.maxBuddies, 0) AS MaxBuddies,
+  acceptedPersons      AS AcceptedPersons
+ORDER BY hs.startDate
+";
+
+        var destCursor = await session.RunAsync(destCypher, new { tripId });
+        var destRecords = await destCursor.ToListAsync();
+
+        var dests = new List<SimplifiedTripDestination>();
+
+        foreach (var r in destRecords)
+        {
+            dests.Add(new SimplifiedTripDestination
+            {
+                TripDestinationId    = r["TripDestinationId"].As<int>(),
+                TripId               = r["TripId"].As<int>(),
+                DestinationStartDate = ParseIsoDate(r["DestinationStartDate"]),
+                DestinationEndDate   = ParseIsoDate(r["DestinationEndDate"]),
+                DestinationName      = r["DestinationName"].As<string>(),
+                DestinationState     = r["DestinationState"].As<string?>(),
+                DestinationCountry   = r["DestinationCountry"].As<string>(),
+                MaxBuddies           = r["MaxBuddies"].As<int>(),
+                AcceptedBuddiesCount = r["AcceptedPersons"].As<int>()
+            });
+        }
+
+        overview.Destinations = dests;
+        return overview;
     }
+
+    // --------------------------------------------------------------------
+    // All trip overviews owned by a user
+    // --------------------------------------------------------------------
     public async Task<List<TripOverview>> GetOwnedTripOverviewsAsync(int userId)
     {
-        // TODO Placeholder: Return an empty list of trip overviews
-        return await Task.FromResult<List<TripOverview>>(new List<TripOverview>());
+        await using var session = _driver.AsyncSession();
+
+        // First get all trip headers for trips owned by user
+        var headerCypher = @"
+MATCH (owner:User { userId: $userId })-[:OWNS]->(t:Trip)
+MATCH (t)-[hs:HAS_STOP]->(:Destination)
+WITH owner, t,
+     min(hs.startDate) AS TripStart,
+     max(hs.endDate)   AS TripEnd
+RETURN
+  t.tripId                         AS TripId,
+  coalesce(t.tripName, '')         AS TripName,
+  TripStart                        AS TripStartDate,
+  TripEnd                          AS TripEndDate,
+  coalesce(t.maxBuddies, 0)        AS MaxBuddies,
+  coalesce(t.description, '')      AS TripDescription,
+  owner.userId                     AS OwnerUserId,
+  owner.name                       AS OwnerName
+ORDER BY TripStartDate
+";
+
+        var headerCursor = await session.RunAsync(headerCypher, new { userId });
+        var headerRecords = await headerCursor.ToListAsync();
+
+        if (!headerRecords.Any())
+            return new List<TripOverview>();
+
+        var tripIds = headerRecords
+            .Select(r => r["TripId"].As<int>())
+            .Distinct()
+            .ToList();
+
+        // Now get all destinations for those trips in one go
+        var destCypher = @"
+MATCH (t:Trip)-[hs:HAS_STOP]->(d:Destination)
+WHERE t.tripId IN $tripIds
+OPTIONAL MATCH (u:User)-[b:BUDDY_ON { tripDestinationId: hs.tripDestinationId }]->(t)
+WHERE toLower(b.requestStatus) = 'accepted' AND coalesce(b.isActive, true)
+WITH t, hs, d,
+     coalesce(sum(coalesce(b.personCount, 1)), 0) AS acceptedPersons
+RETURN
+  t.tripId             AS TripId,
+  hs.tripDestinationId AS TripDestinationId,
+  hs.startDate         AS DestinationStartDate,
+  hs.endDate           AS DestinationEndDate,
+  d.name               AS DestinationName,
+  d.state              AS DestinationState,
+  d.country            AS DestinationCountry,
+  coalesce(t.maxBuddies, 0) AS MaxBuddies,
+  acceptedPersons      AS AcceptedPersons
+ORDER BY t.tripId, hs.startDate
+";
+
+        var destCursor = await session.RunAsync(destCypher, new { tripIds });
+        var destRecords = await destCursor.ToListAsync();
+
+        // Group destinations by TripId
+        var destLookup = destRecords
+            .GroupBy(r => r["TripId"].As<int>())
+            .ToDictionary(
+                g => g.Key,
+                g => g.Select(r => new SimplifiedTripDestination
+                {
+                    TripDestinationId    = r["TripDestinationId"].As<int>(),
+                    TripId               = r["TripId"].As<int>(),
+                    DestinationStartDate = ParseIsoDate(r["DestinationStartDate"]),
+                    DestinationEndDate   = ParseIsoDate(r["DestinationEndDate"]),
+                    DestinationName      = r["DestinationName"].As<string>(),
+                    DestinationState     = r["DestinationState"].As<string?>(),
+                    DestinationCountry   = r["DestinationCountry"].As<string>(),
+                    MaxBuddies           = r["MaxBuddies"].As<int>(),
+                    AcceptedBuddiesCount = r["AcceptedPersons"].As<int>()
+                }).ToList()
+            );
+
+        var overviews = new List<TripOverview>();
+
+        foreach (var h in headerRecords)
+        {
+            var id = h["TripId"].As<int>();
+
+            overviews.Add(new TripOverview
+            {
+                TripId          = id,
+                TripName        = h["TripName"].As<string>(),
+                TripStartDate   = ParseIsoDate(h["TripStartDate"]),
+                TripEndDate     = ParseIsoDate(h["TripEndDate"]),
+                MaxBuddies      = h["MaxBuddies"].As<int>(),
+                TripDescription = h["TripDescription"].As<string>(),
+                OwnerUserId     = h["OwnerUserId"].As<int>(),
+                OwnerName       = h["OwnerName"].As<string>(),
+                Destinations    = destLookup.TryGetValue(id, out var dests)
+                    ? dests
+                    : new List<SimplifiedTripDestination>()
+            });
+        }
+
+        return overviews;
     }
 
+    // --------------------------------------------------------------------
+    // Get owner of a specific trip destination
+    // --------------------------------------------------------------------
     public async Task<int?> GetTripOwnerAsync(int tripDestinationId)
     {
-        // TODO Placeholder: Return null, indicating the owner ID isn't found
-        return await Task.FromResult<int?>(null);
+        await using var session = _driver.AsyncSession();
+
+        var cypher = @"
+MATCH (owner:User)-[:OWNS]->(t:Trip)-[hs:HAS_STOP { tripDestinationId: $tripDestinationId }]->(:Destination)
+RETURN owner.userId AS OwnerId
+LIMIT 1
+";
+
+        var cursor = await session.RunAsync(cypher, new { tripDestinationId });
+        var records = await cursor.ToListAsync();
+        var record = records.SingleOrDefault();
+
+        if (record == null)
+            return null;
+
+        var ownerValue = record["OwnerId"];
+        if (ownerValue == null)
+            return null;
+
+        return record["OwnerId"].As<int>();
     }
 
-    // ---------------------------------------------------------
-    // Create a new trip with destinations
-    // ---------------------------------------------------------
-    public async Task<(bool Success, string? ErrorMessage)> CreateTripWithDestinationsAsync(CreateTripWithDestinationsDto createTripWithDestinationsDto)
+    // --------------------------------------------------------------------
+    // Create a new trip with destinations (not implemented)
+    // --------------------------------------------------------------------
+    public async Task<(bool Success, string? ErrorMessage)> CreateTripWithDestinationsAsync(
+        CreateTripWithDestinationsDto createTripWithDestinationsDto)
     {
-        // TODO implement
         return await Task.FromResult((false, "Not implemented"));
     }
 
-    // -----------------------------------------------------------------------------------------------
-    // Buddy related
+    // --------------------------------------------------------------------
+    // User leaves a trip destination (deactivate buddy)
+    // --------------------------------------------------------------------
     public async Task<(bool Success, string? ErrorMessage)> LeaveTripDestinationAsync(
         int userId,
         int tripDestinationId,
         int triggeredBy,
-        string departureReason
-    )
+        string departureReason)
     {
-        // TODO Placeholder: Return a successful result tuple with no error message
-        return await Task.FromResult((Success: true, ErrorMessage: (string?)null));
-    }
-    public async Task<IEnumerable<PendingBuddyRequest>> GetPendingBuddyRequestsAsync(int userId)
-    {
-        // TODO Placeholder: Return an empty list of PendingBuddyRequest
-        return await Task.FromResult<IEnumerable<PendingBuddyRequest>>(new List<PendingBuddyRequest>());
+        await using var session = _driver.AsyncSession();
+
+        var cypher = @"
+MATCH (u:User { userId: $userId })-[b:BUDDY_ON { tripDestinationId: $tripDestinationId }]->(t:Trip)
+WHERE toLower(b.requestStatus) = 'accepted'
+SET b.isActive = false,
+    b.departureReason = $departureReason
+RETURN count(b) AS UpdatedCount
+";
+
+        var cursor = await session.RunAsync(cypher, new
+        {
+            userId,
+            tripDestinationId,
+            departureReason
+        });
+
+        var record = await cursor.SingleAsync();
+        var updatedCount = record["UpdatedCount"].As<long>();
+
+        if (updatedCount == 0)
+        {
+            return (false, "Buddy not found for this trip destination.");
+        }
+
+        return (true, null);
     }
 
+    // --------------------------------------------------------------------
+    // Pending buddy requests for a user (as owner)
+    // --------------------------------------------------------------------
+    public async Task<IEnumerable<PendingBuddyRequest>> GetPendingBuddyRequestsAsync(int userId)
+{
+    await using var session = _driver.AsyncSession();
+
+    var cypher = @"
+MATCH (owner:User { userId: $userId })-[:OWNS]->(t:Trip)-[hs:HAS_STOP]->(d:Destination)
+MATCH (requester:User)-[b:BUDDY_ON { tripDestinationId: hs.tripDestinationId }]->(t)
+WHERE toLower(trim(b.requestStatus)) = 'pending'
+RETURN
+  hs.tripDestinationId AS TripDestinationId,
+  d.name               AS DestinationName,
+  hs.startDate         AS DestinationStartDate,
+  hs.endDate           AS DestinationEndDate,
+  t.tripId             AS TripId,
+  b.buddyId            AS BuddyId,
+  requester.userId     AS RequesterUserId,
+  requester.name       AS RequesterName,
+  b.note               AS BuddyNote,
+  coalesce(b.personCount, 1) AS PersonCount
+ORDER BY hs.startDate
+";
+
+    var cursor = await session.RunAsync(cypher, new { userId });
+    var records = await cursor.ToListAsync();
+
+    var list = new List<PendingBuddyRequest>();
+
+    foreach (var r in records)
+    {
+        int? buddyIdNullable = r["BuddyId"].As<int?>();
+        int buddyId = buddyIdNullable ?? 0; // fallback for migrated data with no buddyId
+
+        list.Add(new PendingBuddyRequest
+        {
+            TripDestinationId    = r["TripDestinationId"].As<int>(),
+            DestinationName      = r["DestinationName"].As<string>(),
+            DestinationStartDate = ParseIsoDate(r["DestinationStartDate"]),
+            DestinationEndDate   = ParseIsoDate(r["DestinationEndDate"]),
+            TripId               = r["TripId"].As<int>(),
+            BuddyId              = buddyId,
+            RequesterUserId      = r["RequesterUserId"].As<int>(),
+            RequesterName        = r["RequesterName"].As<string>(),
+            BuddyNote            = r["BuddyNote"].As<string?>(),
+            PersonCount          = r["PersonCount"].As<int>()
+        });
+    }
+
+    return list;
+}
+
+    // --------------------------------------------------------------------
+    // Insert a buddy request
+    // --------------------------------------------------------------------
     public async Task<(bool Success, string? ErrorMessage)> InsertBuddyRequestAsync(BuddyDto buddyDto)
     {
-        // TODO Placeholder: Return true to simulate a successful insertion
-        return await Task.FromResult<(bool, string?)>((true, null));
+        await using var session = _driver.AsyncSession();
+
+        var newBuddyId = await GetNextBuddyIdAsync();
+
+        var cypher = @"
+MATCH (u:User { userId: $userId })
+MATCH (t:Trip)-[hs:HAS_STOP { tripDestinationId: $tripDestinationId }]->(:Destination)
+MERGE (u)-[b:BUDDY_ON { tripDestinationId: $tripDestinationId }]->(t)
+ON CREATE SET
+    b.buddyId       = $buddyId,
+    b.personCount   = $personCount,
+    b.note          = $note,
+    b.requestStatus = 'pending',
+    b.isActive      = false
+ON MATCH SET
+    b.personCount   = $personCount,
+    b.note          = $note,
+    b.requestStatus = 'pending',
+    b.isActive      = false
+RETURN b.buddyId AS BuddyId
+";
+
+        var createCursor = await session.RunAsync(cypher, new
+        {
+            tripDestinationId = buddyDto.TripDestinationId,
+            userId            = buddyDto.UserId,
+            buddyId           = newBuddyId,
+            personCount       = buddyDto.PersonCount,
+            note              = buddyDto.Note
+        });
+
+        var created = await createCursor.SingleAsync();
+
+        if (created == null)
+        {
+            return (false, "Failed to create buddy request in Neo4j.");
+        }
+
+        return (true, null);
     }
 
-    public async Task<(bool Success, string? ErrorMessage)> UpdateBuddyRequestAsync(UpdateBuddyRequestDto updateBuddyRequestDto)
+    // --------------------------------------------------------------------
+    // Owner accepts/rejects a buddy request
+    // --------------------------------------------------------------------
+    public async Task<(bool Success, string? ErrorMessage)> UpdateBuddyRequestAsync(
+        UpdateBuddyRequestDto updateBuddyRequestDto)
     {
-        // TODO Placeholder: Return false to simulate a failed or neutral update (can be true if needed)
-        return await Task.FromResult<(bool, string?)>((true, null));
+        var newStatus = updateBuddyRequestDto.NewStatus switch
+        {
+            BuddyRequestUpdateStatus.Accepted => "accepted",
+            BuddyRequestUpdateStatus.Rejected => "rejected",
+            _ => "pending"
+        };
+
+        await using var session = _driver.AsyncSession();
+
+        var cypher = @"
+MATCH (u:User)-[b:BUDDY_ON { buddyId: $buddyId }]->(t:Trip)
+SET b.requestStatus = $status,
+    b.isActive = ($status = 'accepted'),
+    b.departureReason = CASE WHEN $status = 'accepted' THEN null ELSE b.departureReason END
+RETURN count(b) AS UpdatedCount
+";
+
+        var cursor = await session.RunAsync(cypher, new
+        {
+            buddyId = updateBuddyRequestDto.BuddyId,
+            status  = newStatus
+        });
+
+        var record = await cursor.SingleAsync();
+        var updatedCount = record["UpdatedCount"].As<long>();
+
+        if (updatedCount == 0)
+        {
+            return (false, "Buddy request not found");
+        }
+
+        return (true, null);
     }
 
-    // ------------------------------- AUDIT TABLES -------------------------------
+    // --------------------------------------------------------------------
+    // Audit tables – stubbed, like Mongo implementation
+    // --------------------------------------------------------------------
     public async Task<IEnumerable<TripAudit>> GetTripAuditsAsync()
     {
-        // TODO Placeholder: Return an empty collection of TripAudit records
         return await Task.FromResult<IEnumerable<TripAudit>>(new List<TripAudit>());
     }
 
     public async Task<IEnumerable<BuddyAudit>> GetBuddyAuditsAsync()
     {
-        // TODO Placeholder: Return an empty collection of BuddyAudit records
         return await Task.FromResult<IEnumerable<BuddyAudit>>(new List<BuddyAudit>());
     }
 }
