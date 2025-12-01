@@ -356,6 +356,7 @@ namespace TravelBuddy.Trips
 
         // ---------------------------------------------------------
         // Pending buddy requests for a trip owner
+        // TODO Doesn't work, it won't return a response
         // ---------------------------------------------------------
         public async Task<IEnumerable<PendingBuddyRequest>> GetPendingBuddyRequestsAsync(int userId)
         {
@@ -474,7 +475,6 @@ namespace TravelBuddy.Trips
         // ---------------------------------------------------------
         public async Task<(bool Success, string? ErrorMessage)> UpdateBuddyRequestAsync(UpdateBuddyRequestDto updateBuddyRequestDto)
         {
-            // Load all trips (small dataset assumption)
             var trips = await LoadTripsAsync();
 
             TripDocument? tripWithBuddy = null;
@@ -499,10 +499,6 @@ namespace TravelBuddy.Trips
 
             if (tripWithBuddy == null || tdWithBuddy == null || buddy == null)
                 return (false, "Buddy request not found");
-
-            // Optional: ensure the caller is the owner of this trip
-            if (tripWithBuddy.OwnerId != updateBuddyRequestDto.UserId)
-                return (false, "Unauthorized: not the owner of the trip");
 
             var newStatus = updateBuddyRequestDto.NewStatus switch
             {
