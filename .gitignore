@@ -12,6 +12,7 @@ todo.md
 db_user_privileges.sql
 Factory_explanation.md
 .env 
+.vite/
 
 # Build results
 [Dd]ebug/
