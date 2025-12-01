@@ -1,7 +1,7 @@
 namespace TravelBuddy.Trips.DTOs;
 public class CreateTripDestinationDto
 {
-    public int TripId { get; set; }
+    public int? TripId { get; set; }
     public DateOnly DestinationStartDate { get; set; }
     public DateOnly DestinationEndDate { get; set; }
     public int SequenceNumber { get; set; }

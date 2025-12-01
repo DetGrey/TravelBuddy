@@ -16,20 +16,20 @@ namespace TravelBuddy.Api.Controllers
     {
         private readonly IUserService _userService;
         private readonly ITripService _tripService;
-        private readonly IMessagingRepository _messagingRepository;
-        private readonly ISharedKernelRepository _sharedKernelRepository;
+        private readonly IMessagingService _messagingService;
+        private readonly ISharedKernelService _sharedKernelService;
 
         public AdminController(
             IUserService userService,
             ITripService tripService,
-            IMessagingRepository messagingRepository,
-            ISharedKernelRepository sharedKernelRepository
+            IMessagingService messagingService,
+            ISharedKernelService sharedKernelService
         )
         {
             _userService = userService;
             _tripService = tripService;
-            _messagingRepository = messagingRepository;
-            _sharedKernelRepository = sharedKernelRepository;
+            _messagingService = messagingService;
+            _sharedKernelService = sharedKernelService;
         }
 
         [Authorize(Roles = "admin")]
@@ -96,7 +96,7 @@ namespace TravelBuddy.Api.Controllers
         [HttpGet("audit/conversation")]
         public IActionResult GetConversationAudit()
         {
-            var audits = _messagingRepository.GetConversationAuditsAsync();
+            var audits = _messagingService.GetConversationAuditsAsync();
 
             if (audits == null || !audits.Result.Any())
                 return NoContent();
@@ -109,7 +109,7 @@ namespace TravelBuddy.Api.Controllers
         [HttpGet("logs/system")]
         public IActionResult GetSystemEventLogs()
         {
-            var logs = _sharedKernelRepository.GetSystemEventLogsAsync();
+            var logs = _sharedKernelService.GetSystemEventLogsAsync();
             if (logs == null || !logs.Result.Any())
                 return NoContent();
 

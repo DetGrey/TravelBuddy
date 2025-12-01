@@ -2,7 +2,12 @@ USE travel_buddy;
 show tables;
 
 SELECT *
-FROM conversation_audit;
+FROM trip_destination
+JOIN travel_buddy.buddy b on trip_destination.trip_destination_id = b.trip_destination_id
+WHERE user_id = 1;
+
+SELECT *
+FROM destination;
 
 SELECT *
 FROM conversation_participant
