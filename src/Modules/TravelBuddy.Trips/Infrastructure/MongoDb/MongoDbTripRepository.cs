@@ -356,7 +356,6 @@ namespace TravelBuddy.Trips
 
         // ---------------------------------------------------------
         // Pending buddy requests for a trip owner
-        // TODO Doesn't work, it won't return a response
         // ---------------------------------------------------------
         public async Task<IEnumerable<PendingBuddyRequest>> GetPendingBuddyRequestsAsync(int userId)
         {

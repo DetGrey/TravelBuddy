@@ -95,26 +95,33 @@ namespace TravelBuddy.Messaging
 
         // ---------- IMessagingRepository implementation ----------
 
+        /// <summary>
+        /// Returns a list of ConversationOverview, similar to MySql and Mongo implementations.
+        /// </summary>
         public async Task<IEnumerable<ConversationOverview>> GetConversationsForUserAsync(int userId)
         {
             const string cypher = @"
                 MATCH (u:User { userId: $userId })-[:PARTICIPATES_IN]->(c:Conversation)
                 OPTIONAL MATCH (c)<-[:PARTICIPATES_IN]-(p:User)
-                WITH c, collect(DISTINCT p.userId) AS participantIds
-                RETURN c, participantIds
+                OPTIONAL MATCH (c)-[:HAS_MESSAGE]->(m:Message)
+                WITH u, c, collect(DISTINCT p) AS participants, m
+                ORDER BY m.sentAt DESC
+                WITH u, c, participants, head(collect(m)) AS lastMessage
+                RETURN c, participants, lastMessage
                 ORDER BY c.createdAt
             ";
 
-            var conversations = new List<Conversation>();
+            var overviews = new List<ConversationOverview>();
 
             await using var session = _driver.AsyncSession(o => o.WithDefaultAccessMode(AccessMode.Read));
             var cursor  = await session.RunAsync(cypher, new { userId });
-            var records = await cursor.ToListAsync();   // buffer all records
+            var records = await cursor.ToListAsync();
 
             foreach (var record in records)
             {
-                var cNode          = record["c"].As<INode>();
-                var participantIds = record["participantIds"].As<List<long>>();
+                var cNode            = record["c"].As<INode>();
+                var participantNodes = record["participants"].As<List<INode>>();
+                var lastMsgNode      = record["lastMessage"].As<INode?>();
 
                 var conversationId    = ReadInt(cNode, "conversationId");
                 var tripDestinationId = ReadNullableInt(cNode, "tripDestinationId");
@@ -122,31 +129,51 @@ namespace TravelBuddy.Messaging
                 var isArchived        = ReadBool(cNode, "isArchived");
                 var createdAt         = ReadNullableDateTime(cNode, "createdAt");
 
-                var participants = participantIds
-                    .Select(pid => new ConversationParticipant
-                    {
-                        ConversationId = conversationId,
-                        UserId         = (int)pid
-                        // User navigation not needed for the summary list
-                    })
-                    .ToList();
+                var participantCount = participantNodes?.Count ?? 0;
 
-                var conv = new Conversation
+                // ConversationName – similar idea to Mongo:
+                // group => generic name; DM => other participant's name or "Direct Message"
+                string conversationName;
+                if (isGroup)
                 {
-                    ConversationId           = conversationId,
-                    TripDestinationId        = tripDestinationId,
-                    IsGroup                  = isGroup,
-                    IsArchived               = isArchived,
-                    CreatedAt                = createdAt,
-                    ConversationParticipants = participants,
-                    Messages                 = new List<Message>()
-                };
+                    conversationName = "Group Conversation";
+                }
+                else
+                {
+                    var otherUserNode = participantNodes?
+                        .FirstOrDefault(p => ReadInt(p, "userId") != userId);
 
-                conversations.Add(conv);
+                    var otherName = otherUserNode != null
+                        ? ReadString(otherUserNode, "name")
+                        : null;
+
+                    conversationName = otherName ?? "Direct Message";
+                }
+
+                string?   lastMessagePreview = null;
+                DateTime? lastMessageAt      = null;
+
+                if (lastMsgNode != null)
+                {
+                    lastMessagePreview = ReadString(lastMsgNode, "content");
+                    lastMessageAt      = ReadNullableDateTime(lastMsgNode, "sentAt");
+                }
+
+                overviews.Add(new ConversationOverview
+                {
+                    ConversationId     = conversationId,
+                    TripDestinationId  = tripDestinationId,
+                    IsGroup            = isGroup,
+                    CreatedAt          = createdAt,
+                    IsArchived         = isArchived,
+                    ParticipantCount   = participantCount,
+                    LastMessagePreview = lastMessagePreview,
+                    LastMessageAt      = lastMessageAt,
+                    ConversationName   = conversationName
+                });
             }
-            // TODO UPDATE THIS
-            return new List<ConversationOverview>();
-            // return conversations;
+
+            return overviews;
         }
 
         public async Task<Conversation?> GetConversationParticipantAsync(int conversationId)
@@ -169,11 +196,11 @@ namespace TravelBuddy.Messaging
             var cNode            = record["c"].As<INode>();
             var participantNodes = record["participants"].As<List<INode>>();
 
-            var convId           = ReadInt(cNode, "conversationId");
-            var tripDestinationId= ReadNullableInt(cNode, "tripDestinationId");
-            var isGroup          = ReadBool(cNode, "isGroup");
-            var isArchived       = ReadBool(cNode, "isArchived");
-            var createdAt        = ReadNullableDateTime(cNode, "createdAt");
+            var convId            = ReadInt(cNode, "conversationId");
+            var tripDestinationId = ReadNullableInt(cNode, "tripDestinationId");
+            var isGroup           = ReadBool(cNode, "isGroup");
+            var isArchived        = ReadBool(cNode, "isArchived");
+            var createdAt         = ReadNullableDateTime(cNode, "createdAt");
 
             var participants = new List<ConversationParticipant>();
 
@@ -269,6 +296,7 @@ namespace TravelBuddy.Messaging
                 messages.Add(msg);
             }
 
+            // List<Message> implements IReadOnlyList<Message>, so this matches the interface
             return messages;
         }
 
@@ -288,7 +316,7 @@ namespace TravelBuddy.Messaging
                 RETURN coalesce(max(m.messageId), 0) AS maxId
             ";
 
-            var maxCursor = await session.RunAsync(maxIdCypher);
+            var maxCursor  = await session.RunAsync(maxIdCypher);
             var maxRecords = await maxCursor.ToListAsync();
             var maxRecord  = maxRecords.Single();
             var nextId     = maxRecord["maxId"].As<long>() + 1;
