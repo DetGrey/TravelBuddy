@@ -115,7 +115,7 @@ public async Task<IEnumerable<UserTripSummaryDto>> GetUserTripsAsync(int userId)
 [ProducesResponseType(404)]                   // Not Found response
 public async Task<ActionResult<UserDto>> GetUserTrips([FromRoute] int id)
 {
-    var tripDestinations = await _tripDestinationService.GetUserTripsAsync(id);
+    var tripDestinations = await _tripService.GetUserTripsAsync(id);
     if (!tripDestinations.Any()) return NoContent();
     return Ok(tripDestinations);
 }
@@ -130,7 +130,7 @@ using TravelBuddy.Trips;
 ```
 
 ```csharp
-private readonly ITripDestinationService _tripDestinationService;
+private readonly ITripDestinationService _tripService;
 ```
 
 Update this one to include new service
@@ -141,6 +141,6 @@ public UsersController(
 )
 {
     _userService = userService;
-    _tripDestinationService = tripDestinationService;
+    _tripService = tripDestinationService;
 }
 ```

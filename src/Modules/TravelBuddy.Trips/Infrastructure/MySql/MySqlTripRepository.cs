@@ -444,4 +444,18 @@ public class MySqlTripRepository : ITripRepository
              return (false, "Error: " + ex.Message); 
         }
     }
+
+    // ------------------------------- AUDIT TABLES -------------------------------
+    public async Task<IEnumerable<TripAudit>> GetTripAuditsAsync()
+    {
+        return await _context.TripAudits
+            .AsNoTracking()
+            .ToListAsync();
+    }
+    public async Task<IEnumerable<BuddyAudit>> GetBuddyAuditsAsync()
+    {
+        return await _context.BuddyAudits
+            .AsNoTracking()
+            .ToListAsync();
+    }
 }

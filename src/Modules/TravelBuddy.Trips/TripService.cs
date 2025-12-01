@@ -22,11 +22,16 @@ namespace TravelBuddy.Trips
         Task<IEnumerable<TripOverviewDto>> GetOwnedTripOverviewsAsync(int userId);
         Task<bool> IsTripOwnerAsync(int userId, int tripDestinationId);
         Task<(bool Success, string? ErrorMessage)> CreateTripWithDestinationsAsync(CreateTripWithDestinationsDto createTripWithDestinationsDto);
+        
         // Buddy related
         Task<(bool Success, string? ErrorMessage)> LeaveTripDestinationAsync(int userId, int tripDestinationId, int triggeredBy, string departureReason);
         Task<IEnumerable<PendingBuddyRequestDto>> GetPendingBuddyRequestsAsync(int userId);
         Task<(bool Success, string? ErrorMessage)> InsertBuddyRequestAsync(BuddyDto buddyDto);
         Task<(bool Success, string? ErrorMessage)> UpdateBuddyRequestAsync(UpdateBuddyRequestDto updateBuddyRequestDto);
+
+        // Audit related
+        Task<IEnumerable<TripAudit>> GetTripAuditsAsync();
+        Task<IEnumerable<BuddyAudit>> GetBuddyAuditsAsync();
    }
 
     // CLASS
@@ -253,6 +258,18 @@ namespace TravelBuddy.Trips
         {
             var buddyRepository = GetRepo();
             return await buddyRepository.UpdateBuddyRequestAsync(updateBuddyRequestDto);
+        }
+
+        // ------------------------------- AUDIT TABLES -------------------------------
+        public async Task<IEnumerable<TripAudit>> GetTripAuditsAsync()
+        {
+            var tripRepository = GetRepo();
+            return await tripRepository.GetTripAuditsAsync();
+        }
+        public async Task<IEnumerable<BuddyAudit>> GetBuddyAuditsAsync()
+        {
+            var tripRepository = GetRepo();
+            return await tripRepository.GetBuddyAuditsAsync();
         }
     }
 }

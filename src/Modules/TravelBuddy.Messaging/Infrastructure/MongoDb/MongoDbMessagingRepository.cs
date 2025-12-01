@@ -315,5 +315,12 @@ namespace TravelBuddy.Messaging
             await _messageCollection.InsertOneAsync(doc);
             return message;
         }
+
+        // ------------------------------- AUDIT TABLES -------------------------------
+        public async Task<IEnumerable<ConversationAudit>> GetConversationAuditsAsync()
+        {
+            // TODO: Implement if it actually has audit table in MongoDB
+            return await Task.FromResult(Enumerable.Empty<ConversationAudit>());
+        }
     }
 }

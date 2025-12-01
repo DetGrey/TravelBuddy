@@ -147,6 +147,9 @@ builder.Services.AddTransient<MySqlMessagingRepository>();
 builder.Services.AddTransient<MongoDbMessagingRepository>();
 builder.Services.AddTransient<Neo4jMessagingRepository>();
 
+// Shared Kernel Module
+builder.Services.AddTransient<MySqlSharedKernelRepository>();
+
 // Register HTTP Context Accessor
 // The factories need this to read the request header.
 builder.Services.AddHttpContextAccessor();
@@ -156,11 +159,13 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserRepositoryFactory, UserRepositoryFactory>();
 builder.Services.AddScoped<ITripRepositoryFactory, TripRepositoryFactory>();
 builder.Services.AddScoped<IMessagingRepositoryFactory, MessagingRepositoryFactory>();
+builder.Services.AddScoped<ISharedKernelRepositoryFactory, SharedKernelRepositoryFactory>();
 
 // --- Register the Services (Binds IUserService to UserService) ---
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITripService, TripService>();
 builder.Services.AddScoped<IMessagingService, MessagingService>();
+builder.Services.AddScoped<ISharedKernelService, SharedKernelService>();
 
 builder.Services.AddScoped<JwtTokenGenerator>();
 builder.Services.AddControllers()

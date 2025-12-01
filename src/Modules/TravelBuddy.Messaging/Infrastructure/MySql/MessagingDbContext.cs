@@ -12,12 +12,10 @@ public partial class MessagingDbContext : DbContext
     {
     }
 
-    // Messaging tables only
     public DbSet<Conversation> Conversations { get; set; }
     public DbSet<ConversationParticipant> ConversationParticipants { get; set; }
     public DbSet<Message> Messages { get; set; }
-
-    // Needed for sender_id and user_id
+    public DbSet<ConversationAudit> ConversationAudits { get; set; }
     public DbSet<User> Users { get; set; }
 
     // Custom
@@ -64,6 +62,21 @@ public partial class MessagingDbContext : DbContext
             entity.Property(e => e.ConversationId).HasColumnName("conversation_id");
             entity.Property(e => e.SentAt).HasColumnName("sent_at");
         });
+        
+        // --- Conversation Audit ---
+        modelBuilder.Entity<ConversationAudit>(entity =>
+        {
+            entity.HasKey(e => e.AuditId);
+
+            entity.ToTable("conversation_audit");
+
+            entity.Property(e => e.AuditId).HasColumnName("audit_id");
+            entity.Property(e => e.ConversationId).HasColumnName("conversation_id");
+            entity.Property(e => e.AffectedUserId).HasColumnName("affected_user_id");
+            entity.Property(e => e.Action).HasColumnName("action");
+            entity.Property(e => e.TriggeredBy).HasColumnName("triggered_by");
+            entity.Property(e => e.Timestamp).HasColumnName("timestamp");
+        });
 
         // --- User ---
         modelBuilder.Entity<User>(entity =>
@@ -88,22 +101,19 @@ public partial class MessagingDbContext : DbContext
         entity.Property(e => e.Name)
             .HasMaxLength(100)
             .HasColumnName("name");
-   
+    
         });
         
-        // -------- AUDIT & NAVIGATION FIX --------
+        // -------- AUDIT & NAVIGATION --------
 
         // Markér BuddyAudit & TripAudit som keyless (de har ingen PK i databasen)
+        // NOTE: If ConversationAudit has a primary key in the C# model (AuditId), you don't need HasNoKey() here.
         modelBuilder.Entity<BuddyAudit>().HasNoKey();
         modelBuilder.Entity<TripAudit>().HasNoKey();
 
         // Ignorér navigationer der peger på audits
         modelBuilder.Entity<Buddy>().Ignore(b => b.BuddyAudits);
         modelBuilder.Entity<Trip>().Ignore(t => t.TripAudits);
-
-        // Vi bruger ikke ConversationAudit i Messaging
-        modelBuilder.Ignore<ConversationAudit>();
-        modelBuilder.Entity<Conversation>().Ignore(c => c.ConversationAudits);
 
         // -------- Custom Models --------
         modelBuilder.Entity<ConversationOverview>().HasNoKey();

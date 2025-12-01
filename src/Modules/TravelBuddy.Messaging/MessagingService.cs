@@ -13,6 +13,8 @@ namespace TravelBuddy.Messaging
         Task<IReadOnlyList<MessageDto>> GetMessagesForConversationAsync(int userId, int conversationId);
 
         Task<MessageDto?> SendMessageAsync(int userId, int conversationId, string content);
+        // Audit related
+        Task<IEnumerable<ConversationAudit>> GetConversationAuditsAsync();
     }
 
     public class MessagingService : IMessagingService
@@ -149,6 +151,14 @@ namespace TravelBuddy.Messaging
                 Content: saved.Content,
                 SentAt: saved.SentAt
             );
+        }
+
+        // ------------------------------- AUDIT TABLES -------------------------------
+        public async Task<IEnumerable<ConversationAudit>> GetConversationAuditsAsync()
+        {
+            var messagingRepository = GetRepo();
+            var audits = await messagingRepository.GetConversationAuditsAsync();
+            return audits;
         }
     }
 }

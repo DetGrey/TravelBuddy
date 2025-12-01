@@ -355,5 +355,12 @@ namespace TravelBuddy.Messaging
 
             return message;
         }
+
+        // ------------------------------- AUDIT TABLES -------------------------------
+        public async Task<IEnumerable<ConversationAudit>> GetConversationAuditsAsync()
+        {
+            // TODO: Implement if it actually has audit table in Neo4j
+            return await Task.FromResult(Enumerable.Empty<ConversationAudit>());
+        }
     }
 }

@@ -11,13 +11,13 @@ namespace TravelBuddy.Api.Controllers
     // [ApiController] enables automatic API features like model validation.
     [ApiController]
     // [Route] defines the base URL for this controller (e.g., /api/users).
-    [Route("api/[controller]")] 
+    [Route("api/users")] 
     public class UsersController : ControllerBase
     {
         private readonly JwtTokenGenerator _jwtTokenGenerator;
         // This is the dependency on the business logic layer (UserService).
         private readonly IUserService _userService;
-        private readonly ITripService _tripDestinationService;    
+        private readonly ITripService _tripService;    
 
 
         // Constructor: ASP.NET Core automatically injects the IUserService implementation here.
@@ -29,7 +29,7 @@ namespace TravelBuddy.Api.Controllers
         {
             _jwtTokenGenerator = jwtTokenGenerator;
             _userService = userService;
-            _tripDestinationService = tripDestinationService;
+            _tripService = tripDestinationService;
         }
 
         [HttpPost("login")]
@@ -180,37 +180,5 @@ namespace TravelBuddy.Api.Controllers
 
             return Ok("Password changed successfully.");
         }
-
-        [Authorize(Roles = "admin")]
-        // [HttpGet] maps this method to an HTTP GET request (URL: /api/users).
-        [HttpGet]
-        // [ProducesResponseType] is for documentation (Swagger/OpenAPI).
-        [ProducesResponseType(typeof(IEnumerable<UserDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> GetAll()
-        {
-            // 1. Call the business service to get the list of safe UserDto objects.
-            var users = await _userService.GetAllUsersAsync();
-
-            // 2. Check the result and handle the case where no users are found.
-            if (users == null || !users.Any())
-            {
-                // Returns HTTP 204 No Content.
-                return NoContent();
-            }
-
-            // 3. Returns the list of users with an HTTP 200 OK status.
-            return Ok(users);
-        }
-        
-        [Authorize(Roles = "admin")]
-        [HttpGet("admin-action")]
-        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public IActionResult AdminOnlyStuff() => Ok("Admins only!");
-
     }
 }
