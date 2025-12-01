@@ -11,10 +11,10 @@ namespace TravelBuddy.Messaging
     /// <summary>
     /// IMessagingRepository implementation backed by Neo4j.
     ///
-    /// Assumed graph model:
+    /// Graph model:
     ///   (:User { userId })
     ///   (:Conversation { conversationId, tripDestinationId, isGroup, isArchived, createdAt })
-    ///   (:Message { messageId, conversationId, senderId, content, sentAt })
+    ///   (:Message { messageId, conversationId?, senderId?, content, sentAt })
     ///
     ///   (:User)-[:PARTICIPATES_IN]->(:Conversation)
     ///   (:Conversation)-[:HAS_MESSAGE]->(:Message)
@@ -77,9 +77,12 @@ namespace TravelBuddy.Messaging
             if (!node.Properties.TryGetValue(key, out var value) || value is null)
                 return null;
 
+            // Handle Neo4j temporal types + DateTime + string
             return value switch
             {
                 DateTime dt => dt,
+                Neo4j.Driver.LocalDateTime ldt => ldt.ToDateTime(),
+                Neo4j.Driver.ZonedDateTime zdt => zdt.UtcDateTime,
                 string s when DateTime.TryParse(s, out var dt) => dt,
                 _ => (DateTime?)null
             };
@@ -96,7 +99,7 @@ namespace TravelBuddy.Messaging
         // ---------- IMessagingRepository implementation ----------
 
         /// <summary>
-        /// Returns a list of ConversationOverview, similar to MySql and Mongo implementations.
+        /// Returns conversation overviews similar to MySqlMessagingRepository / MongoDbMessagingRepository.
         /// </summary>
         public async Task<IEnumerable<ConversationOverview>> GetConversationsForUserAsync(int userId)
         {
@@ -131,8 +134,9 @@ namespace TravelBuddy.Messaging
 
                 var participantCount = participantNodes?.Count ?? 0;
 
-                // ConversationName – similar idea to Mongo:
-                // group => generic name; DM => other participant's name or "Direct Message"
+                // ConversationName logic roughly aligned with Mongo:
+                // - Group  => generic name for now
+                // - Direct => other participant's name or "Direct Message"
                 string conversationName;
                 if (isGroup)
                 {
@@ -187,7 +191,7 @@ namespace TravelBuddy.Messaging
 
             await using var session = _driver.AsyncSession(o => o.WithDefaultAccessMode(AccessMode.Read));
             var cursor  = await session.RunAsync(cypher, new { conversationId });
-            var records = await cursor.ToListAsync();   // at most 1
+            var records = await cursor.ToListAsync();   // at most 1 because of LIMIT 1
             var record  = records.SingleOrDefault();
 
             if (record is null)
@@ -263,12 +267,16 @@ namespace TravelBuddy.Messaging
                 var uNode = record["u"].As<INode?>();
 
                 var messageId = ReadInt(mNode, "messageId");
-                var convId    = ReadInt(mNode, "conversationId");
-                var senderId  = ReadNullableInt(mNode, "senderId");
-                var content   = ReadString(mNode, "content") ?? string.Empty;
-                var sentAt    = ReadNullableDateTime(mNode, "sentAt");
 
-                User? senderUser = null;
+                // Some existing seed data might not have a conversationId property on Message,
+                // so we trust the method argument to align with MySQL / Mongo behavior.
+                var convId = conversationId;
+
+                // Prefer explicit senderId on the Message node; otherwise, fall back to the related User's userId.
+                var senderId       = ReadNullableInt(mNode, "senderId");
+                int? senderIdFinal = senderId;
+                User? senderUser   = null;
+
                 if (uNode != null)
                 {
                     var uid   = ReadInt(uNode, "userId");
@@ -281,13 +289,21 @@ namespace TravelBuddy.Messaging
                         Name   = name,
                         Email  = email
                     };
+
+                    if (senderIdFinal is null)
+                    {
+                        senderIdFinal = uid;
+                    }
                 }
+
+                var content = ReadString(mNode, "content") ?? string.Empty;
+                var sentAt  = ReadNullableDateTime(mNode, "sentAt");
 
                 var msg = new Message
                 {
                     MessageId      = messageId,
                     ConversationId = convId,
-                    SenderId       = senderId,
+                    SenderId       = senderIdFinal,
                     Content        = content,
                     SentAt         = sentAt,
                     Sender         = senderUser
@@ -349,7 +365,6 @@ namespace TravelBuddy.Messaging
 
             await session.RunAsync(createCypher, parameters);
 
-            // Update the in-memory entity & return
             message.MessageId = messageId;
             message.SentAt    = sentAt;
 
