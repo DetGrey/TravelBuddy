@@ -17,8 +17,12 @@ namespace TravelBuddy.Messaging
     [BsonIgnoreExtraElements]
     internal class UserDocument
     {
-        [BsonElement("UserId")]
+        // IMPORTANT: map to Mongo _id (int)
+        [BsonId]
         public int UserId { get; set; }
+
+        // These property names match your Mongo fields:
+        // Name, Email, PasswordHash, Birthdate, IsDeleted, Role
         public string Name { get; set; } = null!;
         public string Email { get; set; } = null!;
         public string PasswordHash { get; set; } = null!;
@@ -37,7 +41,7 @@ namespace TravelBuddy.Messaging
     [BsonIgnoreExtraElements]
     internal class ConversationDocument
     {
-        // This property now maps to MongoDB's _id field
+        // This maps to _id and matches your original repo
         [BsonId]
         public int ConversationId { get; set; }
 
@@ -51,7 +55,7 @@ namespace TravelBuddy.Messaging
     [BsonIgnoreExtraElements]
     internal class MessageDocument
     {
-        public int MessageId { get; set; }          // stays as-is
+        public int MessageId { get; set; }
         public int ConversationId { get; set; }
         public int SenderId { get; set; }
         public string Content { get; set; } = null!;
@@ -64,6 +68,7 @@ namespace TravelBuddy.Messaging
         public int TripDestinationId { get; set; }
         public int DestinationId { get; set; }
     }
+
     [BsonIgnoreExtraElements]
     internal class DestinationNameDocument
     {
@@ -87,10 +92,10 @@ namespace TravelBuddy.Messaging
         {
             var database = client.GetDatabase("travel_buddy_mongo");
             _conversationCollection = database.GetCollection<ConversationDocument>("conversations");
-            _messageCollection = database.GetCollection<MessageDocument>("messages");
-            _userCollection = database.GetCollection<UserDocument>("users");
-            _tripCollection = database.GetCollection<TripDestinationNameDocument>("trips");
-            _destinationCollection = database.GetCollection<DestinationNameDocument>("destinations");
+            _messageCollection      = database.GetCollection<MessageDocument>("messages");
+            _userCollection         = database.GetCollection<UserDocument>("users");
+            _tripCollection         = database.GetCollection<TripDestinationNameDocument>("trips");
+            _destinationCollection  = database.GetCollection<DestinationNameDocument>("destinations");
         }
 
         // -----------------------------
@@ -124,15 +129,15 @@ namespace TravelBuddy.Messaging
 
             return new ConversationOverview
             {
-                ConversationId    = doc.ConversationId,
-                TripDestinationId = doc.TripDestinationId,
-                IsGroup           = doc.IsGroup,
-                CreatedAt         = doc.CreatedAt,
-                IsArchived        = doc.IsArchived,
-                ParticipantCount  = doc.Participants.Count,
-                LastMessagePreview= lastMessageDoc?.Content,
-                LastMessageAt     = lastMessageDoc?.SentAt,
-                ConversationName  = conversationName
+                ConversationId     = doc.ConversationId,
+                TripDestinationId  = doc.TripDestinationId,
+                IsGroup            = doc.IsGroup,
+                CreatedAt          = doc.CreatedAt,
+                IsArchived         = doc.IsArchived,
+                ParticipantCount   = doc.Participants.Count,
+                LastMessagePreview = lastMessageDoc?.Content,
+                LastMessageAt      = lastMessageDoc?.SentAt,
+                ConversationName   = conversationName
             };
         }
 
@@ -151,13 +156,13 @@ namespace TravelBuddy.Messaging
 
             var conversation = new Conversation
             {
-                ConversationId = doc.ConversationId,
-                TripDestinationId = doc.TripDestinationId,
-                IsGroup = doc.IsGroup,
-                CreatedAt = doc.CreatedAt,
-                IsArchived = doc.IsArchived,
+                ConversationId           = doc.ConversationId,
+                TripDestinationId        = doc.TripDestinationId,
+                IsGroup                  = doc.IsGroup,
+                CreatedAt                = doc.CreatedAt,
+                IsArchived               = doc.IsArchived,
                 ConversationParticipants = new List<ConversationParticipant>(),
-                Messages = new List<Message>()
+                Messages                 = new List<Message>()
             };
 
             foreach (var p in doc.Participants)
@@ -167,14 +172,14 @@ namespace TravelBuddy.Messaging
                 conversation.ConversationParticipants.Add(new ConversationParticipant
                 {
                     ConversationId = conversation.ConversationId,
-                    UserId = p.UserId,
-                    JoinedAt = p.JoinedAt,
-                    Conversation = conversation,
+                    UserId         = p.UserId,
+                    JoinedAt       = p.JoinedAt,
+                    Conversation   = conversation,
                     User = new User
                     {
                         UserId = p.UserId,
-                        Name = uDoc?.Name ?? string.Empty,
-                        Email = uDoc?.Email ?? string.Empty
+                        Name   = uDoc?.Name  ?? string.Empty,
+                        Email  = uDoc?.Email ?? string.Empty
                     }
                 });
             }
@@ -212,12 +217,12 @@ namespace TravelBuddy.Messaging
                 .Match(m => conversationIds.Contains(m.ConversationId))
                 .SortByDescending(m => m.SentAt)
                 .Group(m => m.ConversationId,
-                    g => g.First()) // first after sort = latest
+                    g => g.First())
                 .ToListAsync();
 
             var lastMessageByConvId = lastMessages.ToDictionary(m => m.ConversationId);
 
-            // 3. Optionally load trip destinations and users if you want names            
+            // 3. Load destinations and users
             var tripDestIds = docs
                 .Where(d => d.TripDestinationId.HasValue)
                 .Select(d => d.TripDestinationId)
@@ -233,12 +238,12 @@ namespace TravelBuddy.Messaging
                 .Find(d => destinationIds.Contains(d.DestinationId))
                 .ToListAsync();
 
-            var destById = destinations.ToDictionary(d => d.DestinationId);
+            var destById     = destinations.ToDictionary(d => d.DestinationId);
             var tripDestById = tripDestDocs.ToDictionary(td => td.TripDestinationId);
 
             var users = await _userCollection.Find(_ => true).ToListAsync();
 
-            // 4. Map to DTOs
+            // 4. Map to overviews
             return docs.Select(doc =>
             {
                 lastMessageByConvId.TryGetValue(doc.ConversationId, out var lastMsg);
@@ -281,13 +286,13 @@ namespace TravelBuddy.Messaging
 
                 messages.Add(new Message
                 {
-                    MessageId = m.MessageId,
+                    MessageId      = m.MessageId,
                     ConversationId = m.ConversationId,
-                    SenderId = m.SenderId,
-                    Content = m.Content,
-                    SentAt = m.SentAt,
-                    Conversation = conversation ?? new Conversation { ConversationId = conversationId },
-                    Sender = sender
+                    SenderId       = m.SenderId,
+                    Content        = m.Content,
+                    SentAt         = m.SentAt,
+                    Conversation   = conversation ?? new Conversation { ConversationId = conversationId },
+                    Sender         = sender
                 });
             }
 
@@ -305,11 +310,11 @@ namespace TravelBuddy.Messaging
 
             var doc = new MessageDocument
             {
-                MessageId = message.MessageId,
+                MessageId      = message.MessageId,
                 ConversationId = message.ConversationId,
-                SenderId = message.SenderId ?? 0,
-                Content = message.Content,
-                SentAt = message.SentAt
+                SenderId       = message.SenderId ?? 0,
+                Content        = message.Content,
+                SentAt         = message.SentAt
             };
 
             await _messageCollection.InsertOneAsync(doc);

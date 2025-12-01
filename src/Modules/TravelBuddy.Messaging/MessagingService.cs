@@ -132,22 +132,29 @@ namespace TravelBuddy.Messaging
             var message = new Message
             {
                 ConversationId = conversationId,
-                SenderId = userId,
-                Content = content,
-                SentAt = DateTime.UtcNow
+                SenderId       = userId,
+                Content        = content,
+                SentAt         = DateTime.UtcNow
             };
 
             // 4. Save the message in the DB
             var saved = await messagingRepository.AddMessageAsync(message);
 
-            // 5. Maps to DTO
+            // 5. Look up the sender in the conversation participants (works for MySQL, Mongo, Neo4j)
+            var senderUser = conversation.ConversationParticipants
+                .FirstOrDefault(cp => cp.UserId == userId)?
+                .User;
+
+            var senderName = senderUser?.Name;
+
+            // 6. Map to DTO with SenderName filled in
             return new MessageDto(
-                Id: saved.MessageId,
+                Id:            saved.MessageId,
                 ConversationId: saved.ConversationId,
-                SenderId: saved.SenderId,
-                SenderName: null,
-                Content: saved.Content,
-                SentAt: saved.SentAt
+                SenderId:      saved.SenderId,
+                SenderName:    senderName,
+                Content:       saved.Content,
+                SentAt:        saved.SentAt
             );
         }
     }
