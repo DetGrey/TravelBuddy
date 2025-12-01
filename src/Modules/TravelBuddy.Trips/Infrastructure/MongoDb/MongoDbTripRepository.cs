@@ -14,7 +14,7 @@ namespace TravelBuddy.Trips
     [BsonIgnoreExtraElements]
     internal class UserDocument
     {
-        [BsonElement("LegacyUserId")]
+        [BsonElement("UserId")]
         public int UserId { get; set; }
         public string Name { get; set; } = null!;
         public string Email { get; set; } = null!;

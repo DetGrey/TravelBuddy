@@ -18,7 +18,7 @@ namespace TravelBuddy.Trips.DTOs
         DateOnly DestinationStartDate,
         DateOnly DestinationEndDate,
         string DestinationName,
-        string DestinationState,
+        string? DestinationState,
         string DestinationCountry,
         int MaxBuddies,
         int AcceptedBuddiesCount
