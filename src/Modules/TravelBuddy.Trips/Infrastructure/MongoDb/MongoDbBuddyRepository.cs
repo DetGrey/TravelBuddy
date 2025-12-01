@@ -4,18 +4,68 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TravelBuddy.Trips.Models;
 using TravelBuddy.Trips.DTOs;
 using TravelBuddy.Trips.Infrastructure;
+using TravelBuddy.Trips.Models;
 
 namespace TravelBuddy.Trips
 {
-    // NOTE: TripDocument / TripDestinationEmbedded / BuddyEmbedded / DestinationDocument
-    // are defined in MongoDbTripDestinationRepository.cs in the same namespace and
-    // are reused here.
+    // ---------- Mongo document shapes specifically for this repository ----------
 
     [BsonIgnoreExtraElements]
-    internal class UserDocument
+    internal class BuddyEmbeddedForBuddy
+    {
+        public int BuddyId { get; set; }
+        public int UserId { get; set; }
+        public int? PersonCount { get; set; }
+        public string? Note { get; set; }
+        public bool? IsActive { get; set; }
+        public string? DepartureReason { get; set; }
+        public string RequestStatus { get; set; } = string.Empty;
+    }
+
+    [BsonIgnoreExtraElements]
+    internal class TripDestinationEmbeddedForBuddy
+    {
+        public int TripDestinationId { get; set; }
+        public int DestinationId { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public int SequenceNumber { get; set; }
+        public string? Description { get; set; }
+        public bool? IsArchived { get; set; }
+        public List<BuddyEmbeddedForBuddy> Buddies { get; set; } = new();
+    }
+
+    [BsonIgnoreExtraElements]
+    internal class TripDocForBuddy
+    {
+        public int TripId { get; set; }
+        public int? OwnerId { get; set; }
+        public int? MaxBuddies { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public string? Description { get; set; }
+        public bool? IsArchived { get; set; }
+
+        public List<TripDestinationEmbeddedForBuddy> Destinations { get; set; } = new();
+    }
+
+    [BsonIgnoreExtraElements]
+    internal class DestinationDocForBuddy
+    {
+        [BsonId]
+        public int DestinationId { get; set; }
+
+        public string Name { get; set; } = null!;
+        public string? State { get; set; }
+        public string Country { get; set; } = null!;
+        public decimal? Longitude { get; set; }
+        public decimal? Latitude { get; set; }
+    }
+
+    [BsonIgnoreExtraElements]
+    internal class UserDocForBuddy
     {
         [BsonElement("LegacyUserId")]
         public int UserId { get; set; }
@@ -23,32 +73,33 @@ namespace TravelBuddy.Trips
         public string Email { get; set; } = null!;
     }
 
+    // ---------- Repository implementation ----------
+
     public class MongoDbBuddyRepository : IBuddyRepository
     {
-        private readonly IMongoCollection<TripDocument> _tripsCollection;
-        private readonly IMongoCollection<DestinationDocument> _destinationsCollection;
-        private readonly IMongoCollection<UserDocument> _usersCollection;
+        private readonly IMongoCollection<TripDocForBuddy> _tripsCollection;
+        private readonly IMongoCollection<DestinationDocForBuddy> _destinationsCollection;
+        private readonly IMongoCollection<UserDocForBuddy> _usersCollection;
 
         public MongoDbBuddyRepository(IMongoClient client)
         {
             var database = client.GetDatabase("travel_buddy_mongo");
-            _tripsCollection = database.GetCollection<TripDocument>("trips");
-            _destinationsCollection = database.GetCollection<DestinationDocument>("destinations");
-            _usersCollection = database.GetCollection<UserDocument>("users");
+            _tripsCollection = database.GetCollection<TripDocForBuddy>("trips");
+            _destinationsCollection = database.GetCollection<DestinationDocForBuddy>("destinations");
+            _usersCollection = database.GetCollection<UserDocForBuddy>("users");
         }
 
-        // Helper: load all trips into memory
-        private async Task<List<TripDocument>> LoadTripsAsync()
+        private async Task<List<TripDocForBuddy>> LoadTripsAsync()
         {
             return await _tripsCollection
-                .Find(FilterDefinition<TripDocument>.Empty)
+                .Find(FilterDefinition<TripDocForBuddy>.Empty)
                 .ToListAsync();
         }
 
-        // Helper: generate next BuddyId (global)
         private async Task<int> GetNextBuddyIdAsync()
         {
             var trips = await LoadTripsAsync();
+
             var max = trips
                 .SelectMany(t => t.Destinations)
                 .SelectMany(td => td.Buddies)
@@ -59,19 +110,20 @@ namespace TravelBuddy.Trips
         }
 
         // ---------------------------------------------------------
-        // Pending buddy requests for a trip owner
+        // Pending buddy requests for an OWNER user
+        // TODO Doesn't work, it won't return a reponse
         // ---------------------------------------------------------
         public async Task<IEnumerable<PendingBuddyRequest>> GetPendingBuddyRequestsAsync(int userId)
         {
+            
             var trips = await LoadTripsAsync();
 
-            // Only trips where this user is the owner
+            // Only trips where this user is the OWNER
             var ownedTrips = trips.Where(t => t.OwnerId == userId).ToList();
-
             if (!ownedTrips.Any())
                 return Enumerable.Empty<PendingBuddyRequest>();
 
-            // Build lookups for destinations and users
+            // Collect destination IDs and user IDs involved in pending requests
             var destIds = ownedTrips
                 .SelectMany(t => t.Destinations)
                 .Select(td => td.DestinationId)
@@ -82,60 +134,62 @@ namespace TravelBuddy.Trips
                 .Find(d => destIds.Contains(d.DestinationId))
                 .ToListAsync();
 
-            var destMap = destinationDocs.ToDictionary(d => d.DestinationId, d => d);
+            var destMap = destinationDocs
+                .GroupBy(d => d.DestinationId)
+                .ToDictionary(g => g.Key, g => g.First());
 
-            var userIds = ownedTrips
-                .SelectMany(t => t.Destinations)
-                .SelectMany(td => td.Buddies)
-                .Where(b => string.Equals(b.RequestStatus, "pending", StringComparison.OrdinalIgnoreCase))
-                .Select(b => b.UserId)
+            var pendingBuddies = ownedTrips
+                .SelectMany(t => t.Destinations, (t, td) => new { Trip = t, TripDest = td })
+                .SelectMany(
+                    x => x.TripDest.Buddies,
+                    (x, b) => new { x.Trip, x.TripDest, Buddy = b }
+                )
+                .Where(x => string.Equals(x.Buddy.RequestStatus, "pending", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            var buddyUserIds = pendingBuddies
+                .Select(x => x.Buddy.UserId)
                 .Distinct()
                 .ToList();
 
             var userDocs = await _usersCollection
-                .Find(u => userIds.Contains(u.UserId))
+                .Find(u => buddyUserIds.Contains(u.UserId))
                 .ToListAsync();
 
             var userMap = userDocs.ToDictionary(u => u.UserId, u => u);
 
             var result = new List<PendingBuddyRequest>();
 
-            foreach (var trip in ownedTrips)
+            foreach (var item in pendingBuddies)
             {
-                foreach (var td in trip.Destinations)
+                if (!destMap.TryGetValue(item.TripDest.DestinationId, out var destDoc))
+                    continue;
+
+                userMap.TryGetValue(item.Buddy.UserId, out var uDoc);
+
+                result.Add(new PendingBuddyRequest
                 {
-                    if (!destMap.TryGetValue(td.DestinationId, out var destDoc))
-                        continue;
-
-                    foreach (var b in td.Buddies.Where(b =>
-                        string.Equals(b.RequestStatus, "pending", StringComparison.OrdinalIgnoreCase)))
-                    {
-                        userMap.TryGetValue(b.UserId, out var uDoc);
-
-                        result.Add(new PendingBuddyRequest
-                        {
-                            TripId = trip.TripId,
-                            DestinationName = destDoc.Name,
-                            BuddyId = b.BuddyId,
-                            UserId = b.UserId,
-                            BuddyName = uDoc?.Name ?? string.Empty,
-                            BuddyNote = b.Note,
-                            PersonCount = b.PersonCount ?? 1
-                        });
-                    }
-                }
+                    TripId = item.Trip.TripId,
+                    DestinationName = destDoc.Name,
+                    BuddyId = item.Buddy.BuddyId,
+                    UserId = item.Buddy.UserId,
+                    BuddyName = uDoc?.Name ?? string.Empty,
+                    BuddyNote = item.Buddy.Note,
+                    PersonCount = item.Buddy.PersonCount ?? 1
+                });
             }
 
             return result;
+            
         }
 
         // ---------------------------------------------------------
-        // User sends a new buddy request
+        // User sends a new buddy request (as buddy)
         // ---------------------------------------------------------
         public async Task<bool> InsertBuddyRequestAsync(BuddyDto buddyDto)
         {
             // Find the trip containing this TripDestination
-            var filter = Builders<TripDocument>.Filter
+            var filter = Builders<TripDocForBuddy>.Filter
                 .ElemMatch(t => t.Destinations, td => td.TripDestinationId == buddyDto.TripDestinationId);
 
             var trip = await _tripsCollection.Find(filter).FirstOrDefaultAsync();
@@ -146,14 +200,14 @@ namespace TravelBuddy.Trips
             if (td == null)
                 return false;
 
-            // Check if user already has a request for this destination
+            // Check if user already has a buddy entry here
             var existing = td.Buddies.FirstOrDefault(b => b.UserId == buddyDto.UserId);
             if (existing != null)
-                return false; // already requested / member
+                return false;
 
             var newBuddyId = await GetNextBuddyIdAsync();
 
-            var buddy = new BuddyEmbedded
+            var buddy = new BuddyEmbeddedForBuddy
             {
                 BuddyId = newBuddyId,
                 UserId = buddyDto.UserId,
@@ -178,12 +232,11 @@ namespace TravelBuddy.Trips
         // ---------------------------------------------------------
         public async Task<bool> UpdateBuddyRequestAsync(UpdateBuddyRequestDto updateBuddyRequestDto)
         {
-            // Load all trips (small dataset assumption)
             var trips = await LoadTripsAsync();
 
-            TripDocument? tripWithBuddy = null;
-            TripDestinationEmbedded? tdWithBuddy = null;
-            BuddyEmbedded? buddy = null;
+            TripDocForBuddy? foundTrip = null;
+            TripDestinationEmbeddedForBuddy? foundDest = null;
+            BuddyEmbeddedForBuddy? foundBuddy = null;
 
             foreach (var trip in trips)
             {
@@ -192,20 +245,21 @@ namespace TravelBuddy.Trips
                     var b = td.Buddies.FirstOrDefault(x => x.BuddyId == updateBuddyRequestDto.BuddyId);
                     if (b != null)
                     {
-                        tripWithBuddy = trip;
-                        tdWithBuddy = td;
-                        buddy = b;
+                        foundTrip = trip;
+                        foundDest = td;
+                        foundBuddy = b;
                         break;
                     }
                 }
-                if (buddy != null) break;
+                if (foundBuddy != null)
+                    break;
             }
 
-            if (tripWithBuddy == null || tdWithBuddy == null || buddy == null)
+            if (foundTrip == null || foundDest == null || foundBuddy == null)
                 return false;
 
-            // Optional: ensure the caller is the owner of this trip
-            if (tripWithBuddy.OwnerId != updateBuddyRequestDto.UserId)
+            // Ensure caller is the owner
+            if (foundTrip.OwnerId != updateBuddyRequestDto.UserId)
                 return false;
 
             var newStatus = updateBuddyRequestDto.NewStatus switch
@@ -215,21 +269,21 @@ namespace TravelBuddy.Trips
                 _ => "pending"
             };
 
-            buddy.RequestStatus = newStatus;
+            foundBuddy.RequestStatus = newStatus;
 
             if (newStatus == "accepted")
             {
-                buddy.IsActive = true;
-                buddy.DepartureReason = null;
+                foundBuddy.IsActive = true;
+                foundBuddy.DepartureReason = null;
             }
             else if (newStatus == "rejected")
             {
-                buddy.IsActive = false;
+                foundBuddy.IsActive = false;
             }
 
             var replaceResult = await _tripsCollection.ReplaceOneAsync(
-                t => t.TripId == tripWithBuddy.TripId,
-                tripWithBuddy);
+                t => t.TripId == foundTrip.TripId,
+                foundTrip);
 
             return replaceResult.IsAcknowledged && replaceResult.ModifiedCount > 0;
         }

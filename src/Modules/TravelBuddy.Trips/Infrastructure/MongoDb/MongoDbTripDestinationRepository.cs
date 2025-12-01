@@ -54,7 +54,9 @@ namespace TravelBuddy.Trips
     [BsonIgnoreExtraElements]
     internal class DestinationDocument
     {
+        [BsonId]
         public int DestinationId { get; set; }
+
         public string Name { get; set; } = null!;
         public string? State { get; set; }
         public string Country { get; set; } = null!;
