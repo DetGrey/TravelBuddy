@@ -667,8 +667,51 @@ namespace TravelBuddy.Trips
         public async Task<(bool Success, string? ErrorMessage)> LeaveTripDestinationAsync(
         int userId, int tripDestinationId, int personCount, string reason)
         {
-            // TODO: implement proper MongoDB logic for leaving a trip destination
-            return await Task.FromResult((false, "Not implemented yet"));
+            //Find the trip that contains this trip destination
+            var filter = Builders<TripDocument>.Filter
+                .ElemMatch(t => t.Destinations, td => td.TripDestinationId == tripDestinationId);
+
+            var trip = await _tripsCollection.Find(filter).FirstOrDefaultAsync();
+            if (trip == null)
+                return (false, "Trip not found for given destination ID.");
+
+            //Find the trip destination within the trip
+            var destination = trip.Destinations.FirstOrDefault(td => td.TripDestinationId == tripDestinationId);
+            if (destination == null)
+                return (false, "Trip destination not found.");
+
+            //Find the buddy entry for this user
+            var buddy = destination.Buddies.FirstOrDefault(b => b.UserId == userId);
+            if (buddy == null)
+                return (false, "Buddy not found for this user in the trip destination.");
+
+            //Adjust person count or remove buddy
+            if (buddy.PersonCount.HasValue && buddy.PersonCount.Value > personCount)
+            {
+                buddy.PersonCount -= personCount;
+            }
+            else
+            {
+                // Remove the buddy entirely
+                destination.Buddies.Remove(buddy);
+            }
+
+            // Optionally: you could add an audit entry or mark a "LeftReason"
+            // e.g. buddy.Note = $"Left: {reason}";
+
+            //Replace the updated destination back into the trip
+            var destinationIndex = trip.Destinations.FindIndex(td => td.TripDestinationId == tripDestinationId);
+            if (destinationIndex >= 0)
+                trip.Destinations[destinationIndex] = destination;
+
+            //Save the updated trip back to MongoDB
+            var updateFilter = Builders<TripDocument>.Filter.Eq(t => t.TripId, trip.TripId);
+            var result = await _tripsCollection.ReplaceOneAsync(updateFilter, trip);
+
+            if (result.ModifiedCount == 0)
+                return (false, "Failed to update trip record.");
+
+            return (true, null);
         }
 
         // ---------------------------------------------------------
