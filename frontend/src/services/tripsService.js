@@ -102,12 +102,12 @@ const tripsService = {
       return res.data;
     },
 
-    // Accept/reject map to: POST /api/users/{userId}/buddy-requests/update
+    // Accept/reject map to: PATCH /api/users/{userId}/buddy-requests/update
     // Body: { userId, buddyId, newStatus }
     async acceptRequest(userId, buddyId) {
       console.log("acceptRequest called with userId:", userId, "buddyId:", buddyId);
       try {
-        const res = await api.post(`/users/${userId}/buddy-requests/update`, {
+        const res = await api.patch(`/users/${userId}/buddy-requests/update`, {
           buddyId,
           newStatus: 'accepted'
         });

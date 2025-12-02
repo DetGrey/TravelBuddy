@@ -1,0 +1,21 @@
+version: '3.8'
+services:
+  test_mysql:
+    image: mysql:8.0 # Use a specific version for stability
+    container_name: test_mysql_travel_buddy_container
+    environment:
+      # These variables set the root user password and a default database
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: travel_buddy
+    ports:
+      # Maps the container's 3306 to your local machine's 3307
+      - "3307:3306"
+    volumes:
+      # This is the key step. It mounts your local SQL files into the container.
+      # Any *.sql or *.sh files placed in /docker-entrypoint-initdb.d/
+      # will be automatically executed by MySQL when the container starts for the first time.
+      - ./db_init:/docker-entrypoint-initdb.d
+    tmpfs:
+      # This tells Docker to store the MySQL database data in temporary memory.
+      # The data will be DESTROYED when the container stops.
+      - /var/lib/mysql:rw

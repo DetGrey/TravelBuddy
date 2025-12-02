@@ -58,7 +58,7 @@ namespace TravelBuddy.Api.Controllers
         }
 
         [Authorize]
-        [HttpPost("update")]
+        [HttpPatch("update")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

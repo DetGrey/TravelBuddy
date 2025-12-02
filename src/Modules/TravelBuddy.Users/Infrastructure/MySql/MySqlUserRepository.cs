@@ -40,7 +40,6 @@ public class MySqlUserRepository : IUserRepository
             user.PasswordHash = passwordHash;
             await _context.SaveChangesAsync();
         }
-
     }
     public async Task<User?> GetUserByIdAsync(int userId)
     {

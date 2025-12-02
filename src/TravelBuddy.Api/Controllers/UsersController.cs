@@ -102,7 +102,6 @@ namespace TravelBuddy.Api.Controllers
             return Created($"/api/users/{userDto.UserId}", new AuthResponseDto(userDto, token));
         }
 
-        [Authorize]
         [HttpPost("logout")]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -145,6 +144,7 @@ namespace TravelBuddy.Api.Controllers
                 return Forbid();
 
             var success = await _userService.DeleteUser(userId);
+            // TODO update to return more specific error messages
             if (!success)
                  return BadRequest("User deletion failed due to invalid input or policy violation.");
 
@@ -155,7 +155,7 @@ namespace TravelBuddy.Api.Controllers
         }
 
         [Authorize]
-        [HttpPost("{userId}/change-password")]
+        [HttpPatch("{userId}/change-password")]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

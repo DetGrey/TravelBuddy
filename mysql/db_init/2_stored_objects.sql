@@ -378,10 +378,14 @@ BEGIN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'content cannot be NULL';
     END IF;
-
+    
+    SET @SESSION_TRIGGER_AUDIT_SKIP = TRUE;
+    
     INSERT INTO message (sender_id, content, conversation_id)
     VALUES (p_sender_id, p_content, p_conversation_id);
 
+    SET @SESSION_TRIGGER_AUDIT_SKIP = NULL;
+    
     -- After inserting the message
     UPDATE conversation
     SET is_archived = FALSE
@@ -605,6 +609,8 @@ BEGIN
 
     -- Only if there is no conversation already
     IF v_conversation_id IS NULL THEN
+        SET @SESSION_TRIGGER_AUDIT_SKIP = TRUE;
+        
         -- Step 1: Create the group conversation
         INSERT INTO conversation (trip_destination_id, is_group)
         VALUES (p_trip_destination_id, TRUE);
@@ -621,6 +627,8 @@ BEGIN
         FROM buddy
         WHERE trip_destination_id = p_trip_destination_id
         AND request_status = 'accepted';
+        
+        SET @SESSION_TRIGGER_AUDIT_SKIP = NULL;
 
         -- Audit log
         INSERT INTO conversation_audit (
@@ -690,9 +698,13 @@ BEGIN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'User has already requested to join this trip destination';
     END IF;
+    
+    SET @SESSION_TRIGGER_AUDIT_SKIP = TRUE;
 
     INSERT INTO buddy (user_id, trip_destination_id, person_count, note)
     VALUES (p_user_id, p_trip_destination_id, p_person_count, p_note);
+    
+    SET @SESSION_TRIGGER_AUDIT_SKIP = NULL;
 
     SET v_buddy_id = LAST_INSERT_ID();
 
@@ -728,8 +740,12 @@ BEGIN
             WHERE conversation_id = v_conversation_id
             AND user_id = v_user_id
         ) THEN
+            SET @SESSION_TRIGGER_AUDIT_SKIP = TRUE;
+        
             INSERT INTO conversation_participant (conversation_id, user_id)
             VALUES (v_conversation_id, v_user_id);
+            
+            SET @SESSION_TRIGGER_AUDIT_SKIP = NULL;
 
             -- Audit log
             INSERT INTO conversation_audit (
@@ -791,7 +807,9 @@ BEGIN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'User cannot create conversation with themselves';
     END IF;
-
+    
+    SET @SESSION_TRIGGER_AUDIT_SKIP = TRUE;
+    
     -- 1. Create conversation
     INSERT INTO conversation (trip_destination_id, is_group)
     VALUES (p_trip_destination_id, FALSE);
@@ -816,6 +834,8 @@ BEGIN
     INSERT INTO conversation_participant (conversation_id, user_id) VALUES
     (v_conversation_id, p_owner_id),
     (v_conversation_id, p_user_id);
+    
+    SET @SESSION_TRIGGER_AUDIT_SKIP = NULL;
 
     -- Audit log
     INSERT INTO conversation_audit (
@@ -852,6 +872,7 @@ DO BEGIN
     SET is_archived = true
     WHERE end_date < NOW();
 END $$
+DELIMITER ;
 
 DROP TRIGGER IF EXISTS audit_archiving_of_trip_destination;
 DELIMITER $$
@@ -1152,11 +1173,15 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'End date must be after start date';
     END IF;
+    
+    SET @SESSION_TRIGGER_AUDIT_SKIP = TRUE;
 
     -- Insert trip
     INSERT INTO trip (owner_id, trip_name, max_buddies, start_date, end_date, description)
     VALUES (p_owner_id, p_trip_name, p_max_buddies, p_start_date, p_end_date, p_description);
-
+    
+    SET @SESSION_TRIGGER_AUDIT_SKIP = NULL;
+    
     SET new_trip_id = LAST_INSERT_ID();
 
     -- Audit log
@@ -1244,4 +1269,109 @@ BEGIN
     INSERT INTO trip_destination (trip_id, destination_id, start_date, end_date, sequence_number, description)
     VALUES (p_trip_id, new_destination_id, p_start_date, p_end_date, p_sequence_number, p_description);
 END $$
+DELIMITER ;
+
+# ADDITIONAL TRIGGERS FOR AUDIT TABLES WHEN ADDING SEED DATA
+DROP TRIGGER IF EXISTS trg_trip_after_insert;
+DROP TRIGGER IF EXISTS trg_conversation_after_insert;
+DROP TRIGGER IF EXISTS trg_conversation_participant_after_insert;
+DROP TRIGGER IF EXISTS trg_buddy_after_insert;
+
+DELIMITER $$
+-- Logs new trip creation
+CREATE TRIGGER trg_trip_after_insert
+AFTER INSERT ON trip
+FOR EACH ROW
+BEGIN
+    -- Skip if the session variable is set (e.g., if insert is inside a controlled procedure like 'create_trip')
+    IF @SESSION_TRIGGER_AUDIT_SKIP IS NULL OR @SESSION_TRIGGER_AUDIT_SKIP != TRUE THEN
+        INSERT INTO trip_audit (
+            trip_id,
+            action,
+            field_changed,
+            old_value,
+            new_value,
+            changed_by
+        )
+        VALUES (
+            NEW.trip_id,
+            'created',
+            'trip_name',
+            NULL,
+            NEW.trip_name,
+            NEW.owner_id -- Assuming the owner is the initial creator
+        );
+    END IF;
+END $$
+
+-- Logs new conversation creation
+CREATE TRIGGER trg_conversation_after_insert
+AFTER INSERT ON conversation
+FOR EACH ROW
+BEGIN
+    -- Skip if the session variable is set, as procedures like 'create_group_conversation_for_trip_destination' already insert into conversation_audit
+    IF @SESSION_TRIGGER_AUDIT_SKIP IS NULL OR @SESSION_TRIGGER_AUDIT_SKIP != TRUE THEN
+        -- If the insert is NOT from a controlled procedure, we try to create a basic audit log entry.
+        -- NOTE: We cannot determine the `triggered_by` user here easily, so we use NULL.
+        INSERT INTO conversation_audit (
+            conversation_id,
+            affected_user_id,
+            action,
+            triggered_by
+        )
+        VALUES (
+            NEW.conversation_id,
+            NULL,
+            'created',
+            NULL -- Cannot determine user in a simple trigger, must be handled in the SP
+        );
+    END IF;
+END $$
+
+-- Logs when a participant is added to a conversation
+CREATE TRIGGER trg_conversation_participant_after_insert
+AFTER INSERT ON conversation_participant
+FOR EACH ROW
+BEGIN
+    -- Skip if the session variable is set, as procedures like 'insert_new_private_conversation' already insert into conversation_audit
+    IF @SESSION_TRIGGER_AUDIT_SKIP IS NULL OR @SESSION_TRIGGER_AUDIT_SKIP != TRUE THEN
+        INSERT INTO conversation_audit (
+            conversation_id,
+            affected_user_id,
+            action,
+            triggered_by
+        )
+        VALUES (
+            NEW.conversation_id,
+            NEW.user_id,
+            'user_added',
+            NULL -- Cannot determine the user who initiated the adding action
+        );
+    END IF;
+END $$
+
+DELIMITER $$
+
+-- 1. Logs when a new buddy entry is created (request to join)
+CREATE TRIGGER trg_buddy_after_insert
+AFTER INSERT ON buddy
+FOR EACH ROW
+BEGIN
+    -- Skip if the session variable is set (meaning a stored procedure is handling the audit)
+    IF @SESSION_TRIGGER_AUDIT_SKIP IS NULL OR @SESSION_TRIGGER_AUDIT_SKIP != TRUE THEN
+        INSERT INTO buddy_audit (
+            buddy_id,
+            action,
+            reason,
+            changed_by
+        )
+        VALUES (
+            NEW.buddy_id,
+            'requested',
+            'Buddy request created outside of procedure',
+            NEW.user_id -- Assuming the user themselves created the request
+        );
+    END IF;
+END $$
+
 DELIMITER ;

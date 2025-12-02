@@ -7,6 +7,9 @@ using TravelBuddy.Trips;
 using TravelBuddy.Trips.Models;
 using TravelBuddy.Messaging;
 using TravelBuddy.SharedKernel;
+using TravelBuddy.Messaging.Models;
+using TravelBuddy.Trips.DTOs;
+using TravelBuddy.SharedKernel.Models;
 
 namespace TravelBuddy.Api.Controllers
 {
@@ -33,13 +36,6 @@ namespace TravelBuddy.Api.Controllers
         }
 
         [Authorize(Roles = "admin")]
-        [HttpGet("admin-action")]
-        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public IActionResult AdminOnlyStuff() => Ok("Admins only!");
-
-        [Authorize(Roles = "admin")]
         [HttpGet("users")]
         [ProducesResponseType(typeof(IEnumerable<UserDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -62,7 +58,7 @@ namespace TravelBuddy.Api.Controllers
         // ------------------------------- AUDIT TABLES -------------------------------
         [Authorize(Roles = "admin")]
         [HttpGet("audit/buddy")]
-        [ProducesResponseType(typeof(IEnumerable<BuddyAudit>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<BuddyAuditDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -78,7 +74,7 @@ namespace TravelBuddy.Api.Controllers
 
         [Authorize(Roles = "admin")]
         [HttpGet("audit/trip")]
-        [ProducesResponseType(typeof(IEnumerable<TripAudit>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<TripAuditDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -94,6 +90,10 @@ namespace TravelBuddy.Api.Controllers
 
         [Authorize(Roles = "admin")]
         [HttpGet("audit/conversation")]
+        [ProducesResponseType(typeof(IEnumerable<ConversationAuditDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public IActionResult GetConversationAudit()
         {
             var audits = _messagingService.GetConversationAuditsAsync();
@@ -107,6 +107,10 @@ namespace TravelBuddy.Api.Controllers
         // ------------------------------- SYSTEM LOGS -------------------------------
         [Authorize(Roles = "admin")]
         [HttpGet("logs/system")]
+        [ProducesResponseType(typeof(IEnumerable<SystemEventLog>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public IActionResult GetSystemEventLogs()
         {
             var logs = _sharedKernelService.GetSystemEventLogsAsync();

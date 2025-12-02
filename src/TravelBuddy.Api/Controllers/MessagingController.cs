@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TravelBuddy.Messaging;
+using TravelBuddy.Api.Auth;
 
 namespace TravelBuddy.Api.Controllers
 {
     [ApiController]
     [Route("api/conversations")]
-    [Authorize]
     public class MessagingController : ControllerBase
     {
         private readonly IMessagingService _messagingService;
@@ -21,11 +21,21 @@ namespace TravelBuddy.Api.Controllers
         //    /api/messaging?userId=26
         // -------------------------------------------------------
 
+        [Authorize]
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<IEnumerable<ConversationSummaryDto>>> GetForUser(
             [FromQuery] int userId)
         {
+            if (!User.IsSelfOrAdmin(userId)) return Forbid();
+
             var result = await _messagingService.GetConversationsForUserAsync(userId);
+            if (result == null || !result.Any())
+                return NoContent();
+            
             return Ok(result);
         }
 
@@ -34,15 +44,22 @@ namespace TravelBuddy.Api.Controllers
         //    /api/messaging/{conversationId}?userId=26
         // -------------------------------------------------------
 
+        [Authorize]
         [HttpGet("{conversationId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<ConversationDetailDto>> GetConversation(
             int conversationId,
             [FromQuery] int userId)
         {
+            if (!User.IsSelfOrAdmin(userId)) return Forbid();
+            
             var result = await _messagingService.GetConversationDetailAsync(userId, conversationId);
 
             if (result == null)
-                return NotFound();
+                return NoContent();
             
             return Ok(result);
         }
@@ -51,13 +68,22 @@ namespace TravelBuddy.Api.Controllers
         // 3) GET all messages in a conversation  
         //    /api/messaging/{conversationId}/messages?userId=26
         // -------------------------------------------------------
-
+        [Authorize]
         [HttpGet("{conversationId:int}/messages")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<IEnumerable<MessageDto>>>
             GetMessages(int conversationId, [FromQuery] int userId)
         {
+            if (!User.IsSelfOrAdmin(userId)) return Forbid();
+
             var result = await _messagingService.GetMessagesForConversationAsync(userId, conversationId);
 
+            if (result == null || !result.Any())
+                return NoContent();
+            
             return Ok(result);
         }
 
@@ -69,13 +95,20 @@ namespace TravelBuddy.Api.Controllers
         //        "content": "Hej, hvornår mødes vi?"
         //    }
         // -------------------------------------------------------
-
+        [Authorize]
         [HttpPost("{conversationId:int}/messages")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<MessageDto>> SendMessage(
             int conversationId,
             [FromQuery] int userId,
             [FromBody] SendMessageRequestDto request)
         {
+            if (!User.IsSelfOrAdmin(userId)) return Forbid();
+
             if (string.IsNullOrWhiteSpace(request.Content))
             {
                 return BadRequest("Content must not be empty.");
@@ -85,7 +118,7 @@ namespace TravelBuddy.Api.Controllers
 
             if (result == null)
             {
-                return NotFound("Conversation not found or you are not a partipant.");
+                return NoContent();
             }
 
             return Ok(result);

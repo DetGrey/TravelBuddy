@@ -113,7 +113,7 @@ namespace TravelBuddy.Api.Controllers
 
             return Ok(tripDestinations);
         }
-
+        [Authorize]
         [HttpGet("trip-destinations/{tripDestinationId}")]
         [ProducesResponseType(typeof(TripDestinationInfoDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -162,7 +162,7 @@ namespace TravelBuddy.Api.Controllers
                 triggeredBy.Value,
                 departureReason
             );
-
+            // TODO should this be BadRequest or something else?
             if (!success) 
             {
                 return BadRequest(errorMessage ?? "Failed to update buddy status.");
