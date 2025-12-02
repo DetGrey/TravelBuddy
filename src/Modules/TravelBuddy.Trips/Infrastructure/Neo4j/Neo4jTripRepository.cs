@@ -762,7 +762,7 @@ LIMIT 1
     public async Task<(bool Success, string? ErrorMessage)> LeaveTripDestinationAsync(
         int userId,
         int tripDestinationId,
-        int triggeredBy,
+        int changedBy,
         string departureReason)
     {
         await using var session = _driver.AsyncSession();

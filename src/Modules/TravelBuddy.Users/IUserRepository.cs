@@ -13,4 +13,5 @@ public interface IUserRepository
     Task UpdatePasswordAsync(int userId, string passwordHash);
     Task<User?> GetUserByIdAsync(int userId);
     Task<IEnumerable<User>> GetAllAsync();
+    Task<IEnumerable<UserAudit>> GetUserAuditsAsync();
 }

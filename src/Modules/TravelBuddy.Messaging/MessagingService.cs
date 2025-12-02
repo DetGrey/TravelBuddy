@@ -170,7 +170,7 @@ namespace TravelBuddy.Messaging
                 ca.ConversationId,
                 ca.AffectedUserId,
                 ca.Action,
-                ca.TriggeredBy,
+                ca.ChangedBy,
                 ca.Timestamp
             )).ToList();
         }

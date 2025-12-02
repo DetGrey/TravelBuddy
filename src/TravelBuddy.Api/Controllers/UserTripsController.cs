@@ -140,11 +140,11 @@ namespace TravelBuddy.Api.Controllers
             [FromRoute] int tripDestinationId,
             [FromQuery] string? departureReason
         ) {
-            var triggeredBy = User.GetUserId();
-            if (triggeredBy == null) return Unauthorized();
+            var changedBy = User.GetUserId();
+            if (changedBy == null) return Unauthorized();
 
             var isSelfOrAdmin = User.IsSelfOrAdmin(userId);
-            var isOwner = await _tripService.IsTripOwnerAsync(triggeredBy.Value, tripDestinationId);
+            var isOwner = await _tripService.IsTripOwnerAsync(changedBy.Value, tripDestinationId);
 
             if (!isSelfOrAdmin && !isOwner)
                 return Forbid();
@@ -159,7 +159,7 @@ namespace TravelBuddy.Api.Controllers
             var (success, errorMessage) = await _tripService.LeaveTripDestinationAsync(
                 userId,
                 tripDestinationId,
-                triggeredBy.Value,
+                changedBy.Value,
                 departureReason
             );
             // TODO should this be BadRequest or something else?

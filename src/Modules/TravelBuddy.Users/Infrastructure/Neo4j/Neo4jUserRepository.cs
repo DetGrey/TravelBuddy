@@ -180,6 +180,12 @@ public class Neo4jUserRepository : IUserRepository
 
         return result.Result.Select(MapRecordToUser).ToList();
     }
+    // ------------------------------- AUDIT TABLES -------------------------------
+    public async Task<IEnumerable<UserAudit>> GetUserAuditsAsync()
+    {
+        // TODO Placeholder: Return an empty collection of UserAudit records
+        return await Task.FromResult<IEnumerable<UserAudit>>(new List<UserAudit>());
+    }
 }
 
 /*

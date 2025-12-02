@@ -10,6 +10,7 @@ using TravelBuddy.SharedKernel;
 using TravelBuddy.Messaging.Models;
 using TravelBuddy.Trips.DTOs;
 using TravelBuddy.SharedKernel.Models;
+using TravelBuddy.Users.Models;
 
 namespace TravelBuddy.Api.Controllers
 {
@@ -56,6 +57,22 @@ namespace TravelBuddy.Api.Controllers
         // Action: Permanently delete a user (use with extreme caution).
         
         // ------------------------------- AUDIT TABLES -------------------------------
+        [Authorize(Roles = "admin")]
+        [HttpGet("audit/user")]
+        [ProducesResponseType(typeof(IEnumerable<UserAuditDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public IActionResult GetUserAudit()
+        {
+            var audits = _userService.GetUserAuditsAsync();
+
+            if (audits == null || !audits.Result.Any())
+                return NoContent();
+            
+            return Ok(audits.Result);
+        }
+
         [Authorize(Roles = "admin")]
         [HttpGet("audit/buddy")]
         [ProducesResponseType(typeof(IEnumerable<BuddyAuditDto>), StatusCodes.Status200OK)]

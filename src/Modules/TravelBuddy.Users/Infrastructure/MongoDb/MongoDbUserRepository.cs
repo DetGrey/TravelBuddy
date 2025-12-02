@@ -173,5 +173,11 @@ namespace TravelBuddy.Users
             // docs is IEnumerable<UserDocument>, MapToEntity(UserDocument) fits perfectly
             return docs.Select(MapToEntity).ToList();
         }
+        // ------------------------------- AUDIT TABLES -------------------------------
+        public async Task<IEnumerable<UserAudit>> GetUserAuditsAsync()
+        {
+            // TODO Placeholder: Return an empty collection of UserAudit records
+            return await Task.FromResult<IEnumerable<UserAudit>>(new List<UserAudit>());
+        }
     }
 }

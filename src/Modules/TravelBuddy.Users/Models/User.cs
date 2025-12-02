@@ -15,4 +15,6 @@ public partial class User
     public bool IsDeleted { get; set; }
 
     public string Role { get; set; } = null!;
+
+    public virtual ICollection<UserAudit> UserAudits { get; set; } = new List<UserAudit>();
 }

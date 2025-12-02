@@ -5,6 +5,6 @@ public record ConversationAuditDto(
     int ConversationId,
     int? AffectedUserId,
     string Action,
-    int? TriggeredBy,
+    int? ChangedBy,
     DateTime? Timestamp
 );

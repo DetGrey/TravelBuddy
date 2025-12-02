@@ -280,6 +280,9 @@ public partial class TripsDbContext : DbContext
                 .HasColumnName("role");
         });
 
+        modelBuilder.Entity<UserAudit>().HasNoKey().Ignore(e => e.ChangedByNavigation);
+        modelBuilder.Entity<User>().Ignore(t => t.UserAudits);
+
         modelBuilder.Entity<TripDestinationSearchResult>().HasNoKey();
 
         modelBuilder.Entity<BuddyTripSummary>().HasNoKey();

@@ -1255,7 +1255,16 @@ INSERT INTO message (sender_id, content, sent_at, conversation_id) VALUES
 (43, 'I am so excited to visit Universal Studios! Is it better to go during the week or on a weekend?', '2025-02-08 15:10:00', 15),
 (74, 'I am looking forward to hiking to the Hollywood Sign! I found a trail that has great views.', '2025-02-09 09:25:00', 15);
 
--- ------- IMMEDIATE EXECUTION OF EVENTS (for testing seed data)
+-- ------------------------------------------------------------------------------------------------------------------------------------------------
+
+-- =======================
+-- IMMEDIATE EXECUTION OF EVENTS (for testing seed data)
+-- =======================
+
+UPDATE trip SET is_archived = true WHERE end_date < NOW();
+
+UPDATE trip_destination SET is_archived = true WHERE end_date < NOW();
+
 UPDATE conversation
 SET is_archived = TRUE
 WHERE conversation_id IN (
@@ -1264,7 +1273,3 @@ WHERE conversation_id IN (
     GROUP BY m.conversation_id
     HAVING MAX(m.sent_at) <= NOW() - INTERVAL 1 WEEK
 );
-
-UPDATE trip SET is_archived = true WHERE end_date < NOW();
-
-UPDATE trip_destination SET is_archived = true WHERE end_date < NOW();

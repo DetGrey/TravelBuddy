@@ -15,6 +15,7 @@ namespace TravelBuddy.Users
 
         // Gets a list of all users from the database.
         Task<IEnumerable<UserDto>> GetAllUsersAsync();
+        Task<IEnumerable<UserAuditDto>> GetUserAuditsAsync();
     }
 
     // Implementation: Contains the actual business logic.
@@ -116,6 +117,23 @@ namespace TravelBuddy.Users
                 u.Name,
                 u.Email,
                 u.Birthdate
+            )).ToList();
+        }
+
+        // ------------------------------- AUDIT TABLES -------------------------------
+        public async Task<IEnumerable<UserAuditDto>> GetUserAuditsAsync()
+        {
+            var userRepository = GetRepo();
+            var results = await userRepository.GetUserAuditsAsync();
+            return results.Select(ua => new UserAuditDto(
+                ua.AuditId,
+                ua.UserId,
+                ua.Action,
+                ua.FieldChanged,
+                ua.OldValue,
+                ua.NewValue,
+                ua.ChangedBy,
+                ua.Timestamp
             )).ToList();
         }
     }

@@ -25,12 +25,13 @@ public class MySqlUserRepository : IUserRepository
     }
     public async Task<bool> DeleteAsync(int userId, string passwordHash)
     {
-        if (string.IsNullOrWhiteSpace(passwordHash))
-            throw new ArgumentException("Password hash cannot be empty.", nameof(passwordHash));
-    
-        // ExecuteSqlInterpolatedAsync() automatically prevents SQL injections
-        var result = await _context.Database.ExecuteSqlInterpolatedAsync($@"CALL delete_user({userId}, {passwordHash})");
-        return result == 1;
+        if (string.IsNullOrWhiteSpace(passwordHash)) return false;
+        try {
+            var result = await _context.Database.ExecuteSqlInterpolatedAsync($@"CALL delete_user({userId}, {passwordHash})");
+            return true;
+        } catch (Exception) {
+            return false;
+        }
     }
     public async Task UpdatePasswordAsync(int userId, string passwordHash)
     {
@@ -54,5 +55,12 @@ public class MySqlUserRepository : IUserRepository
             // It tells EF Core not to track changes, making the query faster.
             .AsNoTracking()
             .ToListAsync(); // Execute the query and return a list of User entities.'
+    }
+    // ------------------------------- AUDIT TABLES -------------------------------
+    public async Task<IEnumerable<UserAudit>> GetUserAuditsAsync()
+    {
+        return await _context.UserAudits
+            .AsNoTracking()
+            .ToListAsync();
     }
 }

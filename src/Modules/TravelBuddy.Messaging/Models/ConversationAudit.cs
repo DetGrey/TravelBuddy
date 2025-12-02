@@ -14,7 +14,7 @@ public partial class ConversationAudit
 
     public string Action { get; set; } = null!;
 
-    public int? TriggeredBy { get; set; }
+    public int? ChangedBy { get; set; }
 
     public DateTime? Timestamp { get; set; }
 
@@ -22,5 +22,5 @@ public partial class ConversationAudit
 
     public virtual Conversation Conversation { get; set; } = null!;
 
-    public virtual User? TriggeredByNavigation { get; set; }
+    public virtual User? ChangedByNavigation { get; set; }
 }

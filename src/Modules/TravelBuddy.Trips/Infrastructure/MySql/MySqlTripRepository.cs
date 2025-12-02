@@ -356,7 +356,7 @@ public class MySqlTripRepository : ITripRepository
     public async Task<(bool Success, string? ErrorMessage)> LeaveTripDestinationAsync(
         int userId,
         int tripDestinationId,
-        int triggeredBy,
+        int changedBy,
         string departureReason
     )
     {
@@ -366,7 +366,7 @@ public class MySqlTripRepository : ITripRepository
                 CALL remove_buddy_from_trip_destination(
                     {userId},
                     {tripDestinationId},
-                    {triggeredBy},
+                    {changedBy},
                     {departureReason}
                 )");
 

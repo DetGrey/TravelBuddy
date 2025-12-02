@@ -24,7 +24,7 @@ namespace TravelBuddy.Trips
         Task<(bool Success, string? ErrorMessage)> CreateTripWithDestinationsAsync(CreateTripWithDestinationsDto createTripWithDestinationsDto);
         
         // Buddy related
-        Task<(bool Success, string? ErrorMessage)> LeaveTripDestinationAsync(int userId, int tripDestinationId, int triggeredBy, string departureReason);
+        Task<(bool Success, string? ErrorMessage)> LeaveTripDestinationAsync(int userId, int tripDestinationId, int changedBy, string departureReason);
         Task<IEnumerable<PendingBuddyRequestDto>> GetPendingBuddyRequestsAsync(int userId);
         Task<(bool Success, string? ErrorMessage)> InsertBuddyRequestAsync(BuddyDto buddyDto);
         Task<(bool Success, string? ErrorMessage)> UpdateBuddyRequestAsync(UpdateBuddyRequestDto updateBuddyRequestDto);
@@ -222,11 +222,11 @@ namespace TravelBuddy.Trips
         public async Task<(bool Success, string? ErrorMessage)> LeaveTripDestinationAsync(
             int userId,
             int tripDestinationId,
-            int triggeredBy, 
+            int changedBy, 
             string departureReason
         ) {
             var tripRepository = GetRepo();
-            return await tripRepository.LeaveTripDestinationAsync(userId, tripDestinationId, triggeredBy, departureReason);
+            return await tripRepository.LeaveTripDestinationAsync(userId, tripDestinationId, changedBy, departureReason);
         }
         public async Task<IEnumerable<PendingBuddyRequestDto>> GetPendingBuddyRequestsAsync(int userId)
         {

@@ -69,7 +69,7 @@ public partial class MessagingDbContext : DbContext
 
             entity.HasIndex(e => e.ConversationId, "fk_convo_audit_convo");
 
-            entity.HasIndex(e => e.TriggeredBy, "fk_convo_audit_triggered");
+            entity.HasIndex(e => e.ChangedBy, "fk_convo_audit_changed");
 
             entity.Property(e => e.AuditId).HasColumnName("audit_id");
             entity.Property(e => e.Action)
@@ -81,7 +81,7 @@ public partial class MessagingDbContext : DbContext
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("datetime")
                 .HasColumnName("timestamp");
-            entity.Property(e => e.TriggeredBy).HasColumnName("triggered_by");
+            entity.Property(e => e.ChangedBy).HasColumnName("changed_by");
 
             entity.HasOne(d => d.AffectedUser).WithMany()
                 .HasForeignKey(d => d.AffectedUserId)
@@ -89,10 +89,10 @@ public partial class MessagingDbContext : DbContext
                 .HasConstraintName("fk_convo_audit_affected");
 
 
-            entity.HasOne(d => d.TriggeredByNavigation).WithMany()
-                .HasForeignKey(d => d.TriggeredBy)
+            entity.HasOne(d => d.ChangedByNavigation).WithMany()
+                .HasForeignKey(d => d.ChangedBy)
                 .OnDelete(DeleteBehavior.SetNull)
-                .HasConstraintName("fk_convo_audit_triggered");
+                .HasConstraintName("fk_convo_audit_changed");
         });
 
         modelBuilder.Entity<ConversationParticipant>(entity =>
@@ -255,9 +255,12 @@ public partial class MessagingDbContext : DbContext
 
         modelBuilder.Entity<BuddyAudit>().HasNoKey();
         modelBuilder.Entity<TripAudit>().HasNoKey();
+        modelBuilder.Entity<UserAudit>().HasNoKey().Ignore(e => e.ChangedByNavigation);
 
         modelBuilder.Entity<Buddy>().Ignore(b => b.BuddyAudits);
         modelBuilder.Entity<Trip>().Ignore(t => t.TripAudits);
+        modelBuilder.Entity<User>().Ignore(t => t.UserAudits);
+
 
          // -------- Custom Models --------
         modelBuilder.Entity<ConversationOverview>().HasNoKey();

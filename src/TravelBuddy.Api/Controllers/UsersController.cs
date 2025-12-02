@@ -146,7 +146,7 @@ namespace TravelBuddy.Api.Controllers
             var success = await _userService.DeleteUser(userId);
             // TODO update to return more specific error messages
             if (!success)
-                 return BadRequest("User deletion failed due to invalid input or policy violation.");
+                 return BadRequest("User deletion failed");
 
             if (!User.IsAdmin(userId))
                 Response.Cookies.Delete("access_token");
