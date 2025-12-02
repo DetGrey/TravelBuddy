@@ -37,8 +37,11 @@ namespace TravelBuddy.Trips
     {
         public int TripDestinationId { get; set; }
         public int DestinationId { get; set; }
-        public DateOnly StartDate { get; set; }   // stored as DateOnly in Mongo
-        public DateOnly EndDate { get; set; }
+
+        // Use DateTime because Mongo stores BSON Date
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+
         public int SequenceNumber { get; set; }
         public string? Description { get; set; }
         public bool? IsArchived { get; set; }
@@ -48,12 +51,16 @@ namespace TravelBuddy.Trips
     [BsonIgnoreExtraElements]
     internal class TripDocument
     {
-        // We do NOT map _id; we keep TripId as a normal field
+        // Map MongoDB _id (int) to TripId
+        [BsonId]
         public int TripId { get; set; }
+
         public int? OwnerId { get; set; }
         public int? MaxBuddies { get; set; }
+
         public DateOnly StartDate { get; set; }
         public DateOnly EndDate { get; set; }
+
         public string? Description { get; set; }
         public bool? IsArchived { get; set; }
 
@@ -63,7 +70,9 @@ namespace TravelBuddy.Trips
     [BsonIgnoreExtraElements]
     internal class DestinationDocument
     {
+        [BsonId]
         public int DestinationId { get; set; }
+
         public string Name { get; set; } = null!;
         public string? State { get; set; }
         public string Country { get; set; } = null!;
@@ -156,8 +165,8 @@ namespace TravelBuddy.Trips
                     if (!destMap.TryGetValue(td.DestinationId, out var destDoc))
                         continue;
 
-                    var destStart = td.StartDate;
-                    var destEnd = td.EndDate;
+                    var destStart = DateOnly.FromDateTime(td.StartDate);
+                    var destEnd = DateOnly.FromDateTime(td.EndDate);
 
                     // --- date overlap filter ---
                     if (reqStart.HasValue && destEnd < reqStart.Value)
@@ -226,9 +235,29 @@ namespace TravelBuddy.Trips
 
         public async Task<IEnumerable<Destination>> GetDestinationsAsync()
         {
-            // TODO: implement 
-            return await Task.FromResult<IEnumerable<Destination>>(new List<Destination>());
+            var docs = await _destinationsCollection
+                .Find(FilterDefinition<DestinationDocument>.Empty)
+                .ToListAsync();
+
+            // If there happen to be duplicate DestinationIds in Mongo, keep the first
+            var distinctDocs = docs
+                .GroupBy(d => d.DestinationId)
+                .Select(g => g.First())
+                .ToList();
+
+            var destinations = distinctDocs.Select(d => new Destination
+            {
+                DestinationId = d.DestinationId,
+                Name          = d.Name,
+                State         = d.State,
+                Country       = d.Country,
+                Longitude     = d.Longitude,
+                Latitude      = d.Latitude
+            });
+
+            return destinations;
         }
+
 
         // ---------------------------------------------------------
         // Get trips that a user owns or is buddy on
@@ -269,27 +298,258 @@ namespace TravelBuddy.Trips
         // ---------------------------------------------------------
         public async Task<TripDestinationInfo?> GetTripDestinationInfoAsync(int tripDestinationId)
         {
-            // TODO implement
-            return await Task.FromResult<TripDestinationInfo?>(null);
+            // Find the trip that contains this trip destination
+            var filter = Builders<TripDocument>.Filter
+                .ElemMatch(t => t.Destinations, td => td.TripDestinationId == tripDestinationId);
+
+            var trip = await _tripsCollection.Find(filter).FirstOrDefaultAsync();
+            if (trip == null)
+                return null;
+
+            var td = trip.Destinations.FirstOrDefault(d => d.TripDestinationId == tripDestinationId);
+            if (td == null)
+                return null;
+
+            // Load destination info
+            var destDoc = await _destinationsCollection
+                .Find(d => d.DestinationId == td.DestinationId)
+                .FirstOrDefaultAsync();
+
+            if (destDoc == null)
+                return null;
+
+            // Load all users that are buddies on this destination (accepted + pending)
+            var buddyUserIds = td.Buddies
+                .Select(b => b.UserId)
+                .Distinct()
+                .ToList();
+
+            var buddyUserDocs = await _usersCollection
+                .Find(u => buddyUserIds.Contains(u.UserId))
+                .ToListAsync();
+
+            var userMap = buddyUserDocs.ToDictionary(u => u.UserId, u => u);
+
+            // Load owner (if any)
+            UserDocument? ownerDoc = null;
+            if (trip.OwnerId.HasValue)
+            {
+                ownerDoc = await _usersCollection
+                    .Find(u => u.UserId == trip.OwnerId.Value)
+                    .FirstOrDefaultAsync();
+            }
+
+            var info = new TripDestinationInfo
+            {
+                TripDestinationId    = td.TripDestinationId,
+                DestinationStartDate = DateOnly.FromDateTime(td.StartDate),
+                DestinationEndDate   = DateOnly.FromDateTime(td.EndDate),
+                DestinationDescription = td.Description,
+                DestinationIsArchived  = td.IsArchived,
+
+                TripId      = trip.TripId,
+                MaxBuddies  = trip.MaxBuddies,
+
+                DestinationId      = destDoc.DestinationId,
+                DestinationName    = destDoc.Name,
+                DestinationState   = destDoc.State,
+                DestinationCountry = destDoc.Country,
+                Longitude          = destDoc.Longitude,
+                Latitude           = destDoc.Latitude,
+
+                OwnerUserId = trip.OwnerId ?? 0,
+                OwnerName   = ownerDoc?.Name ?? string.Empty,
+
+                // There is no group conversation in Mongo model right now
+                GroupConversationId = null
+            };
+
+            foreach (var b in td.Buddies)
+            {
+                userMap.TryGetValue(b.UserId, out var uDoc);
+
+                if (string.Equals(b.RequestStatus, "accepted", StringComparison.OrdinalIgnoreCase))
+                {
+                    info.AcceptedBuddies.Add(new BuddyInfo
+                    {
+                        BuddyId      = b.BuddyId,
+                        PersonCount  = b.PersonCount ?? 1,
+                        BuddyNote    = b.Note,
+                        BuddyUserId  = b.UserId,
+                        BuddyName    = uDoc?.Name ?? string.Empty
+                    });
+                }
+                else if (string.Equals(b.RequestStatus, "pending", StringComparison.OrdinalIgnoreCase))
+                {
+                    info.PendingRequests.Add(new BuddyRequestInfo
+                    {
+                        BuddyId         = b.BuddyId,
+                        PersonCount     = b.PersonCount ?? 1,
+                        BuddyNote       = b.Note,
+                        RequesterUserId = b.UserId,
+                        RequesterName   = uDoc?.Name ?? string.Empty
+                    });
+                }
+                // We ignore "rejected" here – same as the relational logic normally does
+            }
+
+            return info;
         }
+
+
 
         // ---------------------------------------------------------
         // Get full trip overview
         // ---------------------------------------------------------
         public async Task<TripOverview?> GetFullTripOverviewAsync(int tripId)
         {
-            // TODO implement
-            return await Task.FromResult<TripOverview?>(null);
+            var trip = await _tripsCollection
+                .Find(t => t.TripId == tripId)
+                .FirstOrDefaultAsync();
+
+            if (trip == null)
+                return null;
+
+            // Load owner
+            UserDocument? ownerDoc = null;
+            if (trip.OwnerId.HasValue)
+            {
+                ownerDoc = await _usersCollection
+                    .Find(u => u.UserId == trip.OwnerId.Value)
+                    .FirstOrDefaultAsync();
+            }
+
+            // Load all destinations used in this trip
+            var destIds = trip.Destinations
+                .Select(td => td.DestinationId)
+                .Distinct()
+                .ToList();
+
+            var destDocs = await _destinationsCollection
+                .Find(d => destIds.Contains(d.DestinationId))
+                .ToListAsync();
+
+            var destMap = destDocs.ToDictionary(d => d.DestinationId, d => d);
+
+            var overview = new TripOverview
+            {
+                TripId          = trip.TripId,
+                TripName        = trip.Description ?? $"Trip {trip.TripId}", // fallback if TripName not mapped
+                TripStartDate   = trip.StartDate,
+                TripEndDate     = trip.EndDate,
+                MaxBuddies      = trip.MaxBuddies ?? 0,
+                TripDescription = trip.Description ?? string.Empty,
+                OwnerUserId     = trip.OwnerId ?? 0,
+                OwnerName       = ownerDoc?.Name ?? string.Empty,
+                Destinations    = new List<SimplifiedTripDestination>()
+            };
+
+            foreach (var td in trip.Destinations.OrderBy(td => td.SequenceNumber))
+            {
+                if (!destMap.TryGetValue(td.DestinationId, out var destDoc))
+                    continue;
+
+                var acceptedCount = td.Buddies
+                    .Where(b => string.Equals(b.RequestStatus, "accepted", StringComparison.OrdinalIgnoreCase))
+                    .Sum(b => b.PersonCount ?? 1);
+
+                overview.Destinations.Add(new SimplifiedTripDestination
+                {
+                    TripDestinationId    = td.TripDestinationId,
+                    TripId               = trip.TripId,
+                    DestinationStartDate = DateOnly.FromDateTime(td.StartDate),
+                    DestinationEndDate   = DateOnly.FromDateTime(td.EndDate),
+                    DestinationName      = destDoc.Name,
+                    DestinationState     = destDoc.State,
+                    DestinationCountry   = destDoc.Country,
+                    MaxBuddies           = trip.MaxBuddies ?? 0,
+                    AcceptedBuddiesCount = acceptedCount
+                });
+            }
+
+            return overview;
         }
+
+
 
         // ---------------------------------------------------------
         // Get all trip overviews owned by a user
         // ---------------------------------------------------------
         public async Task<List<TripOverview>> GetOwnedTripOverviewsAsync(int userId)
         {
-            // TODO implement
-            return await Task.FromResult(new List<TripOverview>());
+            // All trips owned by this user
+            var trips = await _tripsCollection
+                .Find(t => t.OwnerId == userId)
+                .ToListAsync();
+
+            if (!trips.Any())
+                return new List<TripOverview>();
+
+            // Load owner once
+            var ownerDoc = await _usersCollection
+                .Find(u => u.UserId == userId)
+                .FirstOrDefaultAsync();
+
+            // Preload all destinations used in these trips
+            var destIds = trips
+                .SelectMany(t => t.Destinations)
+                .Select(td => td.DestinationId)
+                .Distinct()
+                .ToList();
+
+            var destDocs = await _destinationsCollection
+                .Find(d => destIds.Contains(d.DestinationId))
+                .ToListAsync();
+
+            var destMap = destDocs.ToDictionary(d => d.DestinationId, d => d);
+
+            var result = new List<TripOverview>();
+
+            foreach (var trip in trips)
+            {
+                var overview = new TripOverview
+                {
+                    TripId          = trip.TripId,
+                    TripName        = trip.Description ?? $"Trip {trip.TripId}", // or trip.TripName if present
+                    TripStartDate   = trip.StartDate,
+                    TripEndDate     = trip.EndDate,
+                    MaxBuddies      = trip.MaxBuddies ?? 0,
+                    TripDescription = trip.Description ?? string.Empty,
+                    OwnerUserId     = userId,
+                    OwnerName       = ownerDoc?.Name ?? string.Empty,
+                    Destinations    = new List<SimplifiedTripDestination>()
+                };
+
+                foreach (var td in trip.Destinations.OrderBy(td => td.SequenceNumber))
+                {
+                    if (!destMap.TryGetValue(td.DestinationId, out var destDoc))
+                        continue;
+
+                    var acceptedCount = td.Buddies
+                        .Where(b => string.Equals(b.RequestStatus, "accepted", StringComparison.OrdinalIgnoreCase))
+                        .Sum(b => b.PersonCount ?? 1);
+
+                    overview.Destinations.Add(new SimplifiedTripDestination
+                    {
+                        TripDestinationId    = td.TripDestinationId,
+                        TripId               = trip.TripId,
+                        DestinationStartDate = DateOnly.FromDateTime(td.StartDate),
+                        DestinationEndDate   = DateOnly.FromDateTime(td.EndDate),
+                        DestinationName      = destDoc.Name,
+                        DestinationState     = destDoc.State,
+                        DestinationCountry   = destDoc.Country,
+                        MaxBuddies           = trip.MaxBuddies ?? 0,
+                        AcceptedBuddiesCount = acceptedCount
+                    });
+                }
+
+                result.Add(overview);
+            }
+
+            return result;
         }
+
+
 
         // ---------------------------------------------------------
         // Get owner of a specific trip destination
@@ -306,52 +566,109 @@ namespace TravelBuddy.Trips
         // ---------------------------------------------------------
         // Create a new trip with destinations
         // ---------------------------------------------------------
-        public async Task<(bool Success, string? ErrorMessage)> CreateTripWithDestinationsAsync(CreateTripWithDestinationsDto createTripWithDestinationsDto)
+        public async Task<(bool Success, string? ErrorMessage)> CreateTripWithDestinationsAsync(
+        CreateTripWithDestinationsDto dto)
         {
-            // TODO implement
-            return await Task.FromResult((false, "Not implemented"));
+            try
+            {
+                //Load existing trips to find next IDs
+                var trips = await LoadTripsAsync();
+
+                var nextTripId = trips
+                    .DefaultIfEmpty()
+                    .Max(t => t?.TripId ?? 0) + 1;
+
+                var nextTripDestinationId = trips
+                    .SelectMany(t => t.Destinations)
+                    .DefaultIfEmpty()
+                    .Max(td => td?.TripDestinationId ?? 0) + 1;
+
+                //Trip-level data from dto.CreateTrip
+                var t = dto.CreateTrip;
+
+                var tripDoc = new TripDocument
+                {
+                    TripId      = nextTripId,
+                    OwnerId     = t.OwnerId,
+                    MaxBuddies  = t.MaxBuddies,
+                    StartDate   = t.StartDate,
+                    EndDate     = t.EndDate,
+                    Description = t.Description,
+                    IsArchived  = false,
+                    Destinations = new List<TripDestinationEmbedded>()
+                };
+
+                //Preload destinations (if needed for ID generation)
+                var existingDestinations = await _destinationsCollection
+                    .Find(FilterDefinition<DestinationDocument>.Empty)
+                    .ToListAsync();
+
+                var nextDestinationId = existingDestinations
+                    .DefaultIfEmpty()
+                    .Max(d => d?.DestinationId ?? 0) + 1;
+
+                //Map trip destinations
+                int seq = 1;
+                foreach (var d in dto.TripDestinations)
+                {
+                    int destinationId;
+
+                    if (d.DestinationId.HasValue)
+                    {
+                        destinationId = d.DestinationId.Value;
+                    }
+                    else
+                    {
+                        // Create new destination entry
+                        var newDest = new DestinationDocument
+                        {
+                            DestinationId = nextDestinationId++,
+                            Name          = d.Name ?? "Unnamed",
+                            State         = d.State,
+                            Country       = d.Country ?? string.Empty,
+                            Longitude     = d.Longitude,
+                            Latitude      = d.Latitude
+                        };
+
+                        await _destinationsCollection.InsertOneAsync(newDest);
+                        destinationId = newDest.DestinationId;
+                    }
+
+                    var td = new TripDestinationEmbedded
+                    {
+                        TripDestinationId = nextTripDestinationId++,
+                        DestinationId     = destinationId,
+                        StartDate         = d.DestinationStartDate.ToDateTime(TimeOnly.MinValue), // ✅ DateOnly → DateTime
+                        EndDate           = d.DestinationEndDate.ToDateTime(TimeOnly.MinValue),   // ✅
+                        SequenceNumber    = d.SequenceNumber != 0 ? d.SequenceNumber : seq++,
+                        Description       = d.Description,
+                        IsArchived        = false,
+                        Buddies           = new List<BuddyEmbedded>()
+                    };
+
+                    tripDoc.Destinations.Add(td);
+                }
+
+                //Insert into Mongo
+                await _tripsCollection.InsertOneAsync(tripDoc);
+
+                return (true, null);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Error creating trip: {ex.Message}");
+            }
         }
 
         // ---------------------------------------------------------
-        // User leaves a trip destination (deactivate buddy)
+        // Leave Trip destination
         // ---------------------------------------------------------
+
         public async Task<(bool Success, string? ErrorMessage)> LeaveTripDestinationAsync(
-            int userId,
-            int tripDestinationId,
-            int triggeredBy,
-            string departureReason)
+        int userId, int tripDestinationId, int personCount, string reason)
         {
-            // Load the trip containing this tripDestination
-            var filter = Builders<TripDocument>.Filter
-                .ElemMatch(t => t.Destinations, td => td.TripDestinationId == tripDestinationId);
-
-            var trip = await _tripsCollection.Find(filter).FirstOrDefaultAsync();
-            if (trip == null)
-                return (false, "Trip destination not found.");
-
-            var td = trip.Destinations.FirstOrDefault(d => d.TripDestinationId == tripDestinationId);
-            if (td == null)
-                return (false, "Trip destination not found.");
-
-            var buddy = td.Buddies.FirstOrDefault(b => b.UserId == userId &&
-                                                       string.Equals(b.RequestStatus, "accepted", StringComparison.OrdinalIgnoreCase));
-            if (buddy == null)
-                return (false, "Buddy not found for this trip destination.");
-
-            // Mark buddy as inactive and store reason
-            buddy.IsActive = false;
-            buddy.DepartureReason = departureReason;
-
-            // (We leave RequestStatus as "accepted" – the relational model uses audits for 'left')
-
-            var replaceResult = await _tripsCollection.ReplaceOneAsync(
-                t => t.TripId == trip.TripId,
-                trip);
-
-            if (!replaceResult.IsAcknowledged || replaceResult.ModifiedCount == 0)
-                return (false, "Failed to update trip in MongoDB.");
-
-            return (true, null);
+            // TODO: implement proper MongoDB logic for leaving a trip destination
+            return await Task.FromResult((false, "Not implemented yet"));
         }
 
         // ---------------------------------------------------------
