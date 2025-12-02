@@ -12,17 +12,17 @@ namespace TravelBuddy.Users
     // MongoDB-specific representation of a user document
     internal class UserDocument
     {
+        // Map directly to MongoDB _id (which is an Int32 in your data)
         [BsonId]
-        public ObjectId Id { get; set; }
-
-        // Match the actual Mongo field name "LegacyUserId"
-        [BsonElement("LegacyUserId")]
         public int UserId { get; set; }
 
         public string Name { get; set; } = null!;
         public string Email { get; set; } = null!;
         public string PasswordHash { get; set; } = null!;
-        public DateOnly? Birthdate { get; set; }
+
+        // Birthdate is stored as a BSON DateTime, so use DateTime? here
+        public DateTime? Birthdate { get; set; }
+
         public bool IsDeleted { get; set; }
         public string Role { get; set; } = null!;
     }
@@ -50,7 +50,7 @@ namespace TravelBuddy.Users
                 Email = doc.Email,
                 PasswordHash = doc.PasswordHash,
                 Birthdate = doc.Birthdate.HasValue
-                    ? doc.Birthdate.Value
+                    ? DateOnly.FromDateTime(doc.Birthdate.Value)
                     : default,
                 IsDeleted = doc.IsDeleted,
                 Role = doc.Role
@@ -75,26 +75,28 @@ namespace TravelBuddy.Users
         // --------------------------------------------------------
         public async Task<User?> GetByEmailAsync(string email)
         {
-            var filter = Builders<UserDocument>.Filter.And(
-                Builders<UserDocument>.Filter.Eq(u => u.Email, email),
-                Builders<UserDocument>.Filter.Eq(u => u.IsDeleted, false)
-            );
+            var filter = Builders<UserDocument>.Filter.Eq(u => u.Email, email);
 
             var doc = await _usersCollection
                 .Find(filter)
                 .FirstOrDefaultAsync();
 
-            // doc is UserDocument here (NOT User)
             return doc == null ? null : MapToEntity(doc);
         }
+
 
         // --------------------------------------------------------
         // Get user by id
         // --------------------------------------------------------
         public async Task<User?> GetUserByIdAsync(int userId)
         {
-            // TODO: implement
-            return await Task.FromResult<User?>(null);
+            var filter = Builders<UserDocument>.Filter.Eq(u => u.UserId, userId);
+
+            var doc = await _usersCollection
+                .Find(filter)
+                .FirstOrDefaultAsync();
+
+            return doc == null ? null : MapToEntity(doc);
         }
 
         // --------------------------------------------------------
@@ -115,7 +117,7 @@ namespace TravelBuddy.Users
                 Email = user.Email,
                 PasswordHash = user.PasswordHash,
                 Birthdate = user.Birthdate != default
-                    ? user.Birthdate
+                    ? user.Birthdate.ToDateTime(TimeOnly.MinValue)
                     : null,
                 IsDeleted = user.IsDeleted,
                 Role = user.Role
