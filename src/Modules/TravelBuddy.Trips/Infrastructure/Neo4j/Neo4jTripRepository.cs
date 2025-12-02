@@ -590,9 +590,170 @@ LIMIT 1
     // Create a new trip with destinations (not implemented)
     // --------------------------------------------------------------------
     public async Task<(bool Success, string? ErrorMessage)> CreateTripWithDestinationsAsync(
-        CreateTripWithDestinationsDto createTripWithDestinationsDto)
+    CreateTripWithDestinationsDto dto)
     {
-        return await Task.FromResult((false, "Not implemented"));
+        await using var session = _driver.AsyncSession();
+
+        try
+        {
+            // 1) Calculate next IDs (trip, tripDestination, destination)
+            var tripIdCursor = await session.RunAsync(@"
+                MATCH (t:Trip)
+                RETURN coalesce(max(t.tripId), 0) AS MaxId
+            ");
+            var tripIdRecord  = await tripIdCursor.SingleAsync();
+            var nextTripId    = tripIdRecord["MaxId"].As<int>() + 1;
+
+            var tripDestIdCursor = await session.RunAsync(@"
+                MATCH ()-[hs:HAS_STOP]->()
+                RETURN coalesce(max(hs.tripDestinationId), 0) AS MaxId
+            ");
+            var tripDestIdRecord   = await tripDestIdCursor.SingleAsync();
+            var nextTripDestId     = tripDestIdRecord["MaxId"].As<int>() + 1;
+
+            var destIdCursor = await session.RunAsync(@"
+                MATCH (d:Destination)
+                RETURN coalesce(max(d.destinationId), 0) AS MaxId
+            ");
+            var destIdRecord      = await destIdCursor.SingleAsync();
+            var nextDestinationId = destIdRecord["MaxId"].As<int>() + 1;
+
+            // Guard: must have at least one destination
+            if (dto.TripDestinations == null || !dto.TripDestinations.Any())
+            {
+                return (false, "At least one trip destination is required.");
+            }
+
+            var t = dto.CreateTrip;
+
+            // 2) Wrap all writes in a transaction
+            var tx = await session.BeginTransactionAsync();
+            try
+            {
+                // 2a) Create Trip node and OWNS relationship
+                await tx.RunAsync(@"
+    MATCH (u:User { userId: $ownerId })
+    CREATE (t:Trip {
+        tripId:     $tripId,
+        tripName:   $tripName,
+        maxBuddies: $maxBuddies,
+        startDate:  date($startDate),
+        endDate:    date($endDate),
+        description:$description,
+        isArchived: false
+    })
+    MERGE (u)-[:OWNS]->(t)
+    ",
+                    new
+                    {
+                        ownerId    = t.OwnerId,
+                        tripId     = nextTripId,
+                        tripName   = t.TripName,
+                        maxBuddies = t.MaxBuddies,
+                        startDate  = t.StartDate.ToString("yyyy-MM-dd"),
+                        endDate    = t.EndDate.ToString("yyyy-MM-dd"),
+                        description= t.Description ?? string.Empty
+                    });
+
+                // 2b) Create/merge destinations + HAS_STOP relationships
+                int sequence = 1;
+                int currentTripDestId = nextTripDestId;
+                int currentDestId     = nextDestinationId;
+
+                foreach (var d in dto.TripDestinations)
+                {
+                    // --- ensure we have a Destination node ---
+                    int destinationId;
+                    if (d.DestinationId.HasValue && d.DestinationId.Value > 0)
+                    {
+                        destinationId = d.DestinationId.Value;
+
+                        // MERGE by destinationId, set properties on create
+                        await tx.RunAsync(@"
+    MERGE (dest:Destination { destinationId: $destinationId })
+    ON CREATE SET
+        dest.name      = $name,
+        dest.state     = $state,
+        dest.country   = $country,
+        dest.longitude = $longitude,
+        dest.latitude  = $latitude
+    ",
+                            new
+                            {
+                                destinationId,
+                                name      = d.Name ?? "Unnamed",
+                                state     = d.State,
+                                country   = d.Country ?? string.Empty,
+                                longitude = d.Longitude,
+                                latitude  = d.Latitude
+                            });
+                    }
+                    else
+                    {
+                        destinationId = currentDestId++;
+
+                        await tx.RunAsync(@"
+    CREATE (dest:Destination {
+        destinationId: $destinationId,
+        name:          $name,
+        state:         $state,
+        country:       $country,
+        longitude:     $longitude,
+        latitude:      $latitude
+    })
+    ",
+                            new
+                            {
+                                destinationId,
+                                name      = d.Name ?? "Unnamed",
+                                state     = d.State,
+                                country   = d.Country ?? string.Empty,
+                                longitude = d.Longitude,
+                                latitude  = d.Latitude
+                            });
+                    }
+
+                    // --- create HAS_STOP relationship ---
+                    var seqNumber = d.SequenceNumber == 0 ? sequence : d.SequenceNumber;
+
+                    await tx.RunAsync(@"
+    MATCH (t:Trip { tripId: $tripId })
+    MATCH (dest:Destination { destinationId: $destinationId })
+    CREATE (t)-[:HAS_STOP {
+        tripDestinationId: $tripDestinationId,
+        startDate:         date($startDate),
+        endDate:           date($endDate),
+        sequenceNumber:    $sequenceNumber,
+        description:       $description
+    }]->(dest)
+    ",
+                        new
+                        {
+                            tripId            = nextTripId,
+                            destinationId,
+                            tripDestinationId = currentTripDestId++,
+                            startDate         = d.DestinationStartDate.ToString("yyyy-MM-dd"),
+                            endDate           = d.DestinationEndDate.ToString("yyyy-MM-dd"),
+                            sequenceNumber    = seqNumber,
+                            description       = d.Description ?? string.Empty
+                        });
+
+                    sequence++;
+                }
+
+                await tx.CommitAsync();
+                return (true, null);
+            }
+            catch (Exception ex)
+            {
+                await tx.RollbackAsync();
+                return (false, "Error creating trip with destinations in Neo4j: " + ex.Message);
+            }
+        }
+        catch (Exception exOuter)
+        {
+            return (false, "Error (outer) creating trip with destinations in Neo4j: " + exOuter.Message);
+        }
     }
 
     // --------------------------------------------------------------------
