@@ -3,11 +3,6 @@ using TravelBuddy.Trips.Models;
 using TravelBuddy.Trips.DTOs;
 using TravelBuddy.Trips.Infrastructure;
 
-using Neo4j.Driver;
-using TravelBuddy.Trips.Models;
-using TravelBuddy.Trips.DTOs;
-using TravelBuddy.Trips.Infrastructure;
-
 namespace TravelBuddy.Trips;
 
 // CLASS

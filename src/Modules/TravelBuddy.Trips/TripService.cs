@@ -30,8 +30,8 @@ namespace TravelBuddy.Trips
         Task<(bool Success, string? ErrorMessage)> UpdateBuddyRequestAsync(UpdateBuddyRequestDto updateBuddyRequestDto);
 
         // Audit related
-        Task<IEnumerable<TripAudit>> GetTripAuditsAsync();
-        Task<IEnumerable<BuddyAudit>> GetBuddyAuditsAsync();
+        Task<IEnumerable<TripAuditDto>> GetTripAuditsAsync();
+        Task<IEnumerable<BuddyAuditDto>> GetBuddyAuditsAsync();
    }
 
     // CLASS
@@ -261,15 +261,33 @@ namespace TravelBuddy.Trips
         }
 
         // ------------------------------- AUDIT TABLES -------------------------------
-        public async Task<IEnumerable<TripAudit>> GetTripAuditsAsync()
+        public async Task<IEnumerable<TripAuditDto>> GetTripAuditsAsync()
         {
             var tripRepository = GetRepo();
-            return await tripRepository.GetTripAuditsAsync();
+            var results = await tripRepository.GetTripAuditsAsync();
+            return results.Select(ta => new TripAuditDto(
+                ta.AuditId,
+                ta.TripId,
+                ta.Action,
+                ta.FieldChanged,
+                ta.OldValue,
+                ta.NewValue,
+                ta.ChangedBy,
+                ta.Timestamp
+            )).ToList();
         }
-        public async Task<IEnumerable<BuddyAudit>> GetBuddyAuditsAsync()
+        public async Task<IEnumerable<BuddyAuditDto>> GetBuddyAuditsAsync()
         {
             var tripRepository = GetRepo();
-            return await tripRepository.GetBuddyAuditsAsync();
+            var results = await tripRepository.GetBuddyAuditsAsync();
+            return results.Select(ba => new BuddyAuditDto(
+                ba.AuditId,
+                ba.BuddyId,
+                ba.Action,
+                ba.Reason,
+                ba.ChangedBy,
+                ba.Timestamp
+            )).ToList();
         }
     }
 }
