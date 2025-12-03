@@ -39,6 +39,32 @@ namespace TravelBuddy.Api.Controllers
             return Ok(result);
         }
 
+        [Authorize]
+        [HttpPost()]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<ActionResult> CreateConversation(
+            [FromBody] CreateConversationDto createConversationDto)
+        {
+            if (!User.IsSelfOrAdmin(createConversationDto.OwnerId)) return Forbid();
+            
+            var isPrivate = !createConversationDto.IsGroup && createConversationDto.OtherUserId != null;
+            var isTripGroup = createConversationDto.IsGroup && createConversationDto.TripDestinationId != null;
+            if (!isPrivate && !isTripGroup)
+                return BadRequest("Should be either a private conversation or a trip group");
+
+            var (success, errorMessage) = await _messagingService.CreateConversationAsync(createConversationDto);
+
+            if (!success) 
+            {
+                return BadRequest(errorMessage ?? "Failed to create conversation");
+            }
+
+            return Created();
+        }
+
         // -------------------------------------------------------
         // 2) GET conversation details (participants + metadata)
         //    /api/messaging/{conversationId}?userId=26

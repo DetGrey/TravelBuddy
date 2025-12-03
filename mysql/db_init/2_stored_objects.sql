@@ -270,37 +270,50 @@ DELIMITER ;
 -- =====================================
 -- Update email
 -- =====================================
-DROP PROCEDURE IF EXISTS update_user_email;
+DROP PROCEDURE IF EXISTS update_user_role;
 DELIMITER $$
-CREATE PROCEDURE update_user_email (
+DELIMITER $$
+CREATE PROCEDURE update_user_role (
     IN target_user_id INT,
-    IN new_email_val VARCHAR(255),
+    IN new_role ENUM('user', 'admin'),
     IN changed_by_user_id INT
 )
 BEGIN
-    DECLARE old_email_val VARCHAR(255);
+    DECLARE v_changer_role ENUM('user', 'admin');
+    DECLARE v_old_role ENUM('user', 'admin');
 
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
         ROLLBACK;
         RESIGNAL;
     END;
-
+    
     START TRANSACTION;
 
-    -- 1. Get the current value
-    SELECT email INTO old_email_val FROM user WHERE user_id = target_user_id;
+    SELECT role INTO v_changer_role 
+    FROM user 
+    WHERE user_id = changed_by_user_id;
+
+    IF v_changer_role IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Changer user ID not found.';
+    END IF;
+
+    IF v_changer_role <> 'admin' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Permission denied: Only admin users can update user roles.';
+    END IF;
 
     SET @SESSION_TRIGGER_AUDIT_SKIP = TRUE;
 
-    -- 2. Update the user table
-    UPDATE user SET email = new_email_val WHERE user_id = target_user_id;
+    UPDATE user 
+    SET role = new_role
+    WHERE user_id = target_user_id;
 
     SET @SESSION_TRIGGER_AUDIT_SKIP = NULL;
 
-    -- 3. Audit the change
     INSERT INTO user_audit (user_id, action, field_changed, old_value, new_value, changed_by)
-    VALUES (target_user_id, 'updated', 'email', old_email_val, new_email_val, changed_by_user_id);
+    VALUES (target_user_id, 'updated', 'role', v_old_role, new_role, changed_by_user_id);
 
     COMMIT;
 END $$
@@ -607,9 +620,9 @@ BEGIN
         CASE
             WHEN c.is_group = TRUE THEN CONCAT('Group for ', d.name)
             ELSE (
-                SELECT u.name
+                SELECT IFNULL(u.name, 'Unknown User')
                 FROM conversation_participant cp
-                JOIN user u ON u.user_id = cp.user_id
+                LEFT JOIN user u ON u.user_id = cp.user_id
                 WHERE cp.conversation_id = c.conversation_id
                   AND cp.user_id <> p_user_id
                 LIMIT 1
@@ -620,7 +633,7 @@ BEGIN
         ON c.conversation_id = p.conversation_id
     LEFT JOIN trip_destination td
         ON c.trip_destination_id = td.trip_destination_id
-    INNER JOIN destination d
+    LEFT JOIN destination d
         ON td.destination_id = d.destination_id
     LEFT JOIN message m
         ON m.message_id = (
@@ -795,26 +808,45 @@ CREATE PROCEDURE insert_new_private_conversation(
 )
 BEGIN
     DECLARE v_conversation_id INT;
+    DECLARE v_existing_conversation_id INT DEFAULT NULL;
 
-    IF p_trip_destination_id IS NULL OR p_owner_id IS NULL OR p_user_id IS NULL THEN
+    IF p_owner_id IS NULL OR p_user_id IS NULL THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'All input parameters must be non-NULL';
+        SET MESSAGE_TEXT = 'owner_id and user_id must be non-NULL';
     END IF;
 
     IF p_owner_id = p_user_id THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'User cannot create conversation with themselves';
     END IF;
+
+    START TRANSACTION;
+  
+    SELECT c.conversation_id INTO v_existing_conversation_id
+    FROM conversation c
+    INNER JOIN conversation_participant cp1 ON c.conversation_id = cp1.conversation_id
+    INNER JOIN conversation_participant cp2 ON c.conversation_id = cp2.conversation_id
+    WHERE 
+        c.trip_destination_id = p_trip_destination_id 
+        AND c.is_group = FALSE
+        AND cp1.user_id = p_owner_id
+        AND cp2.user_id = p_user_id
+        AND cp1.user_id != cp2.user_id 
+        AND (SELECT COUNT(*) FROM conversation_participant cp_count WHERE cp_count.conversation_id = c.conversation_id) = 2
+    LIMIT 1;
+
+    IF v_existing_conversation_id IS NOT NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Private conversation already exists';
+    END IF;
     
     SET @SESSION_TRIGGER_AUDIT_SKIP = TRUE;
     
-    -- 1. Create conversation
     INSERT INTO conversation (trip_destination_id, is_group)
     VALUES (p_trip_destination_id, FALSE);
 
     SET v_conversation_id = LAST_INSERT_ID();
 
-    -- Audit log
     INSERT INTO conversation_audit (
         conversation_id,
         affected_user_id,
@@ -828,14 +860,12 @@ BEGIN
         p_owner_id
     );
 
-    -- 2. Add participants
     INSERT INTO conversation_participant (conversation_id, user_id) VALUES
     (v_conversation_id, p_owner_id),
     (v_conversation_id, p_user_id);
     
     SET @SESSION_TRIGGER_AUDIT_SKIP = NULL;
 
-    -- Audit log
     INSERT INTO conversation_audit (
         conversation_id,
         affected_user_id,
@@ -854,6 +884,10 @@ BEGIN
         'user_added',
         p_owner_id
     );
+
+    COMMIT;
+    
+    SELECT v_conversation_id AS conversation_id;
 END $$
 DELIMITER ;
 -- =====================================
@@ -867,6 +901,8 @@ CREATE PROCEDURE create_group_conversation_for_trip_destination(
 )
 BEGIN
     DECLARE v_conversation_id INT;
+    DECLARE v_trip_id INT;
+    DECLARE v_actual_owner_id INT;
 
     IF p_trip_destination_id IS NULL THEN
         SIGNAL SQLSTATE '45000'
@@ -879,6 +915,27 @@ BEGIN
     WHERE is_group = TRUE
     AND trip_destination_id = p_trip_destination_id
     LIMIT 1;
+
+    -- 2. Retrieve the parent trip_id from trip_destination
+    SELECT trip_id
+    INTO v_trip_id
+    FROM trip_destination
+    WHERE trip_destination_id = p_trip_destination_id;
+    
+    -- Check if the trip destination exists
+    IF v_trip_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Trip destination ID not found.';
+    END IF;
+
+    -- Get the trip owner using the provided function
+    SET v_actual_owner_id = get_owner_id_from_trip(v_trip_id);
+    
+    -- Validate p_owner_id against the actual trip owner
+    IF v_actual_owner_id <> p_owner_id THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Permission denied: Only the main trip owner can create the group conversation.';
+    END IF;
 
     -- Only if there is no conversation already
     IF v_conversation_id IS NULL THEN
@@ -899,7 +956,8 @@ BEGIN
         SELECT v_conversation_id, user_id
         FROM buddy
         WHERE trip_destination_id = p_trip_destination_id
-        AND request_status = 'accepted';
+        AND request_status = 'accepted'
+        AND user_id <> p_owner_id;
         
         SET @SESSION_TRIGGER_AUDIT_SKIP = NULL;
 

@@ -260,6 +260,11 @@ namespace TravelBuddy.Messaging
             }).ToList();
         }
 
+        public async Task<(bool Success, string? ErrorMessage)> CreateConversationAsync(CreateConversationDto createConversationDto)
+        {
+            return (false, null);
+        }
+
         public async Task<Conversation?> GetConversationParticipantAsync(int conversationId)
         {
             var doc = await _conversationCollection

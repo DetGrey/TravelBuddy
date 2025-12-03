@@ -180,6 +180,11 @@ namespace TravelBuddy.Messaging
             return overviews;
         }
 
+        public async Task<(bool Success, string? ErrorMessage)> CreateConversationAsync(CreateConversationDto createConversationDto)
+        {
+            return (false, null);
+        }
+
         public async Task<Conversation?> GetConversationParticipantAsync(int conversationId)
         {
             const string cypher = @"

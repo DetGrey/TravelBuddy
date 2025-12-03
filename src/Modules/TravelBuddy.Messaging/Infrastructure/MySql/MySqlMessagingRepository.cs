@@ -19,6 +19,35 @@ public class MySqlMessagingRepository : IMessagingRepository
             .FromSqlInterpolated($"CALL get_user_conversations({userId})")
             .ToListAsync();
     }
+    public async Task<(bool Success, string? ErrorMessage)> CreateConversationAsync(CreateConversationDto createConversationDto)
+    {
+        try
+        {
+            if (!createConversationDto.IsGroup && createConversationDto.OtherUserId != null) {
+                await _context.Database.ExecuteSqlInterpolatedAsync($@"
+                    CALL insert_new_private_conversation(
+                        {createConversationDto.TripDestinationId},
+                        {createConversationDto.OwnerId},
+                        {createConversationDto.OtherUserId}
+                    )");
+                return (true, null);
+            } else if (createConversationDto.IsGroup && createConversationDto.TripDestinationId != null)
+            {
+                await _context.Database.ExecuteSqlInterpolatedAsync($@"
+                    CALL create_group_conversation_for_trip_destination(
+                        {createConversationDto.TripDestinationId},
+                        {createConversationDto.OwnerId}
+                    )");
+                return (true, null);
+            }
+
+            return (true, null);
+        }
+        catch (Exception ex)
+        {
+             return (false, "Error: " + ex.Message); 
+        }
+    }
 
     public async Task<Conversation?> GetConversationParticipantAsync(int conversationId)
     {

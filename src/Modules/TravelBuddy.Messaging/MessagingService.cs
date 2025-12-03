@@ -7,9 +7,8 @@ namespace TravelBuddy.Messaging
     public interface IMessagingService
     {
         Task<IEnumerable<ConversationOverviewDto>> GetConversationsForUserAsync(int userId);
-
+        Task<(bool Success, string? ErrorMessage)> CreateConversationAsync(CreateConversationDto createConversationDto);
         Task<ConversationDetailDto?> GetConversationDetailAsync(int userId, int conversationId);
-
         Task<IReadOnlyList<MessageDto>> GetMessagesForConversationAsync(int userId, int conversationId);
 
         Task<MessageDto?> SendMessageAsync(int userId, int conversationId, string content);
@@ -48,7 +47,11 @@ namespace TravelBuddy.Messaging
                 ))
                 .ToList();
         }
-
+        public async Task<(bool Success, string? ErrorMessage)> CreateConversationAsync(CreateConversationDto createConversationDto)
+        {
+            var messagingRepository = GetRepo();
+            return await messagingRepository.CreateConversationAsync(createConversationDto);
+        }
         public async Task<ConversationDetailDto?> GetConversationDetailAsync(int userId, int conversationId)
         {
             var messagingRepository = GetRepo();
