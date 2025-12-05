@@ -108,35 +108,48 @@ public class Neo4jUserRepository : IUserRepository
             .ExecuteAsync();
     }
 
-    public async Task<bool> DeleteAsync(int userId, string passwordHash)
+    public async Task<(bool Success, string? ErrorMessage)> DeleteAsync(int userId, string passwordHash)
     {
-        var result = await _driver
-            .ExecutableQuery(@"
-                MATCH (u:User { userId: $userId })
-                SET u.isDeleted   = true,
-                    u.passwordHash = $passwordHash
-                RETURN count(u) AS updatedCount
-            ")
-            .WithParameters(new { userId, passwordHash })
-            .ExecuteAsync();
+        if (string.IsNullOrWhiteSpace(passwordHash)) return (false, "Password hash is required.");
 
-        var record = result.Result.SingleOrDefault();
-        if (record == null) return false;
+        try {
+            var result = await _driver
+                .ExecutableQuery(@"
+                    MATCH (u:User { userId: $userId })
+                    SET u.isDeleted   = true,
+                        u.passwordHash = $passwordHash
+                    RETURN count(u) AS updatedCount
+                ")
+                .WithParameters(new { userId, passwordHash })
+                .ExecuteAsync();
 
-        var updatedCount = record["updatedCount"].As<long>();
-        return updatedCount == 1;
+            var record = result.Result.SingleOrDefault();
+            if (record == null) return (false, "User not found.");
+
+            var updatedCount = record["updatedCount"].As<long>();
+            return updatedCount == 1 ? (true, null) : (false, "User not found.");
+        } catch (Exception ex) {
+            return (false, ex.Message ?? "An error occurred while deleting the user.");
+        }
     }
 
-    public async Task UpdatePasswordAsync(int userId, string passwordHash)
+    public async Task<(bool Success, string? ErrorMessage)> UpdatePasswordAsync(int userId, string passwordHash)
     {
-        await _driver
-            .ExecutableQuery(@"
-                MATCH (u:User { userId: $userId })
-                WHERE coalesce(u.isDeleted, false) = false
-                SET u.passwordHash = $passwordHash
-            ")
-            .WithParameters(new { userId, passwordHash })
-            .ExecuteAsync();
+        if (string.IsNullOrWhiteSpace(passwordHash)) return (false, "Password hash is required.");
+        
+        try {
+            await _driver
+                .ExecutableQuery(@"
+                    MATCH (u:User { userId: $userId })
+                    WHERE coalesce(u.isDeleted, false) = false
+                    SET u.passwordHash = $passwordHash
+                ")
+                .WithParameters(new { userId, passwordHash })
+                .ExecuteAsync();
+            return (true, null);
+        } catch (Exception ex) {
+            return (false, ex.Message ?? "An error occurred while updating the password.");
+        }
     }
 
     public async Task<User?> GetUserByIdAsync(int userId)

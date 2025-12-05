@@ -9,9 +9,9 @@ namespace TravelBuddy.Users
     {
         Task<User?> AuthenticateAsync(string email, string password);
         Task<User?> RegisterAsync(RegisterRequestDto request);
-        Task<bool> DeleteUser(int userId);
+        Task<(bool Success, string? ErrorMessage)> DeleteUser(int userId);
         Task<UserDto?> GetUserByIdAsync(int userId);
-        Task<bool> ChangePasswordAsync(PasswordChangeRequestDto request, string email, int userId);
+        Task<(bool Success, string? ErrorMessage)> ChangePasswordAsync(PasswordChangeRequestDto request, string email, int userId);
 
         // Gets a list of all users from the database.
         Task<IEnumerable<UserDto>> GetAllUsersAsync();
@@ -65,7 +65,7 @@ namespace TravelBuddy.Users
             return newUser;
         }
         
-        public async Task<bool> DeleteUser(int userId)
+        public async Task<(bool Success, string? ErrorMessage)> DeleteUser(int userId)
         {
             var userRepository = GetRepo();
 
@@ -74,21 +74,21 @@ namespace TravelBuddy.Users
             return await userRepository.DeleteAsync(userId, hashedPassword);
         }
 
-        public async Task<bool> ChangePasswordAsync(PasswordChangeRequestDto request, string email, int userId)
+        public async Task<(bool Success, string? ErrorMessage)> ChangePasswordAsync(PasswordChangeRequestDto request, string email, int userId)
         {
             var userRepository = GetRepo();
 
             var user = await userRepository.GetByEmailAsync(email);
-            if (user == null || user.IsDeleted) return false;
+            if (user == null || user.IsDeleted) return (false, "User not found or is deleted.");
 
             // Note: To actually change password from generated users, comment out the two lines below
             bool isValid = PasswordHasher.VerifyPassword(request.OldPassword, user.PasswordHash);
-            if (!isValid) return false;
-
+            if (!isValid) return (false, "Old password is incorrect.");
+            
             var hashedPassword = PasswordHasher.HashPassword(request.NewPassword);
             await userRepository.UpdatePasswordAsync(userId, hashedPassword);
 
-            return true;
+            return (true, null);
         }
         public async Task<UserDto?> GetUserByIdAsync(int userId)
         {

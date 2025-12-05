@@ -23,23 +23,29 @@ public class MySqlUserRepository : IUserRepository
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
     }
-    public async Task<bool> DeleteAsync(int userId, string passwordHash)
+    public async Task<(bool Success, string? ErrorMessage)> DeleteAsync(int userId, string passwordHash)
     {
-        if (string.IsNullOrWhiteSpace(passwordHash)) return false;
+        if (string.IsNullOrWhiteSpace(passwordHash)) return (false, "Password hash is required.");
         try {
             var result = await _context.Database.ExecuteSqlInterpolatedAsync($@"CALL delete_user({userId}, {passwordHash})");
-            return true;
-        } catch (Exception) {
-            return false;
+            return (true, null);
+        } catch (Exception ex) {
+            return (false, ex.Message ?? "An error occurred while deleting the user.");
         }
     }
-    public async Task UpdatePasswordAsync(int userId, string passwordHash)
+    public async Task<(bool Success, string? ErrorMessage)> UpdatePasswordAsync(int userId, string passwordHash)
     {
-        var user = await _context.Users.FindAsync(userId);
-        if (user != null)
-        {
+        try {
+            var user = await _context.Users.FindAsync(userId);
+
+            if (user == null) return (false, "User not found.");
+
             user.PasswordHash = passwordHash;
             await _context.SaveChangesAsync();
+            return (true, null);
+
+        } catch (Exception ex) {
+            return (false, ex.Message ?? "An error occurred while updating the password.");
         }
     }
     public async Task<User?> GetUserByIdAsync(int userId)

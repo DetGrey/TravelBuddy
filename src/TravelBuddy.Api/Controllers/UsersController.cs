@@ -143,10 +143,9 @@ namespace TravelBuddy.Api.Controllers
             if (!User.IsSelfOrAdmin(userId))
                 return Forbid();
 
-            var success = await _userService.DeleteUser(userId);
-            // TODO update to return more specific error messages
+            var (success, errorMessage) = await _userService.DeleteUser(userId);
             if (!success)
-                 return BadRequest("User deletion failed");
+                 return BadRequest(errorMessage ?? "User deletion failed");
 
             if (!User.IsAdmin(userId))
                 Response.Cookies.Delete("access_token");
@@ -175,9 +174,9 @@ namespace TravelBuddy.Api.Controllers
             if (userEmail == null)
                 return NotFound("User email not found in claims.");
 
-            var success = await _userService.ChangePasswordAsync(request, userEmail, userId);
+            var (success, errorMessage) = await _userService.ChangePasswordAsync(request, userEmail, userId);
             if (!success)
-                 return BadRequest("Password change failed due to invalid input or policy violation.");
+                 return BadRequest(errorMessage ?? "Password change failed due to invalid input or policy violation.");
 
             return Ok("Password changed successfully.");
         }

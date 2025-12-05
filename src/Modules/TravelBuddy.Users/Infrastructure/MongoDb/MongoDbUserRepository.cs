@@ -130,33 +130,45 @@ namespace TravelBuddy.Users
         // --------------------------------------------------------
         // Delete: soft-delete user (and update password hash)
         // --------------------------------------------------------
-        public async Task<bool> DeleteAsync(int userId, string passwordHash)
+        public async Task<(bool Success, string? ErrorMessage)> DeleteAsync(int userId, string passwordHash)
         {
-            var filter = Builders<UserDocument>.Filter.Eq(u => u.UserId, userId);
+            try {
+                var filter = Builders<UserDocument>.Filter.Eq(u => u.UserId, userId);
 
-            var update = Builders<UserDocument>.Update
-                .Set(u => u.IsDeleted, true)
-                .Set(u => u.PasswordHash, passwordHash);
+                var update = Builders<UserDocument>.Update
+                    .Set(u => u.IsDeleted, true)
+                    .Set(u => u.PasswordHash, passwordHash);
 
-            var result = await _usersCollection.UpdateOneAsync(filter, update);
+                var result = await _usersCollection.UpdateOneAsync(filter, update);
 
-            return result.IsAcknowledged && result.ModifiedCount == 1;
+                return (result.IsAcknowledged && result.ModifiedCount == 1, null);
+
+            }
+            catch (Exception ex) {
+                return (false, ex.Message ?? "An error occurred while deleting the user.");
+            }
         }
 
         // --------------------------------------------------------
         // Change password
         // --------------------------------------------------------
-        public async Task UpdatePasswordAsync(int userId, string passwordHash)
+        public async Task<(bool Success, string? ErrorMessage)> UpdatePasswordAsync(int userId, string passwordHash)
         {
-            var filter = Builders<UserDocument>.Filter.And(
-                Builders<UserDocument>.Filter.Eq(u => u.UserId, userId),
-                Builders<UserDocument>.Filter.Eq(u => u.IsDeleted, false)
-            );
+            try {
+                var filter = Builders<UserDocument>.Filter.And(
+                    Builders<UserDocument>.Filter.Eq(u => u.UserId, userId),
+                    Builders<UserDocument>.Filter.Eq(u => u.IsDeleted, false)
+                );
 
-            var update = Builders<UserDocument>.Update
-                .Set(u => u.PasswordHash, passwordHash);
+                var update = Builders<UserDocument>.Update
+                    .Set(u => u.PasswordHash, passwordHash);
 
-            await _usersCollection.UpdateOneAsync(filter, update);
+                await _usersCollection.UpdateOneAsync(filter, update);
+                return (true, null);
+
+            } catch (Exception ex) {
+                return (false, ex.Message ?? "An error occurred while updating the password.");
+            }
         }
 
         // --------------------------------------------------------
