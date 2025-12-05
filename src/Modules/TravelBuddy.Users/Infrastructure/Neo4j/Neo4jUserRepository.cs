@@ -198,12 +198,13 @@ public class Neo4jUserRepository : IUserRepository
     {
         await using var session = _driver.AsyncSession();
         const string cypher = @"
-            MATCH (a:UserAudit)
-            RETURN a.AuditId as AuditId, a.UserId as UserId, a.Action as Action,
-                   a.FieldChanged as FieldChanged, a.OldValue as OldValue,
-                   a.NewValue as NewValue, a.ChangedBy as ChangedBy,
-                   a.Timestamp as Timestamp
-            ORDER BY a.AuditId DESC
+            MATCH (u:User)-[:HAS_AUDIT]->(a:UserAudit)
+            OPTIONAL MATCH (cb:User)-[:CHANGED]->(a)
+            RETURN a.auditId as AuditId, u.userId as UserId, a.action as Action,
+                   a.fieldChanged as FieldChanged, a.oldValue as OldValue,
+                   a.newValue as NewValue, cb.userId as ChangedBy,
+                   a.timestamp as Timestamp
+            ORDER BY a.auditId DESC
         ";
         
         var cursor = await session.RunAsync(cypher);
@@ -211,9 +212,9 @@ public class Neo4jUserRepository : IUserRepository
         
         return records.Select(r => new UserAudit
         {
-            AuditId = r["AuditId"].As<int>(),
-            UserId = r["UserId"].As<int>(),
-            Action = r["Action"].As<string>(),
+            AuditId = r["AuditId"].As<int?>() ?? 0,
+            UserId = r["UserId"].As<int?>() ?? 0,
+            Action = r["Action"].As<string?>() ?? string.Empty,
             FieldChanged = r["FieldChanged"].As<string?>(),
             OldValue = r["OldValue"].As<string?>(),
             NewValue = r["NewValue"].As<string?>(),
@@ -222,18 +223,24 @@ public class Neo4jUserRepository : IUserRepository
         }).ToList();
     }
     
-    private static DateTime ParseDateTime(object value)
+    private static DateTime ParseDateTime(object? value)
     {
         if (value == null)
-            throw new InvalidOperationException("Null timestamp value from Neo4j");
+            return DateTime.MinValue;
 
         if (value is DateTime dt)
             return dt;
 
-        if (value is string s)
-            return DateTime.Parse(s, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeUniversal);
+        if (value is Neo4j.Driver.LocalDateTime ldt)
+            return ldt.ToDateTime();
 
-        throw new InvalidOperationException($"Unsupported timestamp type: {value.GetType()}");
+        if (value is Neo4j.Driver.ZonedDateTime zdt)
+            return zdt.UtcDateTime;
+
+        if (value is string s && DateTime.TryParse(s, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeUniversal, out var parsed))
+            return parsed;
+
+        return DateTime.MinValue;
     }
 }
 

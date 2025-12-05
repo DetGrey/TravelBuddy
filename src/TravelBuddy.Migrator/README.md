@@ -42,21 +42,11 @@ The migrator reads from MySQL and populates both MongoDB and Neo4j with:
 From the project root (where `docker-compose.yml` is located):
 
 ```bash
-# Build and start all containers (MySQL, MongoDB, Neo4j, Migrator)
-docker-compose up --build
-```
-
-The migrator automatically runs after all databases are ready and completes the full data transfer.
-
-#### Alternative way of starting everything:
-
-```bash
-# Stop and remove the database containers
+# Stop and remove the database containers if they already exist
 docker-compose rm -sf test_mysql test_mongodb test_neo4j migrator
-# Start them again (data will be wiped)
+# Start the database containers again (data will be wiped)
 docker-compose up -d test_mysql test_mongodb test_neo4j
-# Re-run the migrator
-# (if not run automatically, you can run it manually)
+# Run the migrator
 docker-compose up --build migrator
 ```
 

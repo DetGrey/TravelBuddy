@@ -181,6 +181,14 @@ await buddyAuditCollection.DeleteManyAsync(FilterDefinition<BuddyAuditDocument>.
 await conversationAuditCollection.DeleteManyAsync(FilterDefinition<ConversationAuditDocument>.Empty);
 await systemEventLogCollection.DeleteManyAsync(FilterDefinition<SystemEventLogDocument>.Empty);
 
+// Clear Neo4j database
+Console.WriteLine("Clearing Neo4j database...");
+await using (var clearSession = neo4j.AsyncSession(o => o.WithDefaultAccessMode(AccessMode.Write)))
+{
+    await clearSession.RunAsync("MATCH (n) DETACH DELETE n");
+}
+Console.WriteLine("Neo4j database cleared.");
+
 // ===== 1) MongoDB: USERS =====
 var users = await usersDbContext.Users
     .AsNoTracking()
@@ -827,7 +835,7 @@ await using (var taSession = neo4j.AsyncSession(o => o.WithDefaultAccessMode(Acc
 }
 Console.WriteLine($"Neo4j: migrated {tripAudits.Count} trip audits.");
 
-// BuddyAudit nodes and relationships
+// BuddyAudit nodes - store buddyId as property since buddies are relationships, not nodes
 await using (var baSession = neo4j.AsyncSession(o => o.WithDefaultAccessMode(AccessMode.Write)))
 {
     foreach (var a in buddyAudits)
@@ -842,12 +850,11 @@ await using (var baSession = neo4j.AsyncSession(o => o.WithDefaultAccessMode(Acc
             timestamp = a.Timestamp?.ToUniversalTime().ToString("o", CultureInfo.InvariantCulture)
         };
         await baSession.RunAsync(@"
-            MATCH (b:Buddy { buddyId: $buddyId })
             MERGE (a:BuddyAudit { auditId: $auditId })
-            SET a.action = $action,
+            SET a.buddyId = $buddyId,
+                a.action = $action,
                 a.reason = $reason,
                 a.timestamp = datetime($timestamp)
-            MERGE (b)-[:HAS_AUDIT]->(a)
             WITH a, $changedBy AS changedById
             UNWIND CASE WHEN changedById IS NULL THEN [] ELSE [changedById] END AS cbId
             MATCH (cb:User { userId: cbId })
