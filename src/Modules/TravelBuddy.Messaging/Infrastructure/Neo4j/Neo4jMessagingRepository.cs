@@ -182,7 +182,151 @@ namespace TravelBuddy.Messaging
 
         public async Task<(bool Success, string? ErrorMessage)> CreateConversationAsync(CreateConversationDto createConversationDto)
         {
-            return (false, null);
+            var session = _driver.AsyncSession();
+            try
+            {
+                // =================================================================
+                // 1. PRIVATE CONVERSATION LOGIC
+                // =================================================================
+                if (!createConversationDto.IsGroup && createConversationDto.OtherUserId != null)
+                {
+                    if (createConversationDto.OwnerId == createConversationDto.OtherUserId)
+                    {
+                        return (false, "User cannot create conversation with themselves");
+                    }
+
+                    return await session.ExecuteWriteAsync(async tx =>
+                    {
+                        // Check if private conversation already exists
+                        // Pattern: (User1)-[:PARTICIPATES_IN]->(Convo)-[:PARTICIPATES_IN]-(User2)
+                        // AND Convo is not group AND Convo links to TripDest
+                        var checkQuery = @"
+                            MATCH (u1:User {userId: $ownerId})
+                            MATCH (u2:User {userId: $otherUserId})
+                            MATCH (td:TripDestination {tripDestinationId: $tripDestId})
+                            MATCH (u1)-[:PARTICIPATES_IN]->(c:Conversation {isGroup: false})-[:BELONGS_TO]->(td)
+                            WHERE (u2)-[:PARTICIPATES_IN]->(c)
+                            RETURN c.conversationId as id";
+
+                        var cursor = await tx.RunAsync(checkQuery, new { 
+                            ownerId = createConversationDto.OwnerId,
+                            otherUserId = createConversationDto.OtherUserId,
+                            tripDestId = createConversationDto.TripDestinationId
+                        });
+
+                        if (await cursor.FetchAsync())
+                        {
+                            return (false, "Private conversation already exists");
+                        }
+
+                        // Create Conversation, Relationships, and Audit Log equivalent
+                        var createQuery = @"
+                            MATCH (u1:User {userId: $ownerId})
+                            MATCH (u2:User {userId: $otherUserId})
+                            MATCH (td:TripDestination {tripDestinationId: $tripDestId})
+                            CREATE (c:Conversation {
+                                isGroup: false, 
+                                createdAt: datetime(), 
+                                tripDestinationId: $tripDestId,
+                                conversationId: randomUUID() 
+                            })
+                            CREATE (u1)-[:PARTICIPATES_IN]->(c)
+                            CREATE (u2)-[:PARTICIPATES_IN]->(c)
+                            CREATE (c)-[:BELONGS_TO]->(td)
+                            RETURN c.conversationId";
+
+                        await tx.RunAsync(createQuery, new { 
+                            ownerId = createConversationDto.OwnerId,
+                            otherUserId = createConversationDto.OtherUserId,
+                            tripDestId = createConversationDto.TripDestinationId
+                        });
+
+                        return (true, null);
+                    });
+                }
+                // =================================================================
+                // 2. GROUP CONVERSATION LOGIC
+                // =================================================================
+                else if (createConversationDto.IsGroup && createConversationDto.TripDestinationId != 0)
+                {
+                    return await session.ExecuteWriteAsync(async tx =>
+                    {
+                        // Logic:
+                        // 1. Check if conversation exists (if so, return success)
+                        // 2. Validate Owner (User -> OWNS -> Trip -> INCLUDES -> TripDestination)
+                        // 3. Create Conversation
+                        // 4. Add Owner
+                        // 5. Find Buddies (User -> IS_BUDDY_OF {status:'accepted'} -> TripDest) and add them
+
+                        var query = @"
+                            MATCH (td:TripDestination {tripDestinationId: $tripDestId})
+                            
+                            // 1. Check existing Group Conversation
+                            OPTIONAL MATCH (existingC:Conversation {isGroup: true})-[:BELONGS_TO]->(td)
+                            WITH td, existingC
+                            WHERE existingC IS NULL // Proceed only if it doesn't exist
+
+                            // 2. Validate Owner Permissions
+                            // We assume a structure: (Owner)-[:OWNS]->(Trip)-[:INCLUDES]->(TripDestination)
+                            MATCH (owner:User {userId: $ownerId})
+                            MATCH (owner)-[:OWNS]->(t:Trip)-[:INCLUDES]->(td)
+                            
+                            // 3. Create Conversation
+                            CREATE (c:Conversation {
+                                isGroup: true,
+                                createdAt: datetime(),
+                                tripDestinationId: $tripDestId,
+                                conversationId: randomUUID()
+                            })
+                            CREATE (c)-[:BELONGS_TO]->(td)
+                            CREATE (owner)-[:PARTICIPATES_IN]->(c)
+
+                            // 4. Find Accepted Buddies and add them
+                            WITH c, td
+                            MATCH (buddy:User)-[r:IS_BUDDY_OF]->(td)
+                            WHERE r.status = 'accepted' AND buddy.userId <> $ownerId
+                            CREATE (buddy)-[:PARTICIPATES_IN]->(c)
+                            
+                            RETURN c.conversationId";
+
+                        // Note: If the Owner validation fails (MATCH fails), the query creates nothing.
+                        // To handle the specific error 'Permission denied' in Cypher is complex in one go.
+                        // For simplicity, we run a check first.
+
+                        var checkOwnerQuery = @"
+                            MATCH (owner:User {userId: $ownerId})-[:OWNS]->(t:Trip)-[:INCLUDES]->(td:TripDestination {tripDestinationId: $tripDestId})
+                            RETURN t.tripId";
+                        
+                        var ownerCheckCursor = await tx.RunAsync(checkOwnerQuery, new { 
+                            ownerId = createConversationDto.OwnerId, 
+                            tripDestId = createConversationDto.TripDestinationId 
+                        });
+
+                        if (!await ownerCheckCursor.FetchAsync())
+                        {
+                            return (false, "Permission denied: Only the main trip owner can create the group conversation or Trip Destination not found.");
+                        }
+
+                        // Execute main creation
+                        await tx.RunAsync(query, new { 
+                            ownerId = createConversationDto.OwnerId, 
+                            tripDestId = createConversationDto.TripDestinationId 
+                        });
+
+                        return (true, null);
+                    });
+                }
+
+                return (true, null);
+            }
+            catch (Exception ex)
+            {
+                return (false, "Error: " + ex.Message);
+            }
+            finally
+            {
+                await session.CloseAsync();
+            }
         }
 
         public async Task<Conversation?> GetConversationParticipantAsync(int conversationId)

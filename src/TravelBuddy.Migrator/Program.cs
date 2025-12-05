@@ -13,19 +13,13 @@ using EFServerVersion = Microsoft.EntityFrameworkCore.ServerVersion;
 
 
 // EF DbContexts + entities
-using TravelBuddy.Users.Infrastructure;   
-using TravelBuddy.Users.Models;
-
+using TravelBuddy.Users.Infrastructure;
 using TravelBuddy.Trips.Infrastructure;
-using TravelBuddy.Trips.Models;
-
 using TravelBuddy.Messaging.Infrastructure;
-using TravelBuddy.Messaging.Models; 
 
 
 // Load .env from solution root
 Env.Load();
-
 
 // ------------- CONFIG -------------
 var configuration = new ConfigurationBuilder()
@@ -33,7 +27,6 @@ var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
     .AddEnvironmentVariables()
     .Build();
-
 
 // ---- Read variable *names* from appsettings.json ----
 var mysqlSection = configuration.GetSection("MySql");
@@ -80,6 +73,9 @@ var neo4jUser = Env.GetString(neo4jUserVar)
 var neo4jPass = Env.GetString(neo4jPassVar) 
     ?? throw new InvalidOperationException($"Env var {neo4jPassVar} not set");
 
+Console.WriteLine("Configuration:");
+Console.WriteLine($"MySQL connection string: {mySqlConnectionString}");
+Console.WriteLine($"MongoDB connection string: {mongoConnectionString}");
 Console.WriteLine($"Neo4j URI being used: {neo4jUri}");
 
 // Create Neo4j driver

@@ -44,6 +44,7 @@ namespace TravelBuddy.Api.Controllers
         public async Task<ActionResult> CreateConversation(
             [FromBody] CreateConversationDto createConversationDto)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             if (!User.IsSelfOrAdmin(createConversationDto.OwnerId)) return Forbid();
             
             var (success, errorMessage) = await _messagingService.CreateConversationAsync(createConversationDto);
@@ -115,6 +116,7 @@ namespace TravelBuddy.Api.Controllers
             [FromQuery] int userId,
             [FromBody] SendMessageRequestDto request)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             if (!User.IsSelfOrAdmin(userId)) return Forbid();
 
             if (string.IsNullOrWhiteSpace(request.Content)) 
