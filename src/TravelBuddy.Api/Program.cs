@@ -149,6 +149,8 @@ builder.Services.AddTransient<Neo4jMessagingRepository>();
 
 // Shared Kernel Module
 builder.Services.AddTransient<MySqlSharedKernelRepository>();
+builder.Services.AddTransient<MongoDbSharedKernelRepository>();
+builder.Services.AddTransient<Neo4jSharedKernelRepository>();
 
 // Register HTTP Context Accessor
 // The factories need this to read the request header.

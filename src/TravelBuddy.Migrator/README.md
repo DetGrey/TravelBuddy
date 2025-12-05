@@ -56,6 +56,8 @@ For MySQL:
 - Restart the container and the data will be reset
 
 For MongoDB and Neo4j:
+- Restart mysql container (to be sure it only migrates seed data)
+- Wait for mysql to be ready (~10 sec)
 - Run the migrator while all three db containers are running
 
 ### Manual Run

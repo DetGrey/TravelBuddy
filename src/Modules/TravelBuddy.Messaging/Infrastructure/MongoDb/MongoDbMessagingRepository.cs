@@ -81,8 +81,7 @@ namespace TravelBuddy.Messaging
     internal class ConversationAuditDocument
     {
         [BsonId]
-        public ObjectId Id { get; set; }
-
+        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]
         public int AuditId { get; set; }
         public int ConversationId { get; set; }
         public int? AffectedUserId { get; set; }

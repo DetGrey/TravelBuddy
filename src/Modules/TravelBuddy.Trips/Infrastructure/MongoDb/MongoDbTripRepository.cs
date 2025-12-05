@@ -86,8 +86,7 @@ namespace TravelBuddy.Trips
     internal class TripAuditDocument
     {
         [BsonId]
-        public ObjectId Id { get; set; }
-
+        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]
         public int AuditId { get; set; }
         public int TripId { get; set; }
         public string Action { get; set; } = null!;
@@ -102,8 +101,7 @@ namespace TravelBuddy.Trips
     internal class BuddyAuditDocument
     {
         [BsonId]
-        public ObjectId Id { get; set; }
-
+        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]
         public int AuditId { get; set; }
         public int BuddyId { get; set; }
         public string Action { get; set; } = null!;

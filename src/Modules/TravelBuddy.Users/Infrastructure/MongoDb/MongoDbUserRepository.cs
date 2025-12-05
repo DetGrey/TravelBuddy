@@ -31,8 +31,7 @@ namespace TravelBuddy.Users
     internal class UserAuditDocument
     {
         [BsonId]
-        public ObjectId Id { get; set; }
-
+        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]
         public int AuditId { get; set; }
         public int UserId { get; set; }
         public string Action { get; set; } = null!;

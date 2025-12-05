@@ -1,7 +1,11 @@
+using MongoDB.Bson.Serialization.Attributes;
+
 namespace TravelBuddy.Migrator.Models;
 
 public class TripAuditDocument
 {
+    [BsonId]
+    [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]
     public int AuditId { get; set; }
 
     public int TripId { get; set; }
