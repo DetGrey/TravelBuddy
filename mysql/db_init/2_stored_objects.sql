@@ -261,6 +261,11 @@ BEGIN
         birthdate = NOW()
     WHERE user_id = p_user_id;
 
+    IF ROW_COUNT() = 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'No user found with the given user_id';
+    END IF;
+
     INSERT INTO user_audit (user_id, action, field_changed, old_value, new_value, changed_by)
     VALUES (p_user_id, 'deleted', 'user', NULL, NULL, NULL);
 
