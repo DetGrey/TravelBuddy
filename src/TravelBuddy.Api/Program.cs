@@ -22,7 +22,7 @@ using System.Text.Json;
 var builder = WebApplication.CreateBuilder(args);
 
 // --- 1. SERVICE CONFIGURATION ---
-
+builder.Services.AddProblemDetails();
 // Configure OpenAPI/Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -79,18 +79,18 @@ builder.Services.AddSwaggerGen(options =>
 
 // --- GET CONNECTION STRINGS TO THE DATABASES ---
 // Get the connection strings
-var mysqlConnectionString = builder.Configuration.GetConnectionString("DefaultConnection") ;
-    //?? throw new InvalidOperationException("MySQL connection string not found.");
+var mysqlConnectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+    ?? throw new InvalidOperationException("MySQL connection string not found.");
 
-var mongoDbConnectionString = builder.Configuration["ConnectionStrings:MongoDbConnection"] ;
-    //?? throw new InvalidOperationException("MongoDB connection string not found.");
+var mongoDbConnectionString = builder.Configuration["ConnectionStrings:MongoDbConnection"] 
+    ?? throw new InvalidOperationException("MongoDB connection string not found.");
     
-var neo4jUri = builder.Configuration["ConnectionStrings:Neo4jUri"];
-    //?? throw new InvalidOperationException("Neo4j URI not found.");
-var neo4jUser = builder.Configuration["ConnectionStrings:Neo4jUser"] ;
-    //?? throw new InvalidOperationException("Neo4j User not found.");
-var neo4jPassword = builder.Configuration["ConnectionStrings:Neo4jPassword"] ;
-    //?? throw new InvalidOperationException("Neo4j Password not found.");
+var neo4jUri = builder.Configuration["ConnectionStrings:Neo4jUri"]
+    ?? throw new InvalidOperationException("Neo4j URI not found.");
+var neo4jUser = builder.Configuration["ConnectionStrings:Neo4jUser"] 
+    ?? throw new InvalidOperationException("Neo4j User not found.");
+var neo4jPassword = builder.Configuration["ConnectionStrings:Neo4jPassword"] 
+    ?? throw new InvalidOperationException("Neo4j Password not found.");
 
 // --- MODULE CONFIGURATION ---
 // 1. MySQL (EF Core) DbContexts Registration
@@ -202,6 +202,7 @@ if (app.Environment.IsDevelopment())
 // enable CORS for the dev frontend before authentication
 app.UseCors("LocalDev");
 
+app.UseExceptionHandler("/error");
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization(); 

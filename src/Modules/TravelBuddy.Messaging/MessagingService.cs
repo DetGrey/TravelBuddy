@@ -49,6 +49,11 @@ namespace TravelBuddy.Messaging
         }
         public async Task<(bool Success, string? ErrorMessage)> CreateConversationAsync(CreateConversationDto createConversationDto)
         {
+            var isPrivate = !createConversationDto.IsGroup && createConversationDto.OtherUserId != null;
+            var isTripGroup = createConversationDto.IsGroup && createConversationDto.TripDestinationId != null;
+            if (!isPrivate && !isTripGroup)
+                return (false, "Should be either a private conversation or a trip group");
+            
             var messagingRepository = GetRepo();
             return await messagingRepository.CreateConversationAsync(createConversationDto);
         }
