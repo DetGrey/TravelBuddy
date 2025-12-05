@@ -196,8 +196,44 @@ public class Neo4jUserRepository : IUserRepository
     // ------------------------------- AUDIT TABLES -------------------------------
     public async Task<IEnumerable<UserAudit>> GetUserAuditsAsync()
     {
-        // TODO Placeholder: Return an empty collection of UserAudit records
-        return await Task.FromResult<IEnumerable<UserAudit>>(new List<UserAudit>());
+        await using var session = _driver.AsyncSession();
+        const string cypher = @"
+            MATCH (a:UserAudit)
+            RETURN a.AuditId as AuditId, a.UserId as UserId, a.Action as Action,
+                   a.FieldChanged as FieldChanged, a.OldValue as OldValue,
+                   a.NewValue as NewValue, a.ChangedBy as ChangedBy,
+                   a.Timestamp as Timestamp
+            ORDER BY a.AuditId DESC
+        ";
+        
+        var cursor = await session.RunAsync(cypher);
+        var records = await cursor.ToListAsync();
+        
+        return records.Select(r => new UserAudit
+        {
+            AuditId = r["AuditId"].As<int>(),
+            UserId = r["UserId"].As<int>(),
+            Action = r["Action"].As<string>(),
+            FieldChanged = r["FieldChanged"].As<string?>(),
+            OldValue = r["OldValue"].As<string?>(),
+            NewValue = r["NewValue"].As<string?>(),
+            ChangedBy = r["ChangedBy"].As<int?>(),
+            Timestamp = ParseDateTime(r["Timestamp"])
+        }).ToList();
+    }
+    
+    private static DateTime ParseDateTime(object value)
+    {
+        if (value == null)
+            throw new InvalidOperationException("Null timestamp value from Neo4j");
+
+        if (value is DateTime dt)
+            return dt;
+
+        if (value is string s)
+            return DateTime.Parse(s, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeUniversal);
+
+        throw new InvalidOperationException($"Unsupported timestamp type: {value.GetType()}");
     }
 }
 

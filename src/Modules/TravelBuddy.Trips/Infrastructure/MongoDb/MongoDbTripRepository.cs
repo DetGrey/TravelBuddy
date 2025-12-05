@@ -1,3 +1,4 @@
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 using System;
@@ -14,7 +15,8 @@ namespace TravelBuddy.Trips
     [BsonIgnoreExtraElements]
     internal class UserDocument
     {
-        [BsonElement("UserId")]
+        // Map to MongoDB _id (same as in the Users module)
+        [BsonId]
         public int UserId { get; set; }
         public string Name { get; set; } = null!;
         public string Email { get; set; } = null!;
@@ -54,7 +56,7 @@ namespace TravelBuddy.Trips
         // Map MongoDB _id (int) to TripId
         [BsonId]
         public int TripId { get; set; }
-
+        public string TripName { get; set; } = null!;
         public int? OwnerId { get; set; }
         public int? MaxBuddies { get; set; }
 
@@ -78,6 +80,36 @@ namespace TravelBuddy.Trips
         public string Country { get; set; } = null!;
         public decimal? Longitude { get; set; }
         public decimal? Latitude { get; set; }
+    }
+
+    [BsonIgnoreExtraElements]
+    internal class TripAuditDocument
+    {
+        [BsonId]
+        public ObjectId Id { get; set; }
+
+        public int AuditId { get; set; }
+        public int TripId { get; set; }
+        public string Action { get; set; } = null!;
+        public string? FieldChanged { get; set; }
+        public string? OldValue { get; set; }
+        public string? NewValue { get; set; }
+        public int? ChangedBy { get; set; }
+        public DateTime? Timestamp { get; set; }
+    }
+
+    [BsonIgnoreExtraElements]
+    internal class BuddyAuditDocument
+    {
+        [BsonId]
+        public ObjectId Id { get; set; }
+
+        public int AuditId { get; set; }
+        public int BuddyId { get; set; }
+        public string Action { get; set; } = null!;
+        public string? Reason { get; set; }
+        public int? ChangedBy { get; set; }
+        public DateTime? Timestamp { get; set; }
     }
 
     // ---------- Repository implementation ----------
@@ -434,7 +466,7 @@ namespace TravelBuddy.Trips
             var overview = new TripOverview
             {
                 TripId          = trip.TripId,
-                TripName        = trip.Description ?? $"Trip {trip.TripId}", // fallback if TripName not mapped
+                TripName        = trip.TripName,
                 TripStartDate   = trip.StartDate,
                 TripEndDate     = trip.EndDate,
                 MaxBuddies      = trip.MaxBuddies ?? 0,
@@ -510,7 +542,7 @@ namespace TravelBuddy.Trips
                 var overview = new TripOverview
                 {
                     TripId          = trip.TripId,
-                    TripName        = trip.Description ?? $"Trip {trip.TripId}", // or trip.TripName if present
+                    TripName        = trip.TripName, // or trip.TripName if present
                     TripStartDate   = trip.StartDate,
                     TripEndDate     = trip.EndDate,
                     MaxBuddies      = trip.MaxBuddies ?? 0,
@@ -790,6 +822,16 @@ namespace TravelBuddy.Trips
         // ---------------------------------------------------------
         public async Task<(bool Success, string? ErrorMessage)> InsertBuddyRequestAsync(BuddyDto buddyDto)
         {
+            // Validate input parameters (matching MySQL stored procedure validation)
+            if (buddyDto.UserId <= 0)
+                return (false, "user_id cannot be NULL");
+
+            if (buddyDto.TripDestinationId <= 0)
+                return (false, "trip_destination_id cannot be NULL");
+
+            if (buddyDto.PersonCount <= 0)
+                return (false, "person_count must be greater than zero");
+
             // Find the trip containing this TripDestination
             var filter = Builders<TripDocument>.Filter
                 .ElemMatch(t => t.Destinations, td => td.TripDestinationId == buddyDto.TripDestinationId);
@@ -805,7 +847,19 @@ namespace TravelBuddy.Trips
             // Check if user already has a request for this destination
             var existing = td.Buddies.FirstOrDefault(b => b.UserId == buddyDto.UserId);
             if (existing != null)
-                return (false, "Buddy request already exists or user is already a member");
+                return (false, "User has already requested to join this trip destination");
+
+            // Calculate remaining capacity (matching MySQL get_trip_destination_remaining_capacity)
+            var maxBuddies = trip.MaxBuddies ?? 0;
+            var acceptedPersons = td.Buddies
+                .Where(b => string.Equals(b.RequestStatus, "accepted", StringComparison.OrdinalIgnoreCase))
+                .Sum(b => b.PersonCount ?? 1);
+
+            var remainingCapacity = maxBuddies > 0 ? Math.Max(0, maxBuddies - acceptedPersons) : 0;
+
+            // Check if there's enough capacity
+            if (remainingCapacity < buddyDto.PersonCount)
+                return (false, "there is not enough buddy capacity for the person_count");
 
             var newBuddyId = await GetNextBuddyIdAsync();
 
@@ -888,13 +942,43 @@ namespace TravelBuddy.Trips
         // ------------------------------- AUDIT TABLES -------------------------------
         public async Task<IEnumerable<TripAudit>> GetTripAuditsAsync()
         {
-            // TODO Placeholder: Return an empty collection of TripAudit records
-            return await Task.FromResult<IEnumerable<TripAudit>>(new List<TripAudit>());
+            var database = _tripsCollection.Database;
+            var tripAuditCollection = database.GetCollection<TripAuditDocument>("trip_audits");
+            
+            var docs = await tripAuditCollection
+                .Find(FilterDefinition<TripAuditDocument>.Empty)
+                .ToListAsync();
+            
+            return docs.Select(doc => new TripAudit
+            {
+                AuditId = doc.AuditId,
+                TripId = doc.TripId,
+                Action = doc.Action,
+                FieldChanged = doc.FieldChanged,
+                OldValue = doc.OldValue,
+                NewValue = doc.NewValue,
+                ChangedBy = doc.ChangedBy,
+                Timestamp = doc.Timestamp
+            }).ToList();
         }
         public async Task<IEnumerable<BuddyAudit>> GetBuddyAuditsAsync()
         {
-            // TODO Placeholder: Return an empty collection of BuddyAudit records
-            return await Task.FromResult<IEnumerable<BuddyAudit>>(new List<BuddyAudit>());
+            var database = _tripsCollection.Database;
+            var buddyAuditCollection = database.GetCollection<BuddyAuditDocument>("buddy_audits");
+            
+            var docs = await buddyAuditCollection
+                .Find(FilterDefinition<BuddyAuditDocument>.Empty)
+                .ToListAsync();
+            
+            return docs.Select(doc => new BuddyAudit
+            {
+                AuditId = doc.AuditId,
+                BuddyId = doc.BuddyId,
+                Action = doc.Action,
+                Reason = doc.Reason,
+                ChangedBy = doc.ChangedBy,
+                Timestamp = doc.Timestamp
+            }).ToList();
         }
     }
 }

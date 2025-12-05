@@ -16,6 +16,7 @@ using EFServerVersion = Microsoft.EntityFrameworkCore.ServerVersion;
 using TravelBuddy.Users.Infrastructure;
 using TravelBuddy.Trips.Infrastructure;
 using TravelBuddy.Messaging.Infrastructure;
+using TravelBuddy.SharedKernel.Infrastructure;
 
 
 // Load .env from solution root
@@ -126,6 +127,11 @@ var destinationsCollection  = mongoDatabase.GetCollection<DestinationDocument>("
 var tripsCollection         = mongoDatabase.GetCollection<TripDocument>("trips");
 var conversationsCollection = mongoDatabase.GetCollection<ConversationDocument>("conversations");
 var messagesCollection      = mongoDatabase.GetCollection<MessageDocument>("messages");
+var userAuditCollection     = mongoDatabase.GetCollection<UserAuditDocument>("user_audits");
+var tripAuditCollection     = mongoDatabase.GetCollection<TripAuditDocument>("trip_audits");
+var buddyAuditCollection    = mongoDatabase.GetCollection<BuddyAuditDocument>("buddy_audits");
+var conversationAuditCollection = mongoDatabase.GetCollection<ConversationAuditDocument>("conversation_audits");
+var systemEventLogCollection = mongoDatabase.GetCollection<SystemEventLogDocument>("system_event_logs");
 
 // ------------- MONGODB MIGRATION START -------------
 Console.WriteLine("Starting user migration...");
@@ -169,6 +175,11 @@ await destinationsCollection.DeleteManyAsync(FilterDefinition<DestinationDocumen
 await tripsCollection.DeleteManyAsync(FilterDefinition<TripDocument>.Empty);
 await conversationsCollection.DeleteManyAsync(FilterDefinition<ConversationDocument>.Empty);
 await messagesCollection.DeleteManyAsync(FilterDefinition<MessageDocument>.Empty);
+await userAuditCollection.DeleteManyAsync(FilterDefinition<UserAuditDocument>.Empty);
+await tripAuditCollection.DeleteManyAsync(FilterDefinition<TripAuditDocument>.Empty);
+await buddyAuditCollection.DeleteManyAsync(FilterDefinition<BuddyAuditDocument>.Empty);
+await conversationAuditCollection.DeleteManyAsync(FilterDefinition<ConversationAuditDocument>.Empty);
+await systemEventLogCollection.DeleteManyAsync(FilterDefinition<SystemEventLogDocument>.Empty);
 
 // ===== 1) MongoDB: USERS =====
 var users = await usersDbContext.Users
@@ -382,6 +393,101 @@ if (messageDocs.Count > 0)
     await messagesCollection.InsertManyAsync(messageDocs);
 }
 Console.WriteLine($"Messages migrated: {messageDocs.Count}");
+
+
+// ===== 6) AUDIT TABLES (flat collections) =====
+Console.WriteLine("Migrating audit tables to MongoDB...");
+
+var userAudits = await usersDbContext.UserAudits.AsNoTracking().ToListAsync();
+var userAuditDocs = userAudits.Select(a => new UserAuditDocument
+{
+    AuditId = a.AuditId,
+    UserId = a.UserId,
+    Action = a.Action,
+    FieldChanged = a.FieldChanged,
+    OldValue = a.OldValue,
+    NewValue = a.NewValue,
+    ChangedBy = a.ChangedBy,
+    Timestamp = a.Timestamp
+}).ToList();
+if (userAuditDocs.Count > 0)
+{
+    await userAuditCollection.InsertManyAsync(userAuditDocs);
+}
+Console.WriteLine($"User audits migrated: {userAuditDocs.Count}");
+
+var tripAudits = await tripsDbContext.TripAudits.AsNoTracking().ToListAsync();
+var tripAuditDocs = tripAudits.Select(a => new TripAuditDocument
+{
+    AuditId = a.AuditId,
+    TripId = a.TripId,
+    Action = a.Action,
+    FieldChanged = a.FieldChanged,
+    OldValue = a.OldValue,
+    NewValue = a.NewValue,
+    ChangedBy = a.ChangedBy,
+    Timestamp = a.Timestamp
+}).ToList();
+if (tripAuditDocs.Count > 0)
+{
+    await tripAuditCollection.InsertManyAsync(tripAuditDocs);
+}
+Console.WriteLine($"Trip audits migrated: {tripAuditDocs.Count}");
+
+var buddyAudits = await tripsDbContext.BuddyAudits.AsNoTracking().ToListAsync();
+var buddyAuditDocs = buddyAudits.Select(a => new BuddyAuditDocument
+{
+    AuditId = a.AuditId,
+    BuddyId = a.BuddyId,
+    Action = a.Action,
+    Reason = a.Reason,
+    ChangedBy = a.ChangedBy,
+    Timestamp = a.Timestamp
+}).ToList();
+if (buddyAuditDocs.Count > 0)
+{
+    await buddyAuditCollection.InsertManyAsync(buddyAuditDocs);
+}
+Console.WriteLine($"Buddy audits migrated: {buddyAuditDocs.Count}");
+
+var conversationAudits = await messagingDbContext.ConversationAudits.AsNoTracking().ToListAsync();
+var conversationAuditDocs = conversationAudits.Select(a => new ConversationAuditDocument
+{
+    AuditId = a.AuditId,
+    ConversationId = a.ConversationId,
+    AffectedUserId = a.AffectedUserId,
+    Action = a.Action,
+    ChangedBy = a.ChangedBy,
+    Timestamp = a.Timestamp
+}).ToList();
+if (conversationAuditDocs.Count > 0)
+{
+    await conversationAuditCollection.InsertManyAsync(conversationAuditDocs);
+}
+Console.WriteLine($"Conversation audits migrated: {conversationAuditDocs.Count}");
+
+// ===== 7) SYSTEM EVENT LOGS =====
+Console.WriteLine("Migrating system event logs to MongoDB...");
+
+using (var sharedKernelDbContext = new TravelBuddy.SharedKernel.Infrastructure.SharedKernelDbContext(
+    new DbContextOptionsBuilder<TravelBuddy.SharedKernel.Infrastructure.SharedKernelDbContext>()
+        .UseMySql(mySqlConnectionString, EFServerVersion.AutoDetect(mySqlConnectionString)).Options))
+{
+    var systemEventLogs = await sharedKernelDbContext.SystemEventLogs.AsNoTracking().ToListAsync();
+    var systemEventLogDocs = systemEventLogs.Select(e => new SystemEventLogDocument
+    {
+        EventId = e.EventId,
+        EventType = e.EventType,
+        AffectedId = e.AffectedId,
+        TriggeredAt = e.TriggeredAt,
+        Details = e.Details
+    }).ToList();
+    if (systemEventLogDocs.Count > 0)
+    {
+        await systemEventLogCollection.InsertManyAsync(systemEventLogDocs);
+    }
+    Console.WriteLine($"System event logs migrated: {systemEventLogDocs.Count}");
+}
 
 
 // ===== Neo4j: MIGRATION =====
@@ -649,5 +755,170 @@ await using (var msgSession = neo4j.AsyncSession(o => o.WithDefaultAccessMode(Ac
     }
 }
 Console.WriteLine($"Neo4j: migrated {messages.Count} messages.");
+
+// ===== Neo4j: AUDIT TABLES =====
+Console.WriteLine("Migrating audit tables to Neo4j...");
+
+// UserAudit nodes and relationships
+await using (var uaSession = neo4j.AsyncSession(o => o.WithDefaultAccessMode(AccessMode.Write)))
+{
+    foreach (var a in userAudits)
+    {
+        var parameters = new
+        {
+            auditId = a.AuditId,
+            userId = a.UserId,
+            action = a.Action,
+            fieldChanged = a.FieldChanged,
+            oldValue = a.OldValue,
+            newValue = a.NewValue,
+            changedBy = a.ChangedBy,
+            timestamp = a.Timestamp?.ToUniversalTime().ToString("o", CultureInfo.InvariantCulture)
+        };
+        await uaSession.RunAsync(@"
+            MATCH (u:User { userId: $userId })
+            MERGE (a:UserAudit { auditId: $auditId })
+            SET a.action = $action,
+                a.fieldChanged = $fieldChanged,
+                a.oldValue = $oldValue,
+                a.newValue = $newValue,
+                a.timestamp = datetime($timestamp)
+            MERGE (u)-[:HAS_AUDIT]->(a)
+            WITH a, $changedBy AS changedById
+            UNWIND CASE WHEN changedById IS NULL THEN [] ELSE [changedById] END AS cbId
+            MATCH (cb:User { userId: cbId })
+            MERGE (cb)-[:CHANGED]->(a)
+        ", parameters);
+    }
+}
+Console.WriteLine($"Neo4j: migrated {userAudits.Count} user audits.");
+
+// TripAudit nodes and relationships
+await using (var taSession = neo4j.AsyncSession(o => o.WithDefaultAccessMode(AccessMode.Write)))
+{
+    foreach (var a in tripAudits)
+    {
+        var parameters = new
+        {
+            auditId = a.AuditId,
+            tripId = a.TripId,
+            action = a.Action,
+            fieldChanged = a.FieldChanged,
+            oldValue = a.OldValue,
+            newValue = a.NewValue,
+            changedBy = a.ChangedBy,
+            timestamp = a.Timestamp?.ToUniversalTime().ToString("o", CultureInfo.InvariantCulture)
+        };
+        await taSession.RunAsync(@"
+            MATCH (t:Trip { tripId: $tripId })
+            MERGE (a:TripAudit { auditId: $auditId })
+            SET a.action = $action,
+                a.fieldChanged = $fieldChanged,
+                a.oldValue = $oldValue,
+                a.newValue = $newValue,
+                a.timestamp = datetime($timestamp)
+            MERGE (t)-[:HAS_AUDIT]->(a)
+            WITH a, $changedBy AS changedById
+            UNWIND CASE WHEN changedById IS NULL THEN [] ELSE [changedById] END AS cbId
+            MATCH (cb:User { userId: cbId })
+            MERGE (cb)-[:CHANGED]->(a)
+        ", parameters);
+    }
+}
+Console.WriteLine($"Neo4j: migrated {tripAudits.Count} trip audits.");
+
+// BuddyAudit nodes and relationships
+await using (var baSession = neo4j.AsyncSession(o => o.WithDefaultAccessMode(AccessMode.Write)))
+{
+    foreach (var a in buddyAudits)
+    {
+        var parameters = new
+        {
+            auditId = a.AuditId,
+            buddyId = a.BuddyId,
+            action = a.Action,
+            reason = a.Reason,
+            changedBy = a.ChangedBy,
+            timestamp = a.Timestamp?.ToUniversalTime().ToString("o", CultureInfo.InvariantCulture)
+        };
+        await baSession.RunAsync(@"
+            MATCH (b:Buddy { buddyId: $buddyId })
+            MERGE (a:BuddyAudit { auditId: $auditId })
+            SET a.action = $action,
+                a.reason = $reason,
+                a.timestamp = datetime($timestamp)
+            MERGE (b)-[:HAS_AUDIT]->(a)
+            WITH a, $changedBy AS changedById
+            UNWIND CASE WHEN changedById IS NULL THEN [] ELSE [changedById] END AS cbId
+            MATCH (cb:User { userId: cbId })
+            MERGE (cb)-[:CHANGED]->(a)
+        ", parameters);
+    }
+}
+Console.WriteLine($"Neo4j: migrated {buddyAudits.Count} buddy audits.");
+
+// ConversationAudit nodes and relationships
+await using (var caSession = neo4j.AsyncSession(o => o.WithDefaultAccessMode(AccessMode.Write)))
+{
+    foreach (var a in conversationAudits)
+    {
+        var parameters = new
+        {
+            auditId = a.AuditId,
+            conversationId = a.ConversationId,
+            affectedUserId = a.AffectedUserId,
+            action = a.Action,
+            changedBy = a.ChangedBy,
+            timestamp = a.Timestamp?.ToUniversalTime().ToString("o", CultureInfo.InvariantCulture)
+        };
+        await caSession.RunAsync(@"
+            MATCH (c:Conversation { conversationId: $conversationId })
+            MERGE (a:ConversationAudit { auditId: $auditId })
+            SET a.action = $action,
+                a.timestamp = datetime($timestamp)
+            MERGE (c)-[:HAS_AUDIT]->(a)
+            WITH a, $changedBy AS changedById, $affectedUserId AS affectedId
+            UNWIND CASE WHEN changedById IS NULL THEN [] ELSE [changedById] END AS cbId
+            MATCH (cb:User { userId: cbId })
+            MERGE (cb)-[:CHANGED]->(a)
+            WITH a, affectedId
+            UNWIND CASE WHEN affectedId IS NULL THEN [] ELSE [affectedId] END AS affId
+            MATCH (aff:User { userId: affId })
+            MERGE (aff)-[:AFFECTED_BY]->(a)
+        ", parameters);
+    }
+}
+Console.WriteLine($"Neo4j: migrated {conversationAudits.Count} conversation audits.");
+
+// ===== Neo4j: SYSTEM EVENT LOGS =====
+Console.WriteLine("Migrating system event logs to Neo4j...");
+
+using (var sharedKernelDbContext = new SharedKernelDbContext(
+    new DbContextOptionsBuilder<SharedKernelDbContext>()
+        .UseMySql(mySqlConnectionString, EFServerVersion.AutoDetect(mySqlConnectionString)).Options))
+{
+    var systemEventLogs = await sharedKernelDbContext.SystemEventLogs.AsNoTracking().ToListAsync();
+    await using (var logSession = neo4j.AsyncSession(o => o.WithDefaultAccessMode(AccessMode.Write)))
+    {
+        foreach (var e in systemEventLogs)
+        {
+            var parameters = new
+            {
+                eventId = e.EventId,
+                eventType = e.EventType,
+                affectedId = e.AffectedId,
+                triggeredAt = e.TriggeredAt?.ToUniversalTime().ToString("o", CultureInfo.InvariantCulture),
+                details = e.Details
+            };
+            await logSession.RunAsync(@"
+                MERGE (l:SystemEventLog { eventId: $eventId })
+                SET l.eventType = $eventType,
+                    l.triggeredAt = datetime($triggeredAt),
+                    l.details = $details
+            ", parameters);
+        }
+    }
+    Console.WriteLine($"Neo4j: migrated {systemEventLogs.Count} system event logs.");
+}
 
 Console.WriteLine("Migration complete.");

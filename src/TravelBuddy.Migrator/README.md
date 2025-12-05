@@ -1,11 +1,29 @@
 # TravelBuddy Migrator
 
-This migrator sets up and populates MongoDB and Neo4j databases for the TravelBuddy project using the MySQL database. It is designed to run automatically as a Docker container alongside your database containers.
+This migrator transfers data from MySQL to MongoDB and Neo4j for the TravelBuddy project. It runs as a .NET console application and can be executed standalone or as a Docker container.
 
-## Features
-- Migrates data from MySQL to MongoDB and Neo4j
-- Can be run manually or automatically via Docker Compose
-- Resets MongoDB and Neo4j data on container restart (using tmpfs)
+## What It Does
+
+The migrator reads from MySQL and populates both MongoDB and Neo4j with:
+
+**MongoDB (Document Store):**
+- Users
+- Destinations
+- Trips (with embedded trip destinations and buddies)
+- Conversations (with embedded participants)
+- Messages
+- Audit tables (UserAudit, TripAudit, BuddyAudit, ConversationAudit)
+- System event logs
+
+**Neo4j (Graph Database):**
+- User nodes
+- Destination nodes
+- Trip nodes with relationships (USER_CREATED_TRIP, TRIP_VISITS_DESTINATION)
+- Buddy relationships (USER_IS_BUDDY_WITH)
+- Conversation nodes with participant relationships
+- Message nodes with creator relationships
+- Audit nodes with entity audit chains (HAS_AUDIT, CHANGED)
+- System event log nodes
 
 ## Prerequisites
 - Docker and Docker Compose installed
@@ -15,22 +33,22 @@ This migrator sets up and populates MongoDB and Neo4j databases for the TravelBu
 - `Dockerfile`: Builds the migrator as a .NET container
 - `Program.cs`: Main migration logic
 - `docker-compose.yml`: Defines all services (MySQL, MongoDB, Neo4j, Migrator)
+- `Models/`: Document models for MongoDB collections
+- `appsettings.json`: Database connection configuration
 
 ## Usage
 
-### 1. Build and Start All Containers
+### Build and Start All Services
 From the project root (where `docker-compose.yml` is located):
 
 ```bash
-# Build and start all services (MySQL, MongoDB, Neo4j, Migrator)
+# Build and start all containers (MySQL, MongoDB, Neo4j, Migrator)
 docker-compose up --build
 ```
 
-- The migrator will run automatically after the databases are ready.
-- It will populate MySQL, MongoDB, and Neo4j with default data.
+The migrator automatically runs after all databases are ready and completes the full data transfer.
 
-### 2. Resetting Data
-To reset MongoDB and Neo4j to their default state:
+#### Alternative way of starting everything:
 
 ```bash
 # Stop and remove the database containers
@@ -42,13 +60,45 @@ docker-compose up -d test_mysql test_mongodb test_neo4j
 docker-compose up --build migrator
 ```
 
-### 3. Manual Migrator Run
-You can run the migrator manually at any time:
+### Reset testing environments
+
+For MySQL:
+- Restart the container and the data will be reset
+
+For MongoDB and Neo4j:
+- Run the migrator while all three db containers are running
+
+### Manual Run
+To run the migrator standalone (outside Docker):
 
 ```bash
 docker-compose up --build migrator
 ```
 
-## Environment Variables
-Make sure your `appsettings.json` file use the correct hostnames and credentials for Docker Compose:
+## Configuration
+
+The migrator reads connection details from `appsettings.json` which specifies environment variable names to load from `.env`:
+
+```json
+{
+  "MySql": {
+    "Host": "MYSQL_HOST",
+    "Port": "MYSQL_PORT",
+    "User": "MYSQL_USER",
+    "Password": "MYSQL_PASSWORD",
+    "Database": "MYSQL_DATABASE"
+  },
+  "Mongo": {
+    "Connection": "MONGO_CONNECTION_STRING",
+    "Database": "MONGO_DATABASE"
+  },
+  "Neo4j": {
+    "Uri": "NEO4J_URI",
+    "User": "NEO4J_USER",
+    "Password": "NEO4J_PASSWORD"
+  }
+}
+```
+
+Ensure `.env` file in the project root contains the actual values for these variables for it to run locally. This is not necessary for the docker containers.
 

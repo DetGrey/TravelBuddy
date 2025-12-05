@@ -523,8 +523,41 @@ namespace TravelBuddy.Messaging
         // ------------------------------- AUDIT TABLES -------------------------------
         public async Task<IEnumerable<ConversationAudit>> GetConversationAuditsAsync()
         {
-            // TODO: Implement if it actually has audit table in Neo4j
-            return await Task.FromResult(Enumerable.Empty<ConversationAudit>());
+            await using var session = _driver.AsyncSession();
+            const string cypher = @"
+                MATCH (a:ConversationAudit)
+                RETURN a.AuditId as AuditId, a.ConversationId as ConversationId,
+                       a.AffectedUserId as AffectedUserId, a.Action as Action,
+                       a.ChangedBy as ChangedBy, a.Timestamp as Timestamp
+                ORDER BY a.AuditId DESC
+            ";
+            
+            var cursor = await session.RunAsync(cypher);
+            var records = await cursor.ToListAsync();
+            
+            return records.Select(r => new ConversationAudit
+            {
+                AuditId = r["AuditId"].As<int>(),
+                ConversationId = r["ConversationId"].As<int>(),
+                AffectedUserId = r["AffectedUserId"].As<int?>(),
+                Action = r["Action"].As<string>(),
+                ChangedBy = r["ChangedBy"].As<int?>(),
+                Timestamp = ParseDateTime(r["Timestamp"])
+            }).ToList();
+        }
+        
+        private static DateTime ParseDateTime(object value)
+        {
+            if (value == null)
+                throw new InvalidOperationException("Null timestamp value from Neo4j");
+
+            if (value is DateTime dt)
+                return dt;
+
+            if (value is string s)
+                return DateTime.Parse(s, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeUniversal);
+
+            throw new InvalidOperationException($"Unsupported timestamp type: {value.GetType()}");
         }
     }
 }

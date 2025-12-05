@@ -30,6 +30,7 @@ namespace TravelBuddy.Api.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> PostBuddyRequest([FromRoute] int userId, [FromBody] BuddyDto dto)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             if (!User.IsSelfOrAdmin(userId)) return Forbid();
 
             dto.UserId = userId;

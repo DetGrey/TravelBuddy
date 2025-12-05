@@ -72,8 +72,23 @@ namespace TravelBuddy.Messaging
     [BsonIgnoreExtraElements]
     internal class DestinationNameDocument
     {
+        [BsonId]
         public int DestinationId { get; set; }
         public string Name { get; set; } = null!;
+    }
+
+    [BsonIgnoreExtraElements]
+    internal class ConversationAuditDocument
+    {
+        [BsonId]
+        public ObjectId Id { get; set; }
+
+        public int AuditId { get; set; }
+        public int ConversationId { get; set; }
+        public int? AffectedUserId { get; set; }
+        public string Action { get; set; } = null!;
+        public int? ChangedBy { get; set; }
+        public DateTime? Timestamp { get; set; }
     }
 
     // -----------------------------
@@ -200,6 +215,17 @@ namespace TravelBuddy.Messaging
             return (last?.MessageId ?? 0) + 1;
         }
 
+        private async Task<int> GetNextConversationIdAsync()
+        {
+            var last = await _conversationCollection
+                .Find(FilterDefinition<ConversationDocument>.Empty)
+                .SortByDescending(c => c.ConversationId)
+                .Limit(1)
+                .FirstOrDefaultAsync();
+
+            return (last?.ConversationId ?? 0) + 1;
+        }
+
         // -----------------------------
         // CRUD operations
         // -----------------------------
@@ -227,21 +253,37 @@ namespace TravelBuddy.Messaging
             // 3. Load destinations and users
             var tripDestIds = docs
                 .Where(d => d.TripDestinationId.HasValue)
-                .Select(d => d.TripDestinationId)
+                .Select(d => d.TripDestinationId!.Value)
+                .Distinct()
                 .ToList();
 
-            var tripDestDocs = await _tripDestNameCollection
-                .Find(td => tripDestIds.Contains(td.TripDestinationId))
+            // Query trips collection and extract TripDestinationId -> DestinationId mapping
+            var tripDocs = await _tripCollection
+                .Find(Builders<TripDocument>.Filter.ElemMatch(
+                    t => t.Destinations,
+                    d => tripDestIds.Contains(d.TripDestinationId)))
                 .ToListAsync();
 
-            var destinationIds = tripDestDocs.Select(td => td.DestinationId).ToList();
+            // Build a dictionary: TripDestinationId -> DestinationId
+            var tripDestById = new Dictionary<int, int>();
+            foreach (var trip in tripDocs)
+            {
+                foreach (var dest in trip.Destinations)
+                {
+                    if (tripDestIds.Contains(dest.TripDestinationId))
+                    {
+                        tripDestById[dest.TripDestinationId] = dest.DestinationId;
+                    }
+                }
+            }
+
+            var destinationIds = tripDestById.Values.Distinct().ToList();
 
             var destinations = await _destinationCollection
                 .Find(d => destinationIds.Contains(d.DestinationId))
                 .ToListAsync();
 
-            var destById     = destinations.ToDictionary(d => d.DestinationId);
-            var tripDestById = tripDestDocs.ToDictionary(td => td.TripDestinationId);
+            var destById = destinations.ToDictionary(d => d.DestinationId);
 
             var users = await _userCollection.Find(_ => true).ToListAsync();
 
@@ -251,11 +293,23 @@ namespace TravelBuddy.Messaging
                 lastMessageByConvId.TryGetValue(doc.ConversationId, out var lastMsg);
 
                 DestinationNameDocument? destination = null;
-                if (doc.TripDestinationId.HasValue &&
-                    tripDestById.TryGetValue(doc.TripDestinationId.Value, out var tripDest) &&
-                    destById.TryGetValue(tripDest.DestinationId, out var dest))
+                if (doc.TripDestinationId.HasValue)
                 {
-                    destination = dest;
+                    if (tripDestById.TryGetValue(doc.TripDestinationId.Value, out var destinationId))
+                    {
+                        if (destById.TryGetValue(destinationId, out var dest))
+                        {
+                            destination = dest;
+                        }
+                        else
+                        {
+                            Console.WriteLine($"DestinationId {destinationId} not found in destById.");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine($"TripDestinationId {doc.TripDestinationId.Value} not found in tripDestById.");
+                    }
                 }
 
                 return MapConversationOverview(doc, lastMsg, userId, destination, users);
@@ -297,6 +351,7 @@ namespace TravelBuddy.Messaging
                     // Create new Conversation
                     var newConversation = new ConversationDocument
                     {
+                        ConversationId = await GetNextConversationIdAsync(),
                         TripDestinationId = tripDestId,
                         IsGroup = false,
                         CreatedAt = DateTime.UtcNow,
@@ -351,6 +406,7 @@ namespace TravelBuddy.Messaging
                     // Create the Group Conversation
                     var newGroupConversation = new ConversationDocument
                     {
+                        ConversationId = await GetNextConversationIdAsync(),
                         TripDestinationId = tripDestId,
                         IsGroup = true,
                         CreatedAt = DateTime.UtcNow,
@@ -436,8 +492,22 @@ namespace TravelBuddy.Messaging
         // ------------------------------- AUDIT TABLES -------------------------------
         public async Task<IEnumerable<ConversationAudit>> GetConversationAuditsAsync()
         {
-            // TODO: Implement if it actually has audit table in MongoDB
-            return await Task.FromResult(Enumerable.Empty<ConversationAudit>());
+            var database = _conversationCollection.Database;
+            var conversationAuditCollection = database.GetCollection<ConversationAuditDocument>("conversation_audits");
+            
+            var docs = await conversationAuditCollection
+                .Find(FilterDefinition<ConversationAuditDocument>.Empty)
+                .ToListAsync();
+            
+            return docs.Select(doc => new ConversationAudit
+            {
+                AuditId = doc.AuditId,
+                ConversationId = doc.ConversationId,
+                AffectedUserId = doc.AffectedUserId,
+                Action = doc.Action,
+                ChangedBy = doc.ChangedBy,
+                Timestamp = doc.Timestamp
+            }).ToList();
         }
     }
 }

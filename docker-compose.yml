@@ -35,8 +35,6 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: password
     ports:
       - "27017:27017"
-    tmpfs:
-      - /data/db:rw
   test_neo4j:
     image: neo4j:5.16
     container_name: test_neo4j_travel_buddy_container
@@ -45,9 +43,6 @@ services:
     ports:
       - "7474:7474" # HTTP
       - "7687:7687" # Bolt
-    tmpfs:
-      - /data:rw
-
   migrator:
     build:
       context: ./
@@ -64,8 +59,8 @@ services:
       
       MYSQL_HOST: test_mysql
       MYSQL_PORT: 3306
-      MYSQL_USER: root
-      MYSQL_PASSWORD: password
+      MYSQL_USER: migrator
+      MYSQL_PASSWORD: migrator_password
       MYSQL_DATABASE: travel_buddy
 
       MONGO_CONNECTION: mongodb://root:password@test_mongodb:27017
