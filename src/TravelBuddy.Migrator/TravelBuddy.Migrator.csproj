@@ -12,8 +12,8 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0" />
-    <PackageReference Include="MongoDB.Driver" Version="3.5.1" />
-    <PackageReference Include="Neo4j.Driver" Version="5.28.3" />
+    <PackageReference Include="MongoDB.Driver" Version="3.5.2" />
+    <PackageReference Include="Neo4j.Driver" Version="5.28.4" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,4 +22,9 @@
     <ProjectReference Include="..\Modules\TravelBuddy.Messaging\TravelBuddy.Messaging.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

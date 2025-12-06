@@ -28,9 +28,12 @@ public class SharedKernelRepositoryFactory : ISharedKernelRepositoryFactory
 
     public ISharedKernelRepository GetSharedKernelRepository()
     {
-        // For now, we only support MySql, so we explicitly return it.
-        // The switch expression is kept for future database support (e.g., "mongodb").
-        // The database type header is currently ignored.
-        return _serviceProvider.GetRequiredService<MySqlSharedKernelRepository>();
+        return _dbType switch
+        {
+            // Note: We use GetRequiredService<T>() here to resolve the concrete Transient registrations
+            "mongodb" => _serviceProvider.GetRequiredService<MongoDbSharedKernelRepository>(),
+            "neo4j" => _serviceProvider.GetRequiredService<Neo4jSharedKernelRepository>(),
+            _ => _serviceProvider.GetRequiredService<MySqlSharedKernelRepository>() // Defaults to MySQL
+        };
     }
 }

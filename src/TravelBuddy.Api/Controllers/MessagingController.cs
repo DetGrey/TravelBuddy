@@ -23,45 +23,35 @@ namespace TravelBuddy.Api.Controllers
 
         [Authorize]
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<ActionResult<IEnumerable<ConversationSummaryDto>>> GetForUser(
+        [ProducesResponseType(typeof(IEnumerable<ConversationOverviewDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        public async Task<ActionResult<IEnumerable<ConversationOverviewDto>>> GetForUser(
             [FromQuery] int userId)
         {
             if (!User.IsSelfOrAdmin(userId)) return Forbid();
 
             var result = await _messagingService.GetConversationsForUserAsync(userId);
-            if (result == null || !result.Any())
-                return NoContent();
-            
             return Ok(result);
         }
 
         [Authorize]
         [HttpPost()]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         public async Task<ActionResult> CreateConversation(
             [FromBody] CreateConversationDto createConversationDto)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             if (!User.IsSelfOrAdmin(createConversationDto.OwnerId)) return Forbid();
             
-            var isPrivate = !createConversationDto.IsGroup && createConversationDto.OtherUserId != null;
-            var isTripGroup = createConversationDto.IsGroup && createConversationDto.TripDestinationId != null;
-            if (!isPrivate && !isTripGroup)
-                return BadRequest("Should be either a private conversation or a trip group");
-
             var (success, errorMessage) = await _messagingService.CreateConversationAsync(createConversationDto);
 
-            if (!success) 
-            {
-                return BadRequest(errorMessage ?? "Failed to create conversation");
-            }
+            if (!success) return BadRequest(new { error = errorMessage ?? "Failed to create conversation" });
 
+            // Ideally return the created ID or Object here.
             return Created();
         }
 
@@ -72,10 +62,10 @@ namespace TravelBuddy.Api.Controllers
 
         [Authorize]
         [HttpGet("{conversationId}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ConversationDetailDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<ConversationDetailDto>> GetConversation(
             int conversationId,
             [FromQuery] int userId)
@@ -84,8 +74,7 @@ namespace TravelBuddy.Api.Controllers
             
             var result = await _messagingService.GetConversationDetailAsync(userId, conversationId);
 
-            if (result == null)
-                return NoContent();
+            if (result == null) return NotFound(new { error = "Conversation not found or access denied" });
             
             return Ok(result);
         }
@@ -96,21 +85,16 @@ namespace TravelBuddy.Api.Controllers
         // -------------------------------------------------------
         [Authorize]
         [HttpGet("{conversationId:int}/messages")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<ActionResult<IEnumerable<MessageDto>>>
-            GetMessages(int conversationId, [FromQuery] int userId)
+        [ProducesResponseType(typeof(IEnumerable<MessageDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        public async Task<ActionResult<IEnumerable<MessageDto>>> GetMessages(int conversationId, [FromQuery] int userId)
         {
             if (!User.IsSelfOrAdmin(userId)) return Forbid();
 
             var result = await _messagingService.GetMessagesForConversationAsync(userId, conversationId);
 
-            if (result == null || !result.Any())
-                return NoContent();
-            
-            return Ok(result);
+            return Ok(result ?? new List<MessageDto>());
         }
 
         // -------------------------------------------------------
@@ -123,32 +107,27 @@ namespace TravelBuddy.Api.Controllers
         // -------------------------------------------------------
         [Authorize]
         [HttpPost("{conversationId:int}/messages")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(MessageDto), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<MessageDto>> SendMessage(
             int conversationId,
             [FromQuery] int userId,
             [FromBody] SendMessageRequestDto request)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             if (!User.IsSelfOrAdmin(userId)) return Forbid();
 
-            if (string.IsNullOrWhiteSpace(request.Content))
-            {
-                return BadRequest("Content must not be empty.");
-            }
+            if (string.IsNullOrWhiteSpace(request.Content)) 
+                return BadRequest(new { error = "Content must not be empty." });
 
-            var result = await _messagingService.SendMessageAsync(userId,conversationId,request.Content);
+            var result = await _messagingService.SendMessageAsync(userId, conversationId, request.Content);
 
             if (result == null)
-            {
-                return NoContent();
-            }
+                return BadRequest(new { error = "Failed to send message" });
 
-            return Ok(result);
+            return CreatedAtAction(nameof(GetMessages), new { conversationId, userId }, result);
         }
-
     }
 }

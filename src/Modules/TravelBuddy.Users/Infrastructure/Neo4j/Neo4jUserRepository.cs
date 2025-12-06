@@ -196,8 +196,51 @@ public class Neo4jUserRepository : IUserRepository
     // ------------------------------- AUDIT TABLES -------------------------------
     public async Task<IEnumerable<UserAudit>> GetUserAuditsAsync()
     {
-        // TODO Placeholder: Return an empty collection of UserAudit records
-        return await Task.FromResult<IEnumerable<UserAudit>>(new List<UserAudit>());
+        await using var session = _driver.AsyncSession();
+        const string cypher = @"
+            MATCH (u:User)-[:HAS_AUDIT]->(a:UserAudit)
+            OPTIONAL MATCH (cb:User)-[:CHANGED]->(a)
+            RETURN a.auditId as AuditId, u.userId as UserId, a.action as Action,
+                   a.fieldChanged as FieldChanged, a.oldValue as OldValue,
+                   a.newValue as NewValue, cb.userId as ChangedBy,
+                   a.timestamp as Timestamp
+            ORDER BY a.auditId DESC
+        ";
+        
+        var cursor = await session.RunAsync(cypher);
+        var records = await cursor.ToListAsync();
+        
+        return records.Select(r => new UserAudit
+        {
+            AuditId = r["AuditId"].As<int?>() ?? 0,
+            UserId = r["UserId"].As<int?>() ?? 0,
+            Action = r["Action"].As<string?>() ?? string.Empty,
+            FieldChanged = r["FieldChanged"].As<string?>(),
+            OldValue = r["OldValue"].As<string?>(),
+            NewValue = r["NewValue"].As<string?>(),
+            ChangedBy = r["ChangedBy"].As<int?>(),
+            Timestamp = ParseDateTime(r["Timestamp"])
+        }).ToList();
+    }
+    
+    private static DateTime ParseDateTime(object? value)
+    {
+        if (value == null)
+            return DateTime.MinValue;
+
+        if (value is DateTime dt)
+            return dt;
+
+        if (value is Neo4j.Driver.LocalDateTime ldt)
+            return ldt.ToDateTime();
+
+        if (value is Neo4j.Driver.ZonedDateTime zdt)
+            return zdt.UtcDateTime;
+
+        if (value is string s && DateTime.TryParse(s, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeUniversal, out var parsed))
+            return parsed;
+
+        return DateTime.MinValue;
     }
 }
 

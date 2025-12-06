@@ -39,17 +39,12 @@ namespace TravelBuddy.Api.Controllers
         [Authorize(Roles = "admin")]
         [HttpGet("users")]
         [ProducesResponseType(typeof(IEnumerable<UserDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> GetAll()
         {
             var users = await _userService.GetAllUsersAsync();
-
-            if (users == null || !users.Any())
-                return NoContent();
-
-            return Ok(users);
+            return Ok(users ?? new List<UserDto>());
         }
 
         // TODO
@@ -58,83 +53,59 @@ namespace TravelBuddy.Api.Controllers
         
         // ------------------------------- AUDIT TABLES -------------------------------
         [Authorize(Roles = "admin")]
-        [HttpGet("audit/user")]
+        [HttpGet("audit/users")]
         [ProducesResponseType(typeof(IEnumerable<UserAuditDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public IActionResult GetUserAudit()
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> GetUserAudit()
         {
-            var audits = _userService.GetUserAuditsAsync();
-
-            if (audits == null || !audits.Result.Any())
-                return NoContent();
-            
-            return Ok(audits.Result);
+            var audits = await _userService.GetUserAuditsAsync();
+            return Ok(audits ?? new List<UserAuditDto>());
         }
 
         [Authorize(Roles = "admin")]
-        [HttpGet("audit/buddy")]
+        [HttpGet("audit/buddies")]
         [ProducesResponseType(typeof(IEnumerable<BuddyAuditDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public IActionResult GetBuddyAudit()
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> GetBuddyAudit()
         {
-            var audits = _tripService.GetBuddyAuditsAsync();
-
-            if (audits == null || !audits.Result.Any())
-                return NoContent();
-            
-            return Ok(audits.Result);
+            var audits = await _tripService.GetBuddyAuditsAsync();
+            return Ok(audits ?? new List<BuddyAuditDto>());
         }
 
         [Authorize(Roles = "admin")]
-        [HttpGet("audit/trip")]
+        [HttpGet("audit/trips")]
         [ProducesResponseType(typeof(IEnumerable<TripAuditDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public IActionResult GetTripAudit()
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> GetTripAudit()
         {
-            var audits = _tripService.GetTripAuditsAsync();
-
-            if (audits == null || !audits.Result.Any())
-                return NoContent();
-
-            return Ok(audits.Result);
+            var audits = await _tripService.GetTripAuditsAsync();
+            return Ok(audits ?? new List<TripAuditDto>());
         }
 
         [Authorize(Roles = "admin")]
-        [HttpGet("audit/conversation")]
+        [HttpGet("audit/conversations")]
         [ProducesResponseType(typeof(IEnumerable<ConversationAuditDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public IActionResult GetConversationAudit()
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> GetConversationAudit()
         {
-            var audits = _messagingService.GetConversationAuditsAsync();
-
-            if (audits == null || !audits.Result.Any())
-                return NoContent();
-
-            return Ok(audits.Result);
+            var audits = await _messagingService.GetConversationAuditsAsync();
+            return Ok(audits ?? new List<ConversationAuditDto>());
         }
 
         // ------------------------------- SYSTEM LOGS -------------------------------
         [Authorize(Roles = "admin")]
         [HttpGet("logs/system")]
         [ProducesResponseType(typeof(IEnumerable<SystemEventLog>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public IActionResult GetSystemEventLogs()
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> GetSystemEventLogs()
         {
-            var logs = _sharedKernelService.GetSystemEventLogsAsync();
-            if (logs == null || !logs.Result.Any())
-                return NoContent();
-
-            return Ok(logs.Result);
+            var logs = await _sharedKernelService.GetSystemEventLogsAsync();
+            return Ok(logs ?? new List<SystemEventLog>());
         }
     }
 }

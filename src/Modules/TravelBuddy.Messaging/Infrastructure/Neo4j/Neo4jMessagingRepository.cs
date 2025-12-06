@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Neo4j.Driver;
 using TravelBuddy.Messaging.Models;
 using TravelBuddy.Users.Models;
+using TravelBuddy.Trips.Models;
 
 namespace TravelBuddy.Messaging
 {
@@ -107,10 +108,11 @@ namespace TravelBuddy.Messaging
                 MATCH (u:User { userId: $userId })-[:PARTICIPATES_IN]->(c:Conversation)
                 OPTIONAL MATCH (c)<-[:PARTICIPATES_IN]-(p:User)
                 OPTIONAL MATCH (c)-[:HAS_MESSAGE]->(m:Message)
-                WITH u, c, collect(DISTINCT p) AS participants, m
+                OPTIONAL MATCH (t:Trip)-[hs:HAS_STOP { tripDestinationId: c.tripDestinationId }]->(d:Destination)
+                WITH u, c, collect(DISTINCT p) AS participants, m, d
                 ORDER BY m.sentAt DESC
-                WITH u, c, participants, head(collect(m)) AS lastMessage
-                RETURN c, participants, lastMessage
+                WITH u, c, participants, head(collect(m)) AS lastMessage, d
+                RETURN c, participants, lastMessage, d
                 ORDER BY c.createdAt
             ";
 
@@ -125,6 +127,7 @@ namespace TravelBuddy.Messaging
                 var cNode            = record["c"].As<INode>();
                 var participantNodes = record["participants"].As<List<INode>>();
                 var lastMsgNode      = record["lastMessage"].As<INode?>();
+                var destinationNode  = record["d"].As<INode?>();
 
                 var conversationId    = ReadInt(cNode, "conversationId");
                 var tripDestinationId = ReadNullableInt(cNode, "tripDestinationId");
@@ -134,13 +137,17 @@ namespace TravelBuddy.Messaging
 
                 var participantCount = participantNodes?.Count ?? 0;
 
-                // ConversationName logic roughly aligned with Mongo:
-                // - Group  => generic name for now
-                // - Direct => other participant's name or "Direct Message"
+                // ConversationName logic
                 string conversationName;
                 if (isGroup)
                 {
-                    conversationName = "Group Conversation";
+                    var destinationName = destinationNode != null
+                        ? ReadString(destinationNode, "name")
+                        : null;
+                    
+                    conversationName = destinationName != null
+                        ? $"Group for {destinationName}"
+                        : "Group Conversation";
                 }
                 else
                 {
@@ -182,7 +189,150 @@ namespace TravelBuddy.Messaging
 
         public async Task<(bool Success, string? ErrorMessage)> CreateConversationAsync(CreateConversationDto createConversationDto)
         {
-            return (false, null);
+            var session = _driver.AsyncSession();
+            try
+            {
+                // =================================================================
+                // 1. PRIVATE CONVERSATION LOGIC
+                // =================================================================
+                if (!createConversationDto.IsGroup && createConversationDto.OtherUserId != null)
+                {
+                    if (createConversationDto.OwnerId == createConversationDto.OtherUserId)
+                    {
+                        return (false, "User cannot create conversation with themselves");
+                    }
+
+                    return await session.ExecuteWriteAsync(async tx =>
+                    {
+                        // Check if private conversation already exists
+                        // Pattern: (User1)-[:PARTICIPATES_IN]->(Convo)-[:PARTICIPATES_IN]-(User2)
+                        // AND Convo is not group AND Convo has matching tripDestinationId
+                        var checkQuery = @"
+                            MATCH (u1:User {userId: $ownerId})
+                            MATCH (u2:User {userId: $otherUserId})
+                            MATCH (u1)-[:PARTICIPATES_IN]->(c:Conversation {isGroup: false, tripDestinationId: $tripDestId})
+                            WHERE (u2)-[:PARTICIPATES_IN]->(c)
+                            RETURN c.conversationId as id";
+
+                        var cursor = await tx.RunAsync(checkQuery, new { 
+                            ownerId = createConversationDto.OwnerId,
+                            otherUserId = createConversationDto.OtherUserId,
+                            tripDestId = createConversationDto.TripDestinationId
+                        });
+
+                        if (await cursor.FetchAsync())
+                        {
+                            return (false, "Private conversation already exists");
+                        }
+
+                        // Create Conversation and Relationships
+                        // Note: TripDestination exists as properties on HAS_STOP relationships, not as nodes
+                        var createQuery = @"
+                            MATCH (u1:User {userId: $ownerId})
+                            MATCH (u2:User {userId: $otherUserId})
+                            CREATE (c:Conversation {
+                                isGroup: false, 
+                                createdAt: datetime(), 
+                                tripDestinationId: $tripDestId,
+                                conversationId: randomUUID() 
+                            })
+                            CREATE (u1)-[:PARTICIPATES_IN]->(c)
+                            CREATE (u2)-[:PARTICIPATES_IN]->(c)
+                            RETURN c.conversationId";
+
+                        await tx.RunAsync(createQuery, new { 
+                            ownerId = createConversationDto.OwnerId,
+                            otherUserId = createConversationDto.OtherUserId,
+                            tripDestId = createConversationDto.TripDestinationId
+                        });
+
+                        return (true, (string?)null);
+                    });
+                }
+                // =================================================================
+                // 2. GROUP CONVERSATION LOGIC
+                // =================================================================
+                else if (createConversationDto.IsGroup && createConversationDto.TripDestinationId != 0)
+                {
+                    return await session.ExecuteWriteAsync(async tx =>
+                    {
+                        // Logic:
+                        // 1. Check if conversation exists (if so, return success)
+                        // 2. Validate Owner (User -> OWNS -> Trip -[HAS_STOP {tripDestinationId}]-> Destination)
+                        // 3. Create Conversation
+                        // 4. Add Owner
+                        // 5. Find Buddies (User -[BUDDY_ON {tripDestinationId, requestStatus:'accepted'}]-> Trip) and add them
+
+                        // First check if group conversation already exists
+                        var checkExistingQuery = @"
+                            MATCH (c:Conversation {isGroup: true, tripDestinationId: $tripDestId})
+                            RETURN c.conversationId";
+                        
+                        var existingCursor = await tx.RunAsync(checkExistingQuery, new { 
+                            tripDestId = createConversationDto.TripDestinationId 
+                        });
+
+                        if (await existingCursor.FetchAsync())
+                        {
+                            return (true, (string?)null);
+                        }
+
+                        // Validate Owner has a Trip with a HAS_STOP relationship containing this tripDestinationId
+                        var checkOwnerQuery = @"
+                            MATCH (owner:User {userId: $ownerId})-[:OWNS]->(t:Trip)-[stop:HAS_STOP {tripDestinationId: $tripDestId}]->(d:Destination)
+                            RETURN t.tripId";
+                        
+                        var ownerCheckCursor = await tx.RunAsync(checkOwnerQuery, new { 
+                            ownerId = createConversationDto.OwnerId, 
+                            tripDestId = createConversationDto.TripDestinationId 
+                        });
+
+                        if (!await ownerCheckCursor.FetchAsync())
+                        {
+                            return (false, "Permission denied: Only the main trip owner can create the group conversation or Trip Destination not found.");
+                        }
+
+                        // Create Conversation and add participants
+                        var createQuery = @"
+                            // Find the trip that has this tripDestinationId
+                            MATCH (owner:User {userId: $ownerId})-[:OWNS]->(t:Trip)-[stop:HAS_STOP {tripDestinationId: $tripDestId}]->(d:Destination)
+                            
+                            // Create Conversation
+                            CREATE (c:Conversation {
+                                isGroup: true,
+                                createdAt: datetime(),
+                                tripDestinationId: $tripDestId,
+                                conversationId: randomUUID()
+                            })
+                            CREATE (owner)-[:PARTICIPATES_IN]->(c)
+
+                            // Find Accepted Buddies for this tripDestinationId and add them
+                            WITH c, t, $ownerId AS ownerId
+                            MATCH (buddy:User)-[buddyRel:BUDDY_ON {tripDestinationId: $tripDestId}]->(t)
+                            WHERE buddyRel.requestStatus = 'accepted' AND buddy.userId <> ownerId
+                            CREATE (buddy)-[:PARTICIPATES_IN]->(c)
+                            
+                            RETURN c.conversationId";
+
+                        await tx.RunAsync(createQuery, new { 
+                            ownerId = createConversationDto.OwnerId, 
+                            tripDestId = createConversationDto.TripDestinationId 
+                        });
+
+                        return (true, (string?)null);
+                    });
+                }
+
+                return (true, (string?)null);
+            }
+            catch (Exception ex)
+            {
+                return (false, "Error: " + ex.Message);
+            }
+            finally
+            {
+                await session.CloseAsync();
+            }
         }
 
         public async Task<Conversation?> GetConversationParticipantAsync(int conversationId)
@@ -190,7 +340,8 @@ namespace TravelBuddy.Messaging
             const string cypher = @"
                 MATCH (c:Conversation { conversationId: $conversationId })
                 OPTIONAL MATCH (c)<-[:PARTICIPATES_IN]-(u:User)
-                RETURN c, collect(u) AS participants
+                OPTIONAL MATCH (t:Trip)-[hs:HAS_STOP { tripDestinationId: c.tripDestinationId }]->(d:Destination)
+                RETURN c, collect(DISTINCT u) AS participants, d.name AS destinationName
                 LIMIT 1
             ";
 
@@ -204,6 +355,7 @@ namespace TravelBuddy.Messaging
 
             var cNode            = record["c"].As<INode>();
             var participantNodes = record["participants"].As<List<INode>>();
+            var destinationName  = record["destinationName"].As<string?>();
 
             var convId            = ReadInt(cNode, "conversationId");
             var tripDestinationId = ReadNullableInt(cNode, "tripDestinationId");
@@ -237,6 +389,20 @@ namespace TravelBuddy.Messaging
                 });
             }
 
+            // Create TripDestination if we have a destination name (for group conversations)
+            TripDestination? tripDestination = null;
+            if (tripDestinationId.HasValue && !string.IsNullOrEmpty(destinationName))
+            {
+                tripDestination = new TripDestination
+                {
+                    TripDestinationId = tripDestinationId.Value,
+                    Destination = new Destination
+                    {
+                        Name = destinationName
+                    }
+                };
+            }
+
             var conversation = new Conversation
             {
                 ConversationId           = convId,
@@ -245,7 +411,8 @@ namespace TravelBuddy.Messaging
                 IsArchived               = isArchived,
                 CreatedAt                = createdAt,
                 ConversationParticipants = participants,
-                Messages                 = new List<Message>()
+                Messages                 = new List<Message>(),
+                TripDestination          = tripDestination
             };
 
             return conversation;
@@ -379,8 +546,50 @@ namespace TravelBuddy.Messaging
         // ------------------------------- AUDIT TABLES -------------------------------
         public async Task<IEnumerable<ConversationAudit>> GetConversationAuditsAsync()
         {
-            // TODO: Implement if it actually has audit table in Neo4j
-            return await Task.FromResult(Enumerable.Empty<ConversationAudit>());
+            await using var session = _driver.AsyncSession();
+            const string cypher = @"
+                MATCH (c:Conversation)-[:HAS_AUDIT]->(a:ConversationAudit)
+                OPTIONAL MATCH (cb:User)-[:CHANGED]->(a)
+                OPTIONAL MATCH (aff:User)-[:AFFECTED_BY]->(a)
+                RETURN a.auditId as AuditId, c.conversationId as ConversationId,
+                       aff.userId as AffectedUserId, a.action as Action,
+                       cb.userId as ChangedBy, a.timestamp as Timestamp
+                ORDER BY a.auditId DESC
+            ";
+            
+            var cursor = await session.RunAsync(cypher);
+            var records = await cursor.ToListAsync();
+            
+            return records.Select(r => new ConversationAudit
+            {
+                AuditId = r["AuditId"].As<int?>() ?? 0,
+                ConversationId = r["ConversationId"].As<int?>() ?? 0,
+                AffectedUserId = r["AffectedUserId"].As<int?>(),
+                Action = r["Action"].As<string?>() ?? string.Empty,
+                ChangedBy = r["ChangedBy"].As<int?>(),
+                Timestamp = ParseDateTime(r["Timestamp"])
+            }).ToList();
+        }
+        
+        private static DateTime ParseDateTime(object value)
+        {
+            if (value == null)
+                return DateTime.MinValue;
+
+            if (value is DateTime dt)
+                return dt;
+
+            if (value is Neo4j.Driver.ZonedDateTime zdt)
+                return zdt.ToDateTimeOffset().DateTime;
+
+            if (value is Neo4j.Driver.LocalDateTime ldt)
+                return ldt.ToDateTime();
+
+            if (value is string s && DateTime.TryParse(s, System.Globalization.CultureInfo.InvariantCulture, 
+                System.Globalization.DateTimeStyles.AssumeUniversal, out var parsed))
+                return parsed;
+
+            return DateTime.MinValue;
         }
     }
 }

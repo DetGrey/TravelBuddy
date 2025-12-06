@@ -1,0 +1,4 @@
+.env
+**/obj/
+**/bin/
+.git

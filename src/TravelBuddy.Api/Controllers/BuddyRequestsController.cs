@@ -25,28 +25,31 @@ namespace TravelBuddy.Api.Controllers
         [Authorize]
         [HttpPost()]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> PostBuddyRequest([FromRoute] int userId, [FromBody] BuddyDto dto)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             if (!User.IsSelfOrAdmin(userId)) return Forbid();
 
             dto.UserId = userId;
 
+            // TODO Ideally, your Service should return the created object (with its new ID)
+            // assuming InsertBuddyRequestAsync returns (bool success, string error, BuddyDto createdBuddy)
             var (success, errorMessage) = await _tripService.InsertBuddyRequestAsync(dto);
             
             if (!success) return BadRequest(errorMessage ?? "Buddy request failed");
 
+            // Standard: Return the created resource.
             return Created();
         }
 
         [Authorize]
         [HttpGet("pending")]
         [ProducesResponseType(typeof(IEnumerable<PendingBuddyRequestDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> GetPendingBuddyRequests([FromRoute] int userId)
         {
             if (!User.IsSelfOrAdmin(userId)) return Forbid();
@@ -54,30 +57,29 @@ namespace TravelBuddy.Api.Controllers
             var pendingBuddyRequests = await _tripService.GetPendingBuddyRequestsAsync(userId);
             if (!pendingBuddyRequests.Any()) return NoContent();
 
-            return Ok(pendingBuddyRequests);
+            return Ok(pendingBuddyRequests ?? new List<PendingBuddyRequestDto>());
         }
 
         [Authorize]
-        [HttpPatch("update")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [HttpPatch()]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> UpdateBuddyRequest(
             [FromRoute] int userId,
             [FromBody] UpdateBuddyRequestDto updateBuddyRequestDto
         ) {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
             updateBuddyRequestDto.UserId = userId;
 
             if (!User.IsSelfOrAdmin(updateBuddyRequestDto.UserId)) return Forbid();
 
             var (success, errorMessage) = await _tripService.UpdateBuddyRequestAsync(updateBuddyRequestDto);
-            if (!success) return BadRequest(errorMessage ?? "Updating buddy request status failed");
+            if (!success) return BadRequest(new { error = errorMessage ?? "Updating buddy request status failed" });
 
-            return Ok($"Buddy with buddy id {updateBuddyRequestDto.BuddyId} has been {updateBuddyRequestDto.NewStatus}");
+            return NoContent();
         }
     }
 }

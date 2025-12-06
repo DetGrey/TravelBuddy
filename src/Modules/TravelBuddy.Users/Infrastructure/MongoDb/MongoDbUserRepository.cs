@@ -27,6 +27,21 @@ namespace TravelBuddy.Users
         public string Role { get; set; } = null!;
     }
 
+    [BsonIgnoreExtraElements]
+    internal class UserAuditDocument
+    {
+        [BsonId]
+        [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]
+        public int AuditId { get; set; }
+        public int UserId { get; set; }
+        public string Action { get; set; } = null!;
+        public string? FieldChanged { get; set; }
+        public string? OldValue { get; set; }
+        public string? NewValue { get; set; }
+        public int? ChangedBy { get; set; }
+        public DateTime? Timestamp { get; set; }
+    }
+
     public class MongoDbUserRepository : IUserRepository
     {
         // IMPORTANT: this collection is UserDocument, NOT User
@@ -188,8 +203,24 @@ namespace TravelBuddy.Users
         // ------------------------------- AUDIT TABLES -------------------------------
         public async Task<IEnumerable<UserAudit>> GetUserAuditsAsync()
         {
-            // TODO Placeholder: Return an empty collection of UserAudit records
-            return await Task.FromResult<IEnumerable<UserAudit>>(new List<UserAudit>());
+            var database = _usersCollection.Database;
+            var userAuditCollection = database.GetCollection<UserAuditDocument>("user_audits");
+            
+            var docs = await userAuditCollection
+                .Find(FilterDefinition<UserAuditDocument>.Empty)
+                .ToListAsync();
+            
+            return docs.Select(doc => new UserAudit
+            {
+                AuditId = doc.AuditId,
+                UserId = doc.UserId,
+                Action = doc.Action,
+                FieldChanged = doc.FieldChanged,
+                OldValue = doc.OldValue,
+                NewValue = doc.NewValue,
+                ChangedBy = doc.ChangedBy,
+                Timestamp = doc.Timestamp
+            }).ToList();
         }
     }
 }

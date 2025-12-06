@@ -19,21 +19,17 @@ namespace TravelBuddy.Api.Controllers
 
         [HttpGet("search")]
         [ProducesResponseType(typeof(IEnumerable<TripDestinationDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult<IEnumerable<TripDestinationDto>>> SearchTrips(
-            [FromQuery] DateOnly? reqStart,
-            [FromQuery] DateOnly? reqEnd,
-            [FromQuery] string? country,
-            [FromQuery] string? state,
-            [FromQuery] string? name,
-            [FromQuery] int? partySize,
-            [FromQuery] string? q)
+            [FromQuery] TripSearchRequest filter)
         {
             var trips = await _tripService.SearchTripsAsync(
-                reqStart, reqEnd, country, state, name, partySize, q);
-
-            if (trips == null || !trips.Any())
-                return NoContent();
+                filter.StartDate, 
+                filter.EndDate, 
+                filter.Country, 
+                filter.State, 
+                filter.Name, 
+                filter.PartySize, 
+                filter.Query);
 
             return Ok(trips);
         }

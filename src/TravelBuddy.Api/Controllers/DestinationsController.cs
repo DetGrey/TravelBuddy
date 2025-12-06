@@ -20,15 +20,10 @@ namespace TravelBuddy.Api.Controllers
 
         [HttpGet()]
         [ProducesResponseType(typeof(IEnumerable<DestinationDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult<IEnumerable<DestinationDto>>> GetDestinations()
         {
             var trips = await _tripService.GetDestinationsAsync();
-
-            if (trips == null || !trips.Any())
-                return NoContent();
-
-            return Ok(trips);
+            return Ok(trips ?? new List<DestinationDto>());
         }
     }
 }

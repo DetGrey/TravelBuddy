@@ -70,48 +70,48 @@ public class Neo4jTripRepository : ITripRepository
         await using var session = _driver.AsyncSession();
 
         var cypher = @"
-MATCH (t:Trip)-[hs:HAS_STOP]->(d:Destination)
-OPTIONAL MATCH (u:User)-[b:BUDDY_ON { tripDestinationId: hs.tripDestinationId }]->(t)
-WITH t, hs, d,
-     sum(
-        CASE WHEN toLower(b.requestStatus) = 'accepted'
-             THEN coalesce(b.personCount, 1)
-             ELSE 0
-        END
-     ) AS acceptedPersons
-WITH t, hs, d, acceptedPersons,
-     CASE
-       WHEN t.maxBuddies IS NULL THEN 0
-       WHEN t.maxBuddies - acceptedPersons < 0 THEN 0
-       ELSE t.maxBuddies - acceptedPersons
-     END AS remaining
-WHERE
-  ($reqStart IS NULL OR date(hs.endDate) >= date($reqStart)) AND
-  ($reqEnd   IS NULL OR date(hs.startDate) <= date($reqEnd)) AND
-  ($country  IS NULL OR toLower(d.country) = toLower($country)) AND
-  ($state    IS NULL OR toLower(coalesce(d.state, '')) = toLower($state)) AND
-  ($name     IS NULL OR toLower(d.name) CONTAINS toLower($name)) AND
-  ($q        IS NULL OR toLower(
-                        d.name + ' ' +
-                        d.country + ' ' +
-                        coalesce(d.state, '') + ' ' +
-                        coalesce(t.description, '') + ' ' +
-                        coalesce(t.tripName, '')
-                    ) CONTAINS toLower($q)) AND
-  ($partySize IS NULL OR remaining >= $partySize)
-RETURN
-  hs.tripDestinationId AS TripDestinationId,
-  t.tripId             AS TripId,
-  d.destinationId      AS DestinationId,
-  d.name               AS DestinationName,
-  d.country            AS Country,
-  coalesce(d.state, '') AS State,
-  hs.startDate         AS DestinationStart,
-  hs.endDate           AS DestinationEnd,
-  coalesce(t.maxBuddies, 0) AS MaxBuddies,
-  acceptedPersons      AS AcceptedPersons,
-  remaining            AS RemainingCapacity
-";
+            MATCH (t:Trip)-[hs:HAS_STOP]->(d:Destination)
+            OPTIONAL MATCH (u:User)-[b:BUDDY_ON { tripDestinationId: hs.tripDestinationId }]->(t)
+            WITH t, hs, d,
+                sum(
+                    CASE WHEN toLower(b.requestStatus) = 'accepted'
+                        THEN coalesce(b.personCount, 1)
+                        ELSE 0
+                    END
+                ) AS acceptedPersons
+            WITH t, hs, d, acceptedPersons,
+                CASE
+                WHEN t.maxBuddies IS NULL THEN 0
+                WHEN t.maxBuddies - acceptedPersons < 0 THEN 0
+                ELSE t.maxBuddies - acceptedPersons
+                END AS remaining
+            WHERE
+            ($reqStart IS NULL OR date(hs.endDate) >= date($reqStart)) AND
+            ($reqEnd   IS NULL OR date(hs.startDate) <= date($reqEnd)) AND
+            ($country  IS NULL OR toLower(d.country) = toLower($country)) AND
+            ($state    IS NULL OR toLower(coalesce(d.state, '')) = toLower($state)) AND
+            ($name     IS NULL OR toLower(d.name) CONTAINS toLower($name)) AND
+            ($q        IS NULL OR toLower(
+                                    d.name + ' ' +
+                                    d.country + ' ' +
+                                    coalesce(d.state, '') + ' ' +
+                                    coalesce(t.description, '') + ' ' +
+                                    coalesce(t.tripName, '')
+                                ) CONTAINS toLower($q)) AND
+            ($partySize IS NULL OR remaining >= $partySize)
+            RETURN
+            hs.tripDestinationId AS TripDestinationId,
+            t.tripId             AS TripId,
+            d.destinationId      AS DestinationId,
+            d.name               AS DestinationName,
+            d.country            AS Country,
+            coalesce(d.state, '') AS State,
+            hs.startDate         AS DestinationStart,
+            hs.endDate           AS DestinationEnd,
+            coalesce(t.maxBuddies, 0) AS MaxBuddies,
+            acceptedPersons      AS AcceptedPersons,
+            remaining            AS RemainingCapacity
+            ";
 
         var cursor = await session.RunAsync(cypher, new
         {
@@ -156,16 +156,16 @@ RETURN
         await using var session = _driver.AsyncSession();
 
         var cypher = @"
-MATCH (d:Destination)
-RETURN
-  d.destinationId AS DestinationId,
-  d.name          AS Name,
-  d.state         AS State,
-  d.country       AS Country,
-  d.longitude     AS Longitude,
-  d.latitude      AS Latitude
-ORDER BY d.country, coalesce(d.state, ''), d.name
-";
+            MATCH (d:Destination)
+            RETURN
+            d.destinationId AS DestinationId,
+            d.name          AS Name,
+            d.state         AS State,
+            d.country       AS Country,
+            d.longitude     AS Longitude,
+            d.latitude      AS Latitude
+            ORDER BY d.country, coalesce(d.state, ''), d.name
+            ";
 
         var cursor = await session.RunAsync(cypher);
         var records = await cursor.ToListAsync();
@@ -199,18 +199,19 @@ ORDER BY d.country, coalesce(d.state, ''), d.name
         await using var session = _driver.AsyncSession();
 
         var cypher = @"
-MATCH (u:User { userId: $userId })-[b:BUDDY_ON]->(t:Trip)
-WHERE toLower(b.requestStatus) = 'accepted'
-MATCH (t)-[hs:HAS_STOP { tripDestinationId: b.tripDestinationId }]->(d:Destination)
-RETURN
-  t.tripId             AS TripId,
-  hs.tripDestinationId AS TripDestinationId,
-  d.name               AS DestinationName,
-  coalesce(t.description, '') AS TripDescription,
-  hs.startDate         AS StartDate,
-  hs.endDate           AS EndDate,
-  coalesce(t.isArchived, false) AS IsArchived
-";
+            MATCH (u:User { userId: $userId })-[b:BUDDY_ON]->(t:Trip)
+            WHERE toLower(b.requestStatus) = 'accepted'
+            MATCH (t)-[hs:HAS_STOP { tripDestinationId: b.tripDestinationId }]->(d:Destination)
+            RETURN
+            t.tripId             AS TripId,
+            hs.tripDestinationId AS TripDestinationId,
+            d.name               AS DestinationName,
+            coalesce(t.description, '') AS TripDescription,
+            hs.startDate         AS StartDate,
+            hs.endDate           AS EndDate,
+            coalesce(t.isArchived, false) AS IsArchived
+            ORDER BY hs.startDate
+            ";
 
         var cursor = await session.RunAsync(cypher, new { userId });
         var records = await cursor.ToListAsync();
@@ -243,25 +244,25 @@ RETURN
 
         // 1) Header / main info
         var headerCypher = @"
-MATCH (t:Trip)-[hs:HAS_STOP { tripDestinationId: $tripDestinationId }]->(d:Destination)
-OPTIONAL MATCH (owner:User)-[:OWNS]->(t)
-RETURN
-  hs.tripDestinationId                 AS TripDestinationId,
-  hs.startDate                         AS DestinationStartDate,
-  hs.endDate                           AS DestinationEndDate,
-  hs.description                       AS DestinationDescription,
-  coalesce(hs.isArchived, false)       AS DestinationIsArchived,
-  t.tripId                             AS TripId,
-  t.maxBuddies                         AS MaxBuddies,
-  d.destinationId                      AS DestinationId,
-  d.name                               AS DestinationName,
-  d.state                              AS DestinationState,
-  d.country                            AS DestinationCountry,
-  d.longitude                          AS Longitude,
-  d.latitude                           AS Latitude,
-  owner.userId                         AS OwnerUserId,
-  owner.name                           AS OwnerName
-";
+            MATCH (t:Trip)-[hs:HAS_STOP { tripDestinationId: $tripDestinationId }]->(d:Destination)
+            OPTIONAL MATCH (owner:User)-[:OWNS]->(t)
+            RETURN
+            hs.tripDestinationId                 AS TripDestinationId,
+            hs.startDate                         AS DestinationStartDate,
+            hs.endDate                           AS DestinationEndDate,
+            hs.description                       AS DestinationDescription,
+            coalesce(hs.isArchived, false)       AS DestinationIsArchived,
+            t.tripId                             AS TripId,
+            t.maxBuddies                         AS MaxBuddies,
+            d.destinationId                      AS DestinationId,
+            d.name                               AS DestinationName,
+            d.state                              AS DestinationState,
+            d.country                            AS DestinationCountry,
+            d.longitude                          AS Longitude,
+            d.latitude                           AS Latitude,
+            owner.userId                         AS OwnerUserId,
+            owner.name                           AS OwnerName
+            ";
 
         var headerCursor = await session.RunAsync(headerCypher, new { tripDestinationId });
         var headerRecords = await headerCursor.ToListAsync();
@@ -301,16 +302,16 @@ RETURN
 
         // 2) Accepted buddies – allow null buddyId, fallback to 0
         var acceptedCypher = @"
-MATCH (u:User)-[b:BUDDY_ON { tripDestinationId: $tripDestinationId }]->(t:Trip)
-WHERE toLower(b.requestStatus) = 'accepted'
-  AND coalesce(b.isActive, true)
-RETURN
-  b.buddyId                      AS BuddyId,
-  coalesce(b.personCount, 1)     AS PersonCount,
-  b.note                         AS BuddyNote,
-  u.userId                       AS BuddyUserId,
-  u.name                         AS BuddyName
-";
+            MATCH (u:User)-[b:BUDDY_ON { tripDestinationId: $tripDestinationId }]->(t:Trip)
+            WHERE toLower(b.requestStatus) = 'accepted'
+            AND coalesce(b.isActive, true)
+            RETURN
+            b.buddyId                      AS BuddyId,
+            coalesce(b.personCount, 1)     AS PersonCount,
+            b.note                         AS BuddyNote,
+            u.userId                       AS BuddyUserId,
+            u.name                         AS BuddyName
+            ";
 
         var acceptedCursor = await session.RunAsync(acceptedCypher, new { tripDestinationId });
         var acceptedRecords = await acceptedCursor.ToListAsync();
@@ -332,15 +333,15 @@ RETURN
 
         // 3) Pending requests – same trick for BuddyId
         var pendingCypher = @"
-MATCH (u:User)-[b:BUDDY_ON { tripDestinationId: $tripDestinationId }]->(t:Trip)
-WHERE toLower(b.requestStatus) = 'pending'
-RETURN
-  b.buddyId                      AS BuddyId,
-  coalesce(b.personCount, 1)     AS PersonCount,
-  b.note                         AS BuddyNote,
-  u.userId                       AS RequesterUserId,
-  u.name                         AS RequesterName
-";
+            MATCH (u:User)-[b:BUDDY_ON { tripDestinationId: $tripDestinationId }]->(t:Trip)
+            WHERE toLower(b.requestStatus) = 'pending'
+            RETURN
+            b.buddyId                      AS BuddyId,
+            coalesce(b.personCount, 1)     AS PersonCount,
+            b.note                         AS BuddyNote,
+            u.userId                       AS RequesterUserId,
+            u.name                         AS RequesterName
+            ";
 
         var pendingCursor = await session.RunAsync(pendingCypher, new { tripDestinationId });
         var pendingRecords = await pendingCursor.ToListAsync();
@@ -372,22 +373,22 @@ RETURN
 
         // Header: use min/max of HAS_STOP dates like the SQL view
         var headerCypher = @"
-MATCH (owner:User)-[:OWNS]->(t:Trip { tripId: $tripId })
-MATCH (t)-[hs:HAS_STOP]->(:Destination)
-WITH owner, t,
-     min(hs.startDate) AS TripStart,
-     max(hs.endDate)   AS TripEnd
-RETURN
-  t.tripId                         AS TripId,
-  coalesce(t.tripName, '')         AS TripName,
-  TripStart                        AS TripStartDate,
-  TripEnd                          AS TripEndDate,
-  coalesce(t.maxBuddies, 0)        AS MaxBuddies,
-  coalesce(t.description, '')      AS TripDescription,
-  owner.userId                     AS OwnerUserId,
-  owner.name                       AS OwnerName
-LIMIT 1
-";
+            MATCH (owner:User)-[:OWNS]->(t:Trip { tripId: $tripId })
+            MATCH (t)-[hs:HAS_STOP]->(:Destination)
+            WITH owner, t,
+                min(hs.startDate) AS TripStart,
+                max(hs.endDate)   AS TripEnd
+            RETURN
+            t.tripId                         AS TripId,
+            coalesce(t.tripName, '')         AS TripName,
+            TripStart                        AS TripStartDate,
+            TripEnd                          AS TripEndDate,
+            coalesce(t.maxBuddies, 0)        AS MaxBuddies,
+            coalesce(t.description, '')      AS TripDescription,
+            owner.userId                     AS OwnerUserId,
+            owner.name                       AS OwnerName
+            LIMIT 1
+            ";
 
         var headerCursor = await session.RunAsync(headerCypher, new { tripId });
         var headerRecords = await headerCursor.ToListAsync();
@@ -411,23 +412,23 @@ LIMIT 1
 
         // Destinations + accepted persons per destination
         var destCypher = @"
-MATCH (t:Trip { tripId: $tripId })-[hs:HAS_STOP]->(d:Destination)
-OPTIONAL MATCH (u:User)-[b:BUDDY_ON { tripDestinationId: hs.tripDestinationId }]->(t)
-WHERE toLower(b.requestStatus) = 'accepted' AND coalesce(b.isActive, true)
-WITH t, hs, d,
-     coalesce(sum(coalesce(b.personCount, 1)), 0) AS acceptedPersons
-RETURN
-  t.tripId             AS TripId,
-  hs.tripDestinationId AS TripDestinationId,
-  hs.startDate         AS DestinationStartDate,
-  hs.endDate           AS DestinationEndDate,
-  d.name               AS DestinationName,
-  d.state              AS DestinationState,
-  d.country            AS DestinationCountry,
-  coalesce(t.maxBuddies, 0) AS MaxBuddies,
-  acceptedPersons      AS AcceptedPersons
-ORDER BY hs.startDate
-";
+            MATCH (t:Trip { tripId: $tripId })-[hs:HAS_STOP]->(d:Destination)
+            OPTIONAL MATCH (u:User)-[b:BUDDY_ON { tripDestinationId: hs.tripDestinationId }]->(t)
+            WHERE toLower(b.requestStatus) = 'accepted' AND coalesce(b.isActive, true)
+            WITH t, hs, d,
+                coalesce(sum(coalesce(b.personCount, 1)), 0) AS acceptedPersons
+            RETURN
+            t.tripId             AS TripId,
+            hs.tripDestinationId AS TripDestinationId,
+            hs.startDate         AS DestinationStartDate,
+            hs.endDate           AS DestinationEndDate,
+            d.name               AS DestinationName,
+            d.state              AS DestinationState,
+            d.country            AS DestinationCountry,
+            coalesce(t.maxBuddies, 0) AS MaxBuddies,
+            acceptedPersons      AS AcceptedPersons
+            ORDER BY hs.startDate
+            ";
 
         var destCursor = await session.RunAsync(destCypher, new { tripId });
         var destRecords = await destCursor.ToListAsync();
@@ -463,22 +464,22 @@ ORDER BY hs.startDate
 
         // First get all trip headers for trips owned by user
         var headerCypher = @"
-MATCH (owner:User { userId: $userId })-[:OWNS]->(t:Trip)
-MATCH (t)-[hs:HAS_STOP]->(:Destination)
-WITH owner, t,
-     min(hs.startDate) AS TripStart,
-     max(hs.endDate)   AS TripEnd
-RETURN
-  t.tripId                         AS TripId,
-  coalesce(t.tripName, '')         AS TripName,
-  TripStart                        AS TripStartDate,
-  TripEnd                          AS TripEndDate,
-  coalesce(t.maxBuddies, 0)        AS MaxBuddies,
-  coalesce(t.description, '')      AS TripDescription,
-  owner.userId                     AS OwnerUserId,
-  owner.name                       AS OwnerName
-ORDER BY TripStartDate
-";
+            MATCH (owner:User { userId: $userId })-[:OWNS]->(t:Trip)
+            MATCH (t)-[hs:HAS_STOP]->(:Destination)
+            WITH owner, t,
+                min(hs.startDate) AS TripStart,
+                max(hs.endDate)   AS TripEnd
+            RETURN
+            t.tripId                         AS TripId,
+            coalesce(t.tripName, '')         AS TripName,
+            TripStart                        AS TripStartDate,
+            TripEnd                          AS TripEndDate,
+            coalesce(t.maxBuddies, 0)        AS MaxBuddies,
+            coalesce(t.description, '')      AS TripDescription,
+            owner.userId                     AS OwnerUserId,
+            owner.name                       AS OwnerName
+            ORDER BY TripStartDate
+            ";
 
         var headerCursor = await session.RunAsync(headerCypher, new { userId });
         var headerRecords = await headerCursor.ToListAsync();
@@ -493,24 +494,24 @@ ORDER BY TripStartDate
 
         // Now get all destinations for those trips in one go
         var destCypher = @"
-MATCH (t:Trip)-[hs:HAS_STOP]->(d:Destination)
-WHERE t.tripId IN $tripIds
-OPTIONAL MATCH (u:User)-[b:BUDDY_ON { tripDestinationId: hs.tripDestinationId }]->(t)
-WHERE toLower(b.requestStatus) = 'accepted' AND coalesce(b.isActive, true)
-WITH t, hs, d,
-     coalesce(sum(coalesce(b.personCount, 1)), 0) AS acceptedPersons
-RETURN
-  t.tripId             AS TripId,
-  hs.tripDestinationId AS TripDestinationId,
-  hs.startDate         AS DestinationStartDate,
-  hs.endDate           AS DestinationEndDate,
-  d.name               AS DestinationName,
-  d.state              AS DestinationState,
-  d.country            AS DestinationCountry,
-  coalesce(t.maxBuddies, 0) AS MaxBuddies,
-  acceptedPersons      AS AcceptedPersons
-ORDER BY t.tripId, hs.startDate
-";
+            MATCH (t:Trip)-[hs:HAS_STOP]->(d:Destination)
+            WHERE t.tripId IN $tripIds
+            OPTIONAL MATCH (u:User)-[b:BUDDY_ON { tripDestinationId: hs.tripDestinationId }]->(t)
+            WHERE toLower(b.requestStatus) = 'accepted' AND coalesce(b.isActive, true)
+            WITH t, hs, d,
+                coalesce(sum(coalesce(b.personCount, 1)), 0) AS acceptedPersons
+            RETURN
+            t.tripId             AS TripId,
+            hs.tripDestinationId AS TripDestinationId,
+            hs.startDate         AS DestinationStartDate,
+            hs.endDate           AS DestinationEndDate,
+            d.name               AS DestinationName,
+            d.state              AS DestinationState,
+            d.country            AS DestinationCountry,
+            coalesce(t.maxBuddies, 0) AS MaxBuddies,
+            acceptedPersons      AS AcceptedPersons
+            ORDER BY t.tripId, hs.startDate
+            ";
 
         var destCursor = await session.RunAsync(destCypher, new { tripIds });
         var destRecords = await destCursor.ToListAsync();
@@ -567,10 +568,10 @@ ORDER BY t.tripId, hs.startDate
         await using var session = _driver.AsyncSession();
 
         var cypher = @"
-MATCH (owner:User)-[:OWNS]->(t:Trip)-[hs:HAS_STOP { tripDestinationId: $tripDestinationId }]->(:Destination)
-RETURN owner.userId AS OwnerId
-LIMIT 1
-";
+            MATCH (owner:User)-[:OWNS]->(t:Trip)-[hs:HAS_STOP { tripDestinationId: $tripDestinationId }]->(:Destination)
+            RETURN owner.userId AS OwnerId
+            LIMIT 1
+            ";
 
         var cursor = await session.RunAsync(cypher, new { tripDestinationId });
         var records = await cursor.ToListAsync();
@@ -632,18 +633,18 @@ LIMIT 1
             {
                 // 2a) Create Trip node and OWNS relationship
                 await tx.RunAsync(@"
-    MATCH (u:User { userId: $ownerId })
-    CREATE (t:Trip {
-        tripId:     $tripId,
-        tripName:   $tripName,
-        maxBuddies: $maxBuddies,
-        startDate:  date($startDate),
-        endDate:    date($endDate),
-        description:$description,
-        isArchived: false
-    })
-    MERGE (u)-[:OWNS]->(t)
-    ",
+                    MATCH (u:User { userId: $ownerId })
+                    CREATE (t:Trip {
+                        tripId:     $tripId,
+                        tripName:   $tripName,
+                        maxBuddies: $maxBuddies,
+                        startDate:  date($startDate),
+                        endDate:    date($endDate),
+                        description:$description,
+                        isArchived: false
+                    })
+                    MERGE (u)-[:OWNS]->(t)
+                    ",
                     new
                     {
                         ownerId    = t.OwnerId,
@@ -670,14 +671,14 @@ LIMIT 1
 
                         // MERGE by destinationId, set properties on create
                         await tx.RunAsync(@"
-    MERGE (dest:Destination { destinationId: $destinationId })
-    ON CREATE SET
-        dest.name      = $name,
-        dest.state     = $state,
-        dest.country   = $country,
-        dest.longitude = $longitude,
-        dest.latitude  = $latitude
-    ",
+                            MERGE (dest:Destination { destinationId: $destinationId })
+                            ON CREATE SET
+                                dest.name      = $name,
+                                dest.state     = $state,
+                                dest.country   = $country,
+                                dest.longitude = $longitude,
+                                dest.latitude  = $latitude
+                            ",
                             new
                             {
                                 destinationId,
@@ -693,15 +694,15 @@ LIMIT 1
                         destinationId = currentDestId++;
 
                         await tx.RunAsync(@"
-    CREATE (dest:Destination {
-        destinationId: $destinationId,
-        name:          $name,
-        state:         $state,
-        country:       $country,
-        longitude:     $longitude,
-        latitude:      $latitude
-    })
-    ",
+                            CREATE (dest:Destination {
+                                destinationId: $destinationId,
+                                name:          $name,
+                                state:         $state,
+                                country:       $country,
+                                longitude:     $longitude,
+                                latitude:      $latitude
+                            })
+                            ",
                             new
                             {
                                 destinationId,
@@ -717,16 +718,16 @@ LIMIT 1
                     var seqNumber = d.SequenceNumber == 0 ? sequence : d.SequenceNumber;
 
                     await tx.RunAsync(@"
-    MATCH (t:Trip { tripId: $tripId })
-    MATCH (dest:Destination { destinationId: $destinationId })
-    CREATE (t)-[:HAS_STOP {
-        tripDestinationId: $tripDestinationId,
-        startDate:         date($startDate),
-        endDate:           date($endDate),
-        sequenceNumber:    $sequenceNumber,
-        description:       $description
-    }]->(dest)
-    ",
+                        MATCH (t:Trip { tripId: $tripId })
+                        MATCH (dest:Destination { destinationId: $destinationId })
+                        CREATE (t)-[:HAS_STOP {
+                            tripDestinationId: $tripDestinationId,
+                            startDate:         date($startDate),
+                            endDate:           date($endDate),
+                            sequenceNumber:    $sequenceNumber,
+                            description:       $description
+                        }]->(dest)
+                        ",
                         new
                         {
                             tripId            = nextTripId,
@@ -768,12 +769,12 @@ LIMIT 1
         await using var session = _driver.AsyncSession();
 
         var cypher = @"
-MATCH (u:User { userId: $userId })-[b:BUDDY_ON { tripDestinationId: $tripDestinationId }]->(t:Trip)
-WHERE toLower(b.requestStatus) = 'accepted'
-SET b.isActive = false,
-    b.departureReason = $departureReason
-RETURN count(b) AS UpdatedCount
-";
+            MATCH (u:User { userId: $userId })-[b:BUDDY_ON { tripDestinationId: $tripDestinationId }]->(t:Trip)
+            WHERE toLower(b.requestStatus) = 'accepted'
+            SET b.isActive = false,
+                b.departureReason = $departureReason
+            RETURN count(b) AS UpdatedCount
+            ";
 
         var cursor = await session.RunAsync(cypher, new
         {
@@ -853,6 +854,40 @@ ORDER BY hs.startDate
     {
         await using var session = _driver.AsyncSession();
 
+        // Check capacity before creating request
+        var checkCapacityQuery = @"
+            MATCH (t:Trip)-[hs:HAS_STOP { tripDestinationId: $tripDestinationId }]->(:Destination)
+            OPTIONAL MATCH (accepted:User)-[ab:BUDDY_ON { tripDestinationId: $tripDestinationId }]->(t)
+            WHERE toLower(ab.requestStatus) = 'accepted' AND coalesce(ab.isActive, true)
+            WITH t, coalesce(sum(coalesce(ab.personCount, 1)), 0) AS acceptedPersons
+            RETURN 
+                t.maxBuddies AS MaxBuddies,
+                acceptedPersons AS AcceptedPersons
+            ";
+
+        var capacityCursor = await session.RunAsync(checkCapacityQuery, new { tripDestinationId = buddyDto.TripDestinationId });
+        var capacityRecords = await capacityCursor.ToListAsync();
+        var capacityRecord = capacityRecords.SingleOrDefault();
+
+        if (capacityRecord == null)
+        {
+            return (false, "Trip destination not found");
+        }
+
+        var maxBuddies = capacityRecord["MaxBuddies"].As<int?>();
+        var acceptedPersons = capacityRecord["AcceptedPersons"].As<int>();
+
+        if (maxBuddies.HasValue)
+        {
+            var remaining = maxBuddies.Value - acceptedPersons;
+            var requestedCount = buddyDto.PersonCount;
+
+            if (remaining < requestedCount)
+            {
+                return (false, "there is not enough buddy capacity for the person_count");
+            }
+        }
+
         var newBuddyId = await GetNextBuddyIdAsync();
 
         var cypher = @"
@@ -907,13 +942,52 @@ RETURN b.buddyId AS BuddyId
 
         await using var session = _driver.AsyncSession();
 
+        // If accepting, check capacity first
+        if (newStatus == "accepted")
+        {
+            var checkCapacityQuery = @"
+                MATCH (u:User)-[b:BUDDY_ON { buddyId: $buddyId }]->(t:Trip)
+                OPTIONAL MATCH (accepted:User)-[ab:BUDDY_ON { tripDestinationId: b.tripDestinationId }]->(t)
+                WHERE toLower(ab.requestStatus) = 'accepted' AND coalesce(ab.isActive, true)
+                WITH t, b, coalesce(sum(coalesce(ab.personCount, 1)), 0) AS acceptedPersons
+                RETURN 
+                    t.maxBuddies AS MaxBuddies,
+                    acceptedPersons AS AcceptedPersons,
+                    b.personCount AS RequestPersonCount
+                ";
+
+            var capacityCursor = await session.RunAsync(checkCapacityQuery, new { buddyId = updateBuddyRequestDto.BuddyId });
+            var capacityRecords = await capacityCursor.ToListAsync();
+            var capacityRecord = capacityRecords.SingleOrDefault();
+
+            if (capacityRecord == null)
+            {
+                return (false, "Buddy request not found");
+            }
+
+            var maxBuddies = capacityRecord["MaxBuddies"].As<int?>();
+            var acceptedPersons = capacityRecord["AcceptedPersons"].As<int>();
+            var requestPersonCount = capacityRecord["RequestPersonCount"].As<int?>();
+
+            if (maxBuddies.HasValue)
+            {
+                var remaining = maxBuddies.Value - acceptedPersons;
+                var requestedCount = requestPersonCount ?? 1;
+
+                if (remaining < requestedCount)
+                {
+                    return (false, "Cannot accept request: Trip destination is at maximum capacity");
+                }
+            }
+        }
+
         var cypher = @"
-MATCH (u:User)-[b:BUDDY_ON { buddyId: $buddyId }]->(t:Trip)
-SET b.requestStatus = $status,
-    b.isActive = ($status = 'accepted'),
-    b.departureReason = CASE WHEN $status = 'accepted' THEN null ELSE b.departureReason END
-RETURN count(b) AS UpdatedCount
-";
+            MATCH (u:User)-[b:BUDDY_ON { buddyId: $buddyId }]->(t:Trip)
+            SET b.requestStatus = $status,
+                b.isActive = ($status = 'accepted'),
+                b.departureReason = CASE WHEN $status = 'accepted' THEN null ELSE b.departureReason END
+            RETURN count(b) AS UpdatedCount
+            ";
 
         var cursor = await session.RunAsync(cypher, new
         {
@@ -933,15 +1007,100 @@ RETURN count(b) AS UpdatedCount
     }
 
     // --------------------------------------------------------------------
-    // Audit tables – stubbed, like Mongo implementation
+    // Audit tables
     // --------------------------------------------------------------------
     public async Task<IEnumerable<TripAudit>> GetTripAuditsAsync()
     {
-        return await Task.FromResult<IEnumerable<TripAudit>>(new List<TripAudit>());
+        await using var session = _driver.AsyncSession();
+        const string cypher = @"
+            MATCH (t:Trip)-[:HAS_AUDIT]->(a:TripAudit)
+            OPTIONAL MATCH (cb:User)-[:CHANGED]->(a)
+            RETURN a.auditId as AuditId, t.tripId as TripId, a.action as Action,
+                   a.fieldChanged as FieldChanged, a.oldValue as OldValue,
+                   a.newValue as NewValue, cb.userId as ChangedBy,
+                   a.timestamp as Timestamp
+            ORDER BY a.auditId DESC
+        ";
+        
+        var cursor = await session.RunAsync(cypher);
+        var records = await cursor.ToListAsync();
+        
+        return records.Select(r => new TripAudit
+        {
+            AuditId = r["AuditId"].As<int?>() ?? 0,
+            TripId = r["TripId"].As<int?>() ?? 0,
+            Action = r["Action"].As<string?>() ?? string.Empty,
+            FieldChanged = r["FieldChanged"].As<string?>(),
+            OldValue = r["OldValue"].As<string?>(),
+            NewValue = r["NewValue"].As<string?>(),
+            ChangedBy = r["ChangedBy"].As<int?>(),
+            Timestamp = ParseDateTime(r["Timestamp"])
+        }).ToList();
     }
 
     public async Task<IEnumerable<BuddyAudit>> GetBuddyAuditsAsync()
     {
-        return await Task.FromResult<IEnumerable<BuddyAudit>>(new List<BuddyAudit>());
+        await using var session = _driver.AsyncSession();
+        const string cypher = @"
+            MATCH (a:BuddyAudit)
+            OPTIONAL MATCH (u:User)-[:CHANGED]->(a)
+            RETURN a.auditId as AuditId, a.buddyId as BuddyId, a.action as Action,
+                   a.reason as Reason, u.userId as ChangedBy,
+                   a.timestamp as Timestamp
+            ORDER BY a.auditId DESC
+        ";
+        
+        var cursor = await session.RunAsync(cypher);
+        var records = await cursor.ToListAsync();
+        
+        return records.Select(r => new BuddyAudit
+        {
+            AuditId = r["AuditId"].As<int?>() ?? 0,
+            BuddyId = r["BuddyId"].As<int?>() ?? 0,
+            Action = r["Action"].As<string?>() ?? string.Empty,
+            Reason = r["Reason"].As<string?>(),
+            ChangedBy = r["ChangedBy"].As<int?>(),
+            Timestamp = ParseDateTime(r["Timestamp"])
+        }).ToList();
+    }
+    
+    private static DateTime ParseDateTime(object value)
+    {
+        if (value == null)
+            return DateTime.MinValue;
+
+        if (value is DateTime dt)
+            return dt;
+
+        // Handle Neo4j ZonedDateTime
+        if (value is Neo4j.Driver.ZonedDateTime zdt)
+            return zdt.ToDateTimeOffset().DateTime;
+
+        // Handle Neo4j LocalDateTime
+        if (value is Neo4j.Driver.LocalDateTime ldt)
+            return ldt.ToDateTime();
+
+        // Fallback to reflection for other temporal types
+        var valueType = value.GetType();
+        if (valueType.Name == "LocalDateTime" || valueType.Name == "ZonedDateTime")
+        {
+            var toDateTimeMethod = valueType.GetMethod("ToDateTime");
+            if (toDateTimeMethod != null)
+            {
+                var result = toDateTimeMethod.Invoke(value, null);
+                if (result is DateTime dateTime)
+                    return dateTime;
+            }
+        }
+
+        if (value is string s)
+        {
+            if (DateTime.TryParse(s, System.Globalization.CultureInfo.InvariantCulture, 
+                System.Globalization.DateTimeStyles.AssumeUniversal, out var parsed))
+                return parsed;
+            return DateTime.MinValue;
+        }
+
+        return DateTime.MinValue;
     }
 }

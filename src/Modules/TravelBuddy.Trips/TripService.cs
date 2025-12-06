@@ -24,7 +24,7 @@ namespace TravelBuddy.Trips
         Task<(bool Success, string? ErrorMessage)> CreateTripWithDestinationsAsync(CreateTripWithDestinationsDto createTripWithDestinationsDto);
         
         // Buddy related
-        Task<(bool Success, string? ErrorMessage)> LeaveTripDestinationAsync(int userId, int tripDestinationId, int changedBy, string departureReason);
+        Task<(bool Success, string? ErrorMessage)> LeaveTripDestinationAsync(int userId, int tripDestinationId, int changedBy, string? departureReason, bool isSelfOrAdmin);
         Task<IEnumerable<PendingBuddyRequestDto>> GetPendingBuddyRequestsAsync(int userId);
         Task<(bool Success, string? ErrorMessage)> InsertBuddyRequestAsync(BuddyDto buddyDto);
         Task<(bool Success, string? ErrorMessage)> UpdateBuddyRequestAsync(UpdateBuddyRequestDto updateBuddyRequestDto);
@@ -210,10 +210,20 @@ namespace TravelBuddy.Trips
             return tripOwner == userId;
         }
 
-        public async Task<(bool Success, string? ErrorMessage)> CreateTripWithDestinationsAsync(CreateTripWithDestinationsDto createTripWithDestinationsDto)
+        public async Task<(bool Success, string? ErrorMessage)> CreateTripWithDestinationsAsync(CreateTripWithDestinationsDto dto)
         {
+            if (dto.TripDestinations.Any(td => 
+                td.DestinationId == null &&
+                (string.IsNullOrWhiteSpace(td.Name) ||
+                 string.IsNullOrWhiteSpace(td.Country) ||
+                 td.Longitude == null ||
+                 td.Latitude == null)))
+            {
+                return (false, "New destination fields are incomplete.");
+            }
+
             var tripRepository = GetRepo();
-            return await tripRepository.CreateTripWithDestinationsAsync(createTripWithDestinationsDto);
+            return await tripRepository.CreateTripWithDestinationsAsync(dto);
         }
 
         // --------------------------------------------------------------------------
@@ -223,8 +233,16 @@ namespace TravelBuddy.Trips
             int userId,
             int tripDestinationId,
             int changedBy, 
-            string departureReason
+            string? departureReason,
+            bool isSelfOrAdmin
         ) {
+            if (string.IsNullOrWhiteSpace(departureReason))
+            {
+                departureReason = isSelfOrAdmin
+                    ? "Left voluntarily or by admin"
+                    : "Removed by owner";
+            }
+            
             var tripRepository = GetRepo();
             return await tripRepository.LeaveTripDestinationAsync(userId, tripDestinationId, changedBy, departureReason);
         }

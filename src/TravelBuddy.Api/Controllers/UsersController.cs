@@ -34,20 +34,20 @@ namespace TravelBuddy.Api.Controllers
 
         [HttpPost("login")]
         [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(IActionResult), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             var user = await _userService.AuthenticateAsync(request.Email, request.Password);
-            if (user == null) return Unauthorized("Invalid credentials");
+            if (user == null) return Problem("Invalid credentials", statusCode: StatusCodes.Status401Unauthorized);
 
             var token = _jwtTokenGenerator.GenerateToken(user);
             if (string.IsNullOrEmpty(token))
-                return StatusCode(StatusCodes.Status500InternalServerError, "Token generation failed.");
+                return Problem("Token generation failed.", statusCode: StatusCodes.Status500InternalServerError);
             
             var userDto = new UserDto(
                 user.UserId,
@@ -69,21 +69,21 @@ namespace TravelBuddy.Api.Controllers
 
         [HttpPost("register")]
         [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status201Created)]
-        [ProducesResponseType(typeof(IActionResult), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status409Conflict)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Register([FromBody] RegisterRequestDto request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             var user = await _userService.RegisterAsync(request);
-            if (user == null) return Conflict("Email already in use");
+            if (user == null) return Problem("Email already in use", statusCode: StatusCodes.Status409Conflict);
 
             var token = _jwtTokenGenerator.GenerateToken(user);
             if (string.IsNullOrEmpty(token))
-                return StatusCode(StatusCodes.Status500InternalServerError, "Token generation failed.");
-
+                return Problem("Token generation failed.", statusCode: StatusCodes.Status500InternalServerError);
+            
             var userDto = new UserDto(
                 user.UserId,
                 user.Name,
@@ -103,82 +103,69 @@ namespace TravelBuddy.Api.Controllers
         }
 
         [HttpPost("logout")]
-        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public ActionResult<string> Logout()
+        public IActionResult Logout()
         {
             Response.Cookies.Delete("access_token");
-            return Ok("Logged out successfully.");
+            return NoContent();
         }
 
         [Authorize]
         [HttpGet("{userId}")]
         [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetUser([FromRoute] int userId)
         {
-            if (!User.IsSelfOrAdmin(userId))
-                return Forbid();
+            if (!User.IsSelfOrAdmin(userId)) return Forbid();
         
             var user = await _userService.GetUserByIdAsync(userId);
-            
-            if (user == null)
-            {
-                return NoContent();
-            }
+            if (user == null) return NotFound();
 
             return Ok(user);
         }
         
         [Authorize]
-        [HttpDelete("{userId}/delete-user")]
-        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [HttpDelete("{userId}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> DeleteUser([FromRoute] int userId)
         {
-            if (!User.IsSelfOrAdmin(userId))
-                return Forbid();
+            if (!User.IsSelfOrAdmin(userId)) return Forbid();
 
             var (success, errorMessage) = await _userService.DeleteUser(userId);
-            if (!success)
-                 return BadRequest(errorMessage ?? "User deletion failed");
+            if (!success) return BadRequest(new { error = errorMessage });
 
             if (!User.IsAdmin(userId))
                 Response.Cookies.Delete("access_token");
 
-            return Ok("User deleted successfully.");
+            return NoContent();
         }
 
         [Authorize]
         [HttpPatch("{userId}/change-password")]
-        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> ChangePassword([FromRoute] int userId, [FromBody] PasswordChangeRequestDto request)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            // Note: this means that admin can change other people's passwords
-            // This is not ideal for a real project but used here to access our generated data
-            if (!User.IsSelfOrAdmin(userId))
-                return Forbid();
+            if (!User.IsSelfOrAdmin(userId)) return Forbid();
 
             var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
-            if (userEmail == null)
-                return NotFound("User email not found in claims.");
+            if (userEmail == null) return Problem("Claims error", statusCode: StatusCodes.Status404NotFound);
 
             var (success, errorMessage) = await _userService.ChangePasswordAsync(request, userEmail, userId);
-            if (!success)
-                 return BadRequest(errorMessage ?? "Password change failed due to invalid input or policy violation.");
+            if (!success) return BadRequest(new { error = errorMessage });
 
-            return Ok("Password changed successfully.");
+            return NoContent();
         }
     }
 }
