@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Moq;
 using Xunit;
 using TravelBuddy.Users;
