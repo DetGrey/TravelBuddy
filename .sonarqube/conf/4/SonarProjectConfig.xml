@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<SonarProjectConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.sonarsource.com/msbuild/analyzer/2021/1">
-  <AnalysisConfigPath>C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\.sonarqube\conf\SonarQubeAnalysisConfig.xml</AnalysisConfigPath>
-  <ProjectPath>C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Migrator\TravelBuddy.Migrator.csproj</ProjectPath>
-  <FilesToAnalyzePath>C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\.sonarqube\conf\4\FilesToAnalyze.txt</FilesToAnalyzePath>
-  <OutPath>C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\.sonarqube\out\4</OutPath>
-  <ProjectType>Product</ProjectType>
-  <TargetFramework>net9.0</TargetFramework>
-</SonarProjectConfig>
