@@ -24,7 +24,11 @@ public partial class UsersDbContext : DbContext
         {
             entity.HasKey(e => e.UserId).HasName("PRIMARY");
 
-            entity.ToTable("user");
+            entity.ToTable("users", t =>
+            {
+                t.HasCheckConstraint("chk_user_name_not_empty", "CHAR_LENGTH(TRIM(name)) > 0");
+                t.HasCheckConstraint("chk_user_password_not_empty", "CHAR_LENGTH(TRIM(password_hash)) > 0");
+            });
 
             entity.HasIndex(e => e.Email, "email").IsUnique();
 
@@ -52,7 +56,13 @@ public partial class UsersDbContext : DbContext
         {
             entity.HasKey(e => e.AuditId).HasName("PRIMARY");
 
-            entity.ToTable("user_audit");
+            entity.ToTable("user_audits", t =>
+            {
+                t.HasCheckConstraint("chk_user_audit_field_not_empty", "CHAR_LENGTH(TRIM(field_changed)) > 0");
+                t.HasCheckConstraint("chk_user_audit_old_value_not_empty", "CHAR_LENGTH(TRIM(old_value)) > 0");
+                t.HasCheckConstraint("chk_user_audit_new_value_not_empty", "CHAR_LENGTH(TRIM(new_value)) > 0");
+            });
+
             entity.HasIndex(e => e.UserId, "fk_user_audit_user");
 
             entity.HasIndex(e => e.ChangedBy, "fk_user_audit_changed_by");

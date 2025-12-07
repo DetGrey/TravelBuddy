@@ -49,6 +49,10 @@ docker-compose up -d test_mysql test_mongodb test_neo4j
 # Run the migrator
 docker-compose up --build migrator
 ```
+Oneliner
+```bash
+docker-compose rm -sf test_mysql test_mongodb test_neo4j migrator && docker-compose up -d test_mysql test_mongodb test_neo4j && docker-compose up --build migrator
+```
 
 ### Reset testing environments
 

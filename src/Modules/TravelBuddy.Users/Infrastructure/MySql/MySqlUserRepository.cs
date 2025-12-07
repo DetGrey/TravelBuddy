@@ -50,8 +50,7 @@ public class MySqlUserRepository : IUserRepository
     }
     public async Task<User?> GetUserByIdAsync(int userId)
     {
-        return await _context.Users
-            .FirstOrDefaultAsync(u => u.UserId == userId); 
+        return await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
     }
     public async Task<IEnumerable<User>> GetAllAsync()
     {

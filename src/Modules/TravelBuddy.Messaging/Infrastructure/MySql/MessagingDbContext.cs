@@ -40,7 +40,7 @@ public partial class MessagingDbContext : DbContext
         {
             entity.HasKey(e => e.ConversationId).HasName("PRIMARY");
 
-            entity.ToTable("conversation");
+            entity.ToTable("conversations");
 
             entity.HasIndex(e => e.TripDestinationId, "fk_conversation_trip");
 
@@ -63,7 +63,7 @@ public partial class MessagingDbContext : DbContext
         {
             entity.HasKey(e => e.AuditId).HasName("PRIMARY");
 
-            entity.ToTable("conversation_audit");
+            entity.ToTable("conversation_audits");
 
             entity.HasIndex(e => e.AffectedUserId, "fk_convo_audit_affected");
 
@@ -101,7 +101,7 @@ public partial class MessagingDbContext : DbContext
                 .HasName("PRIMARY")
                 .HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0 });
 
-            entity.ToTable("conversation_participant");
+            entity.ToTable("conversation_participants");
 
             entity.HasIndex(e => e.UserId, "fk_cp_user");
 
@@ -125,7 +125,7 @@ public partial class MessagingDbContext : DbContext
         {
             entity.HasKey(e => e.DestinationId).HasName("PRIMARY");
 
-            entity.ToTable("destination");
+            entity.ToTable("destinations");
 
             entity.HasIndex(e => new { e.Country, e.State }, "idx_dest_contry_state");
 
@@ -151,7 +151,10 @@ public partial class MessagingDbContext : DbContext
         {
             entity.HasKey(e => e.MessageId).HasName("PRIMARY");
 
-            entity.ToTable("message");
+            entity.ToTable("messages", t =>
+            {
+                t.HasCheckConstraint("chk_message_content_not_empty", "CHAR_LENGTH(TRIM(content)) > 0");
+            });
 
             entity.HasIndex(e => e.ConversationId, "fk_message_conversation");
 
@@ -182,7 +185,7 @@ public partial class MessagingDbContext : DbContext
         {
             entity.HasKey(e => e.TripId).HasName("PRIMARY");
 
-            entity.ToTable("trip");
+            entity.ToTable("trips");
 
             entity.HasIndex(e => e.OwnerId, "fk_trip_owner");
 
@@ -205,7 +208,7 @@ public partial class MessagingDbContext : DbContext
         {
             entity.HasKey(e => e.TripDestinationId).HasName("PRIMARY");
 
-            entity.ToTable("trip_destination");
+            entity.ToTable("trip_destinations");
 
             entity.HasIndex(e => new { e.StartDate, e.EndDate }, "idx_td_dates");
 
@@ -231,7 +234,7 @@ public partial class MessagingDbContext : DbContext
         {
             entity.HasKey(e => e.UserId).HasName("PRIMARY");
 
-            entity.ToTable("user");
+            entity.ToTable("users");
 
             entity.HasIndex(e => e.Email, "email").IsUnique();
 

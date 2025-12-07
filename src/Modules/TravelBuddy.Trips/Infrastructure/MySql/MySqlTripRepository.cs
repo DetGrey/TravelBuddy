@@ -239,9 +239,9 @@ public class MySqlTripRepository : ITripRepository
         // SqlQuery is better than FromSqlInterpolated when it returns only one value
         return await _context.Database
             .SqlQuery<int>($@"
-                SELECT trip.owner_id AS Value
-                FROM trip
-                JOIN travel_buddy.trip_destination td ON trip.trip_id = td.trip_id
+                SELECT t.owner_id AS Value
+                FROM trips t
+                JOIN trip_destinations td ON t.trip_id = td.trip_id
                 WHERE td.trip_destination_id = {tripDestinationId}
                 LIMIT 1")
             .SingleOrDefaultAsync();

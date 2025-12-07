@@ -95,31 +95,33 @@ var neo4jPassword = builder.Configuration["ConnectionStrings:Neo4jPassword"]
 // --- MODULE CONFIGURATION ---
 // 1. MySQL (EF Core) DbContexts Registration
 // Register all DbContexts using the MySQL connection string
+var serverVersion = new MySqlServerVersion(new Version(8, 0, 29));
+
 builder.Services.AddDbContext<UsersDbContext>(options =>
     options.UseMySql(
         mysqlConnectionString, 
-        Microsoft.EntityFrameworkCore.ServerVersion.AutoDetect(mysqlConnectionString), 
+        serverVersion, 
         b => b.MigrationsAssembly(typeof(UsersDbContext).Assembly.FullName)
     )
 );
 builder.Services.AddDbContext<TripsDbContext>(options =>
     options.UseMySql(
         mysqlConnectionString, 
-        Microsoft.EntityFrameworkCore.ServerVersion.AutoDetect(mysqlConnectionString), 
+        serverVersion, 
         b => b.MigrationsAssembly(typeof(TripsDbContext).Assembly.FullName)
     )
 );
 builder.Services.AddDbContext<MessagingDbContext>(options =>
     options.UseMySql(
         mysqlConnectionString, 
-        Microsoft.EntityFrameworkCore.ServerVersion.AutoDetect(mysqlConnectionString), 
+        serverVersion, 
         b => b.MigrationsAssembly(typeof(MessagingDbContext).Assembly.FullName)
     )
 );
 builder.Services.AddDbContext<SharedKernelDbContext>(options =>
     options.UseMySql(
         mysqlConnectionString, 
-        Microsoft.EntityFrameworkCore.ServerVersion.AutoDetect(mysqlConnectionString), 
+        serverVersion, 
         b => b.MigrationsAssembly(typeof(SharedKernelDbContext).Assembly.FullName)
     )
 );
@@ -211,3 +213,6 @@ app.UseAuthorization();
 app.MapControllers(); 
 
 app.Run();
+
+// Expose the Program class to the IntegrationTests project
+public partial class Program { }

@@ -34,12 +34,11 @@ IDENTIFIED BY 'password123';
 
 -- 2. Grant SELECT privileges only to see available trips (search for trips
 GRANT SELECT
-ON travel_buddy.trip TO 'guest_reader'@'%';
+ON travel_buddy.trips TO 'guest_reader'@'%';
 GRANT SELECT
-ON travel_buddy.trip_destination TO 'guest_reader'@'%';
+ON travel_buddy.trip_destinations TO 'guest_reader'@'%';
 GRANT SELECT
-ON travel_buddy.destination TO 'guest_reader'@'%';
-
+ON travel_buddy.destinations TO 'guest_reader'@'%';
 -- 3. Grant EXECUTE privilege ONLY on the specific 'search_trips' stored procedure
 -- This allows them to run this procedure but no others.
 GRANT EXECUTE

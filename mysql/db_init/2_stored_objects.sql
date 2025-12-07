@@ -1,13 +1,13 @@
 USE travel_buddy;
 -- ------------------------------------------------------------------ INDEXES
 -- Date + FK'er
-CREATE INDEX idx_td_dates on trip_destination (start_date, end_date);
-CREATE INDEX idx_td_trip on trip_destination (trip_id);
-CREATE Index idx_td_destination on trip_destination(destination_id);
+CREATE INDEX idx_td_dates on trip_destinations(start_date, end_date);
+CREATE INDEX idx_td_trip on trip_destinations(trip_id);
+CREATE Index idx_td_destination on trip_destinations(destination_id);
 -- Location
-CREATE INDEX idx_dest_contry_state ON destination (country,state);
+CREATE INDEX idx_dest_contry_state ON destinations(country,state);
 -- Buddies (count)
-CREATE INDEX idx_buddy_seg_status on buddy (trip_destination_id, request_status);
+CREATE INDEX idx_buddy_seg_status on buddies(trip_destination_id, request_status);
 -- ------------------------------------------------------------------ FUNCTIONS
 DROP FUNCTION IF EXISTS get_user_id_from_buddy;
 DELIMITER $$
@@ -17,7 +17,7 @@ DETERMINISTIC
 BEGIN
     RETURN (
         SELECT user_id
-        FROM buddy
+        FROM buddies
         WHERE buddy_id = f_buddy_id
         LIMIT 1
     );
@@ -36,13 +36,13 @@ BEGIN
     -- Get trip destination for buddy
     SELECT trip_destination_id
     INTO v_trip_id
-    FROM buddy
+    FROM buddies
     WHERE buddy_id = f_buddy_id;
 
-    -- Get group conversation for that trip
+    -- Get group conversation for that trip destination
     SELECT conversation_id
     INTO v_conversation_id
-    FROM conversation
+    FROM conversations
     WHERE is_group = TRUE
     AND trip_destination_id = v_trip_id
     LIMIT 1;
@@ -60,7 +60,7 @@ READS SQL DATA
 BEGIN
     DECLARE v_owner_id INT;
     SELECT t.owner_id INTO v_owner_id
-    FROM trip t
+    FROM trips t
     WHERE trip_id = f_trip_id
     LIMIT 1;
 
@@ -80,7 +80,7 @@ BEGIN
     DECLARE v_remaining_capacity INT;
 
     SELECT trip_id INTO v_trip_id
-    FROM trip_destination
+    FROM trip_destinations
     WHERE trip_destination_id = f_trip_destination_id
     LIMIT 1;
 
@@ -89,12 +89,12 @@ BEGIN
     END IF;
 
     SELECT max_buddies INTO v_max_buddies
-    FROM trip
+    FROM trips
     WHERE trip_id = v_trip_id
     LIMIT 1;
 
     SELECT SUM(b.person_count) INTO v_accepted_buddies
-    FROM buddy b
+    FROM buddies b
     WHERE b.trip_destination_id = f_trip_destination_id
         AND b.request_status = 'accepted';
 
@@ -114,7 +114,7 @@ DELIMITER ;
 -- =====================================
 CREATE or REPLACE VIEW all_users AS
 SELECT user_id, name, email, birthdate, is_deleted
-FROM user;
+FROM users;
 -- =====================================
 -- See trip destination info
 -- =====================================
@@ -141,19 +141,19 @@ SELECT
 
     (
         SELECT c.conversation_id
-        FROM conversation c
+        FROM conversations c
         WHERE c.trip_destination_id = td.trip_destination_id
           AND c.is_group = TRUE
     ) AS GroupConversationId
 
 FROM
-    trip_destination td
+    trip_destinations td
 JOIN
-    trip t ON td.trip_id = t.trip_id
+    trips t ON td.trip_id = t.trip_id
 JOIN
-    destination d ON td.destination_id = d.destination_id
+    destinations d ON td.destination_id = d.destination_id
 JOIN
-    user u_owner ON t.owner_id = u_owner.user_id;
+    users u_owner ON t.owner_id = u_owner.user_id;
 -- =====================================
 -- See accepted buddies
 -- =====================================
@@ -167,9 +167,9 @@ SELECT
     u_buddy.user_id AS BuddyUserId,
     u_buddy.name AS BuddyName
 FROM
-    buddy b
+    buddies b
 JOIN
-    user u_buddy ON b.user_id = u_buddy.user_id
+    users u_buddy ON b.user_id = u_buddy.user_id
 WHERE
     b.is_active = TRUE
     AND b.request_status = 'accepted';
@@ -186,9 +186,9 @@ SELECT
     u_requester.user_id AS RequesterUserId,
     u_requester.name AS RequesterName
 FROM
-    buddy b
+    buddies b
 JOIN
-    user u_requester ON b.user_id = u_requester.user_id
+    users u_requester ON b.user_id = u_requester.user_id
 WHERE
     b.request_status = 'pending';
 -- =====================================
@@ -206,11 +206,11 @@ SELECT
     t.max_buddies AS MaxBuddies,
     0 AS AcceptedBuddiesCount
 FROM
-    trip_destination td
+    trip_destinations td
 JOIN
-    destination d ON td.destination_id = d.destination_id
+    destinations d ON td.destination_id = d.destination_id
 JOIN
-    trip t ON td.trip_id = t.trip_id;
+    trips t ON td.trip_id = t.trip_id;
 -- =====================================
 CREATE OR REPLACE VIEW V_TripHeaderInfo AS
 SELECT
@@ -225,9 +225,9 @@ SELECT
     u_owner.user_id AS OwnerUserId,
     u_owner.name AS OwnerName
 FROM
-    trip t
+    trips t
 JOIN
-    user u_owner ON t.owner_id = u_owner.user_id;
+    users u_owner ON t.owner_id = u_owner.user_id;
 -- ------------------------------------------------------------------ USERS
 -- =====================================
 -- 27. User should be able to delete their own account + admin can delete all
@@ -252,7 +252,7 @@ BEGIN
 
     START TRANSACTION;
 
-    UPDATE user
+    UPDATE users
     SET
         is_deleted = TRUE,
         name = 'Deleted User',
@@ -266,7 +266,7 @@ BEGIN
         SET MESSAGE_TEXT = 'No user found with the given user_id';
     END IF;
 
-    INSERT INTO user_audit (user_id, action, field_changed, old_value, new_value, changed_by)
+    INSERT INTO user_audits (user_id, action, field_changed, old_value, new_value, changed_by)
     VALUES (p_user_id, 'deleted', 'user', NULL, NULL, NULL);
 
     COMMIT;
@@ -296,7 +296,7 @@ BEGIN
     START TRANSACTION;
 
     SELECT role INTO v_changer_role 
-    FROM user 
+    FROM users
     WHERE user_id = changed_by_user_id;
 
     IF v_changer_role IS NULL THEN
@@ -311,13 +311,13 @@ BEGIN
 
     SET @SESSION_TRIGGER_AUDIT_SKIP = TRUE;
 
-    UPDATE user 
+    UPDATE users
     SET role = new_role
     WHERE user_id = target_user_id;
 
     SET @SESSION_TRIGGER_AUDIT_SKIP = NULL;
 
-    INSERT INTO user_audit (user_id, action, field_changed, old_value, new_value, changed_by)
+    INSERT INTO user_audits (user_id, action, field_changed, old_value, new_value, changed_by)
     VALUES (target_user_id, 'updated', 'role', v_old_role, new_role, changed_by_user_id);
 
     COMMIT;
@@ -355,13 +355,13 @@ BEGIN
         COALESCE(t.max_buddies, 0) AS MaxBuddies,
         COALESCE(abt.accepted_persons, 0) AS AcceptedPersons,
         GREATEST(COALESCE(t.max_buddies, 0) - COALESCE(abt.accepted_persons, 0), 0) AS RemainingCapacity
-    FROM trip_destination td
-    JOIN trip t ON t.trip_id = td.trip_id
-    JOIN destination d ON d.destination_id = td.destination_id
+    FROM trip_destinations td
+    JOIN trips t ON t.trip_id = td.trip_id
+    JOIN destinations d ON d.destination_id = td.destination_id
     LEFT JOIN (
         SELECT td2.trip_destination_id, SUM(b.person_count) AS accepted_persons
-        FROM buddy b
-        JOIN trip_destination td2 ON td2.trip_destination_id = b.trip_destination_id
+        FROM buddies b
+        JOIN trip_destinations td2 ON td2.trip_destination_id = b.trip_destination_id
         WHERE b.request_status = 'accepted'
         GROUP BY td2.trip_destination_id
     ) AS abt
@@ -409,9 +409,9 @@ BEGIN
            td.end_date AS EndDate,
            td.is_archived AS IsArchived,
            'owner' AS Role
-    FROM trip t
-    JOIN trip_destination td ON td.trip_id = t.trip_id
-    JOIN destination d ON d.destination_id = td.destination_id
+    FROM trips t
+    JOIN trip_destinations td ON td.trip_id = t.trip_id
+    JOIN destinations d ON d.destination_id = td.destination_id
     WHERE get_owner_id_from_trip(t.trip_id) = in_user_id
 
     UNION
@@ -425,10 +425,10 @@ BEGIN
            td.end_date AS EndDate,
            td.is_archived AS IsArchived,
            'buddy' AS Role
-    FROM trip t
-    JOIN trip_destination td ON td.trip_id = t.trip_id
-    JOIN destination d ON d.destination_id = td.destination_id
-    JOIN buddy b ON b.trip_destination_id = td.trip_destination_id
+    FROM trips t
+    JOIN trip_destinations td ON td.trip_id = t.trip_id
+    JOIN destinations d ON d.destination_id = td.destination_id
+    JOIN buddies b ON b.trip_destination_id = td.trip_destination_id
     WHERE get_user_id_from_buddy(b.buddy_id) = in_user_id
     AND b.is_active = TRUE
 
@@ -449,10 +449,10 @@ BEGIN
            td.start_date AS StartDate,
            td.end_date AS EndDate,
            td.is_archived AS IsArchived
-    FROM trip t
-    JOIN trip_destination td ON td.trip_id = t.trip_id
-    JOIN destination d ON d.destination_id = td.destination_id
-    JOIN buddy b ON b.trip_destination_id = td.trip_destination_id
+    FROM trips t
+    JOIN trip_destinations td ON td.trip_id = t.trip_id
+    JOIN destinations d ON d.destination_id = td.destination_id
+    JOIN buddies b ON b.trip_destination_id = td.trip_destination_id
     WHERE get_user_id_from_buddy(b.buddy_id) = in_user_id
     AND b.is_active = TRUE
 
@@ -505,7 +505,7 @@ BEGIN
     SET @SESSION_TRIGGER_AUDIT_SKIP = TRUE;
 
     -- Insert trip
-    INSERT INTO trip (owner_id, trip_name, max_buddies, start_date, end_date, description)
+    INSERT INTO trips (owner_id, trip_name, max_buddies, start_date, end_date, description)
     VALUES (p_owner_id, p_trip_name, p_max_buddies, p_start_date, p_end_date, p_description);
     
     SET @SESSION_TRIGGER_AUDIT_SKIP = NULL;
@@ -513,7 +513,7 @@ BEGIN
     SET new_trip_id = LAST_INSERT_ID();
 
     -- Audit log
-    INSERT INTO trip_audit (trip_id, action, field_changed, old_value, new_value, changed_by)
+    INSERT INTO trip_audits (trip_id, action, field_changed, old_value, new_value, changed_by)
     VALUES (new_trip_id, 'created', NULL, NULL, CONCAT('Trip created: ', p_trip_name), p_changed_by);
 
     -- Return the new tripId
@@ -547,6 +547,21 @@ BEGIN
             SET MESSAGE_TEXT = 'Trip ID cannot be NULL';
     END IF;
 
+    IF p_start_date IS NULL OR p_end_date IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Start and end dates are required';
+    END IF;
+
+    IF p_end_date < p_start_date THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'End date must be after start date';
+    END IF;
+
+    IF p_sequence_number IS NULL OR p_sequence_number < 1 THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Sequence number must be >= 1';
+    END IF;
+
     -- If no destination_id, create one
     IF p_destination_id IS NULL THEN
         IF p_name IS NULL OR p_name = '' THEN
@@ -570,7 +585,7 @@ BEGIN
                 SET MESSAGE_TEXT = 'Latitude must be between -90 and 90';
         END IF;
 
-        INSERT INTO destination (name, state, country, longitude, latitude)
+        INSERT INTO destinations (name, state, country, longitude, latitude)
         VALUES (p_name, p_state, p_country, p_longitude, p_latitude);
 
         SET new_destination_id = LAST_INSERT_ID();
@@ -578,24 +593,8 @@ BEGIN
         SET new_destination_id = p_destination_id;
     END IF;
 
-    -- Validate dates
-    IF p_start_date IS NULL OR p_end_date IS NULL THEN
-        SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'Start and end dates are required';
-    END IF;
-
-    IF p_end_date < p_start_date THEN
-        SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'End date must be after start date';
-    END IF;
-
-    IF p_sequence_number IS NULL OR p_sequence_number < 1 THEN
-        SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'Sequence number must be >= 1';
-    END IF;
-
     -- Insert trip destination
-    INSERT INTO trip_destination (trip_id, destination_id, start_date, end_date, sequence_number, description)
+    INSERT INTO trip_destinations (trip_id, destination_id, start_date, end_date, sequence_number, description)
     VALUES (p_trip_id, new_destination_id, p_start_date, p_end_date, p_sequence_number, p_description);
 END $$
 DELIMITER ;
@@ -616,7 +615,7 @@ BEGIN
 
         -- Count all participants in this conversation
         (SELECT COUNT(*)
-         FROM conversation_participant cp_all
+         FROM conversation_participants cp_all
          WHERE cp_all.conversation_id = c.conversation_id) AS ParticipantCount,
 
         m.content AS LastMessagePreview,
@@ -626,24 +625,24 @@ BEGIN
             WHEN c.is_group = TRUE THEN CONCAT('Group for ', d.name)
             ELSE (
                 SELECT IFNULL(u.name, 'Unknown User')
-                FROM conversation_participant cp
-                LEFT JOIN user u ON u.user_id = cp.user_id
+                FROM conversation_participants cp
+                LEFT JOIN users u ON u.user_id = cp.user_id
                 WHERE cp.conversation_id = c.conversation_id
                   AND cp.user_id <> p_user_id
                 LIMIT 1
             )
         END AS ConversationName
-    FROM conversation c
-    JOIN conversation_participant p
+    FROM conversations c
+    JOIN conversation_participants p
         ON c.conversation_id = p.conversation_id
-    LEFT JOIN trip_destination td
+    LEFT JOIN trip_destinations td
         ON c.trip_destination_id = td.trip_destination_id
-    LEFT JOIN destination d
+    LEFT JOIN destinations d
         ON td.destination_id = d.destination_id
-    LEFT JOIN message m
+    LEFT JOIN messages m
         ON m.message_id = (
             SELECT m2.message_id
-            FROM message m2
+            FROM messages m2
             WHERE m2.conversation_id = c.conversation_id
             ORDER BY m2.sent_at DESC
             LIMIT 1
@@ -677,11 +676,11 @@ BEGIN
                 'name', u.name
             )
         ) AS Participants
-    FROM conversation c
-    JOIN trip_destination td ON c.trip_destination_id = td.trip_destination_id
-    JOIN destination d ON td.destination_id = d.destination_id
-    JOIN conversation_participant p ON c.conversation_id = p.conversation_id
-    JOIN user u ON p.user_id = u.user_id
+    FROM conversations c
+    JOIN trip_destinations td ON c.trip_destination_id = td.trip_destination_id
+    JOIN destinations d ON td.destination_id = d.destination_id
+    JOIN conversation_participants p ON c.conversation_id = p.conversation_id
+    JOIN users u ON p.user_id = u.user_id
     WHERE c.conversation_id = 9
     GROUP BY c.conversation_id, c.trip_destination_id;
 END $$
@@ -705,9 +704,9 @@ BEGIN
       u.name AS Name,
       m.sent_at AS SentAt,
       m.content AS Content
-    FROM message m
-    JOIN conversation c ON m.conversation_id = c.conversation_id
-    JOIN user u ON m.sender_id = u.user_id
+    FROM messages m
+    JOIN conversations c ON m.conversation_id = c.conversation_id
+    JOIN users u ON m.sender_id = u.user_id
     WHERE c.conversation_id = p_conversation_id;
 END $$
 DELIMITER ;
@@ -741,13 +740,13 @@ BEGIN
     
     SET @SESSION_TRIGGER_AUDIT_SKIP = TRUE;
     
-    INSERT INTO message (sender_id, content, conversation_id)
+    INSERT INTO messages (sender_id, content, conversation_id)
     VALUES (p_sender_id, p_content, p_conversation_id);
 
     SET @SESSION_TRIGGER_AUDIT_SKIP = NULL;
     
     -- After inserting the message
-    UPDATE conversation
+    UPDATE conversations
     SET is_archived = FALSE
     WHERE conversation_id = p_conversation_id
       AND is_archived = TRUE;
@@ -781,12 +780,12 @@ BEGIN
     IF v_conversation_id IS NOT NULL THEN
         SET v_user_id = get_user_id_from_buddy(p_buddy_id);
 
-        DELETE FROM conversation_participant
+        DELETE FROM conversation_participants
         WHERE user_id = v_user_id
         AND conversation_id = v_conversation_id;
 
         -- Audit log
-        INSERT INTO conversation_audit (
+        INSERT INTO conversation_audits (
             conversation_id,
             affected_user_id,
             action,
@@ -828,16 +827,16 @@ BEGIN
     START TRANSACTION;
   
     SELECT c.conversation_id INTO v_existing_conversation_id
-    FROM conversation c
-    INNER JOIN conversation_participant cp1 ON c.conversation_id = cp1.conversation_id
-    INNER JOIN conversation_participant cp2 ON c.conversation_id = cp2.conversation_id
+    FROM conversations c
+    INNER JOIN conversation_participants cp1 ON c.conversation_id = cp1.conversation_id
+    INNER JOIN conversation_participants cp2 ON c.conversation_id = cp2.conversation_id
     WHERE 
         c.trip_destination_id = p_trip_destination_id 
         AND c.is_group = FALSE
         AND cp1.user_id = p_owner_id
         AND cp2.user_id = p_user_id
         AND cp1.user_id != cp2.user_id 
-        AND (SELECT COUNT(*) FROM conversation_participant cp_count WHERE cp_count.conversation_id = c.conversation_id) = 2
+        AND (SELECT COUNT(*) FROM conversation_participants cp_count WHERE cp_count.conversation_id = c.conversation_id) = 2
     LIMIT 1;
 
     IF v_existing_conversation_id IS NOT NULL THEN
@@ -847,12 +846,12 @@ BEGIN
     
     SET @SESSION_TRIGGER_AUDIT_SKIP = TRUE;
     
-    INSERT INTO conversation (trip_destination_id, is_group)
+    INSERT INTO conversations (trip_destination_id, is_group)
     VALUES (p_trip_destination_id, FALSE);
 
     SET v_conversation_id = LAST_INSERT_ID();
 
-    INSERT INTO conversation_audit (
+    INSERT INTO conversation_audits (
         conversation_id,
         affected_user_id,
         action,
@@ -865,13 +864,13 @@ BEGIN
         p_owner_id
     );
 
-    INSERT INTO conversation_participant (conversation_id, user_id) VALUES
+    INSERT INTO conversation_participants (conversation_id, user_id) VALUES
     (v_conversation_id, p_owner_id),
     (v_conversation_id, p_user_id);
     
     SET @SESSION_TRIGGER_AUDIT_SKIP = NULL;
 
-    INSERT INTO conversation_audit (
+    INSERT INTO conversation_audits (
         conversation_id,
         affected_user_id,
         action,
@@ -916,7 +915,7 @@ BEGIN
 
     SELECT conversation_id
     INTO v_conversation_id
-    FROM conversation
+    FROM conversations
     WHERE is_group = TRUE
     AND trip_destination_id = p_trip_destination_id
     LIMIT 1;
@@ -924,7 +923,7 @@ BEGIN
     -- 2. Retrieve the parent trip_id from trip_destination
     SELECT trip_id
     INTO v_trip_id
-    FROM trip_destination
+    FROM trip_destinations
     WHERE trip_destination_id = p_trip_destination_id;
     
     -- Check if the trip destination exists
@@ -947,19 +946,19 @@ BEGIN
         SET @SESSION_TRIGGER_AUDIT_SKIP = TRUE;
         
         -- Step 1: Create the group conversation
-        INSERT INTO conversation (trip_destination_id, is_group)
+        INSERT INTO conversations (trip_destination_id, is_group)
         VALUES (p_trip_destination_id, TRUE);
 
         -- Step 2: Get the new conversation ID
         SET v_conversation_id = LAST_INSERT_ID();
 
         -- Step 3: Add owner to the conversation
-        INSERT INTO conversation_participant (conversation_id, user_id) VALUES (v_conversation_id, p_owner_id);
+        INSERT INTO conversation_participants (conversation_id, user_id) VALUES (v_conversation_id, p_owner_id);
 
         -- Step 4: Add all buddies for this trip to the conversation
-        INSERT INTO conversation_participant (conversation_id, user_id)
+        INSERT INTO conversation_participants (conversation_id, user_id)
         SELECT v_conversation_id, user_id
-        FROM buddy
+        FROM buddies
         WHERE trip_destination_id = p_trip_destination_id
         AND request_status = 'accepted'
         AND user_id <> p_owner_id;
@@ -967,7 +966,7 @@ BEGIN
         SET @SESSION_TRIGGER_AUDIT_SKIP = NULL;
 
         -- Audit log
-        INSERT INTO conversation_audit (
+        INSERT INTO conversation_audits (
             conversation_id,
             affected_user_id,
             action,
@@ -1005,19 +1004,19 @@ BEGIN
         SET v_user_id = get_user_id_from_buddy(p_buddy_id);
 
         IF NOT EXISTS (
-            SELECT 1 FROM conversation_participant # SELECT 1 = Check if any row exists
+            SELECT 1 FROM conversation_participants -- SELECT 1 = Check if any row exists
             WHERE conversation_id = v_conversation_id
             AND user_id = v_user_id
         ) THEN
             SET @SESSION_TRIGGER_AUDIT_SKIP = TRUE;
         
-            INSERT INTO conversation_participant (conversation_id, user_id)
+            INSERT INTO conversation_participants (conversation_id, user_id)
             VALUES (v_conversation_id, v_user_id);
             
             SET @SESSION_TRIGGER_AUDIT_SKIP = NULL;
 
             -- Audit log
-            INSERT INTO conversation_audit (
+            INSERT INTO conversation_audits (
                 conversation_id,
                 affected_user_id,
                 action,
@@ -1081,7 +1080,7 @@ BEGIN
     -- Resolve buddy record
     SELECT buddy_id
     INTO v_buddy_id
-    FROM buddy
+    FROM buddies
     WHERE user_id = p_user_id
       AND trip_destination_id = p_trip_destination_id
     LIMIT 1;
@@ -1089,7 +1088,7 @@ BEGIN
     START TRANSACTION;
 
     -- Mark buddy inactive
-    UPDATE buddy
+    UPDATE buddies
     SET is_active = FALSE,
         departure_reason = p_departure_reason
     WHERE buddy_id = v_buddy_id;
@@ -1124,11 +1123,11 @@ BEGIN
       u.name AS RequesterName,
       b.note AS BuddyNote,
       b.person_count AS PersonCount
-    FROM trip t
-    JOIN trip_destination td ON t.trip_id = td.trip_id
-    JOIN destination d ON td.destination_id = d.destination_id
-    JOIN buddy b ON td.trip_destination_id = b.trip_destination_id
-    JOIN user u ON b.user_id = u.user_id
+    FROM trips t
+    JOIN trip_destinations td ON t.trip_id = td.trip_id
+    JOIN destinations d ON td.destination_id = d.destination_id
+    JOIN buddies b ON td.trip_destination_id = b.trip_destination_id
+    JOIN users u ON b.user_id = u.user_id
     WHERE b.request_status = 'pending'
       AND t.owner_id = p_user_id
     ORDER BY td.start_date DESC ; # Example user 4
@@ -1167,7 +1166,7 @@ BEGIN
     -- Get trip destination for buddy
     SELECT trip_destination_id
     INTO v_trip_destination_id
-    FROM buddy
+    FROM buddies
     WHERE buddy_id = p_buddy_id
     LIMIT 1;
 
@@ -1179,8 +1178,8 @@ BEGIN
     -- Get actual owner of the trip
     SELECT t.owner_id
     INTO v_trip_owner_id
-    FROM trip t
-    JOIN trip_destination td ON td.trip_id = t.trip_id
+    FROM trips t
+    JOIN trip_destinations td ON td.trip_id = t.trip_id
     WHERE td.trip_destination_id = v_trip_destination_id
     LIMIT 1;
 
@@ -1196,12 +1195,12 @@ BEGIN
     END IF;
 
     -- Update buddy request status
-    UPDATE buddy
+    UPDATE buddies
     SET request_status = p_new_status
     WHERE buddy_id = p_buddy_id;
 
     -- Audit log
-    INSERT INTO buddy_audit (buddy_id, action, reason, changed_by)
+    INSERT INTO buddy_audits (buddy_id, action, reason, changed_by)
     VALUES (
         p_buddy_id,
         p_new_status,
@@ -1257,7 +1256,7 @@ BEGIN
     END IF;
 
     IF EXISTS (
-        SELECT 1 FROM buddy
+        SELECT 1 FROM buddies
         WHERE user_id = p_user_id AND trip_destination_id = p_trip_destination_id
     ) THEN
         SIGNAL SQLSTATE '45000'
@@ -1266,14 +1265,14 @@ BEGIN
     
     SET @SESSION_TRIGGER_AUDIT_SKIP = TRUE;
 
-    INSERT INTO buddy (user_id, trip_destination_id, person_count, note)
+    INSERT INTO buddies (user_id, trip_destination_id, person_count, note)
     VALUES (p_user_id, p_trip_destination_id, p_person_count, p_note);
     
     SET @SESSION_TRIGGER_AUDIT_SKIP = NULL;
 
     SET v_buddy_id = LAST_INSERT_ID();
 
-    INSERT INTO buddy_audit (buddy_id, action, reason, changed_by)
+    INSERT INTO buddy_audits (buddy_id, action, reason, changed_by)
     VALUES (v_buddy_id, 'requested', 'Buddy request added', p_user_id);
 
     COMMIT;
@@ -1313,7 +1312,7 @@ ON SCHEDULE EVERY 1 MONTH
 STARTS '2025-09-30 00:00:00'
 ON COMPLETION PRESERVE -- keeps the event definition even after it runs (especially useful if you ever switch to a one-time event)
 DO BEGIN
-    UPDATE trip_destination
+    UPDATE trip_destinations
     SET is_archived = true
     WHERE end_date < NOW();
 END $$
@@ -1326,7 +1325,7 @@ ON SCHEDULE EVERY 1 MONTH
 STARTS '2025-09-30 00:00:00'
 ON COMPLETION PRESERVE
 DO BEGIN
-    UPDATE trip
+    UPDATE trips
     SET is_archived = true
     WHERE end_date < NOW();
 END $$
@@ -1341,7 +1340,7 @@ ON SCHEDULE EVERY 2 WEEK
 STARTS '2025-09-30 00:00:00'
 ON COMPLETION PRESERVE
 DO BEGIN
-    UPDATE conversation
+    UPDATE conversations
     SET is_archived = TRUE
     WHERE conversation_id IN (
         SELECT m.conversation_id
@@ -1355,11 +1354,11 @@ DELIMITER ;
 DROP TRIGGER IF EXISTS audit_archiving_of_trip_destination;
 DELIMITER $$
 CREATE TRIGGER audit_archiving_of_trip_destination
-AFTER UPDATE ON trip_destination
+AFTER UPDATE ON trip_destinations
 FOR EACH ROW
 BEGIN
     IF OLD.is_archived = false AND NEW.is_archived = true THEN
-        INSERT INTO system_event_log (event_type, affected_id, details)
+        INSERT INTO system_event_logs (event_type, affected_id, details)
         VALUES (
             'ARCHIVE',
             NEW.trip_destination_id,
@@ -1371,11 +1370,11 @@ DELIMITER ;
 DROP TRIGGER IF EXISTS audit_archiving_of_trip;
 DELIMITER $$
 CREATE TRIGGER audit_archiving_of_trip
-AFTER UPDATE ON trip
+AFTER UPDATE ON trips
 FOR EACH ROW
 BEGIN
     IF OLD.is_archived = false AND NEW.is_archived = true THEN
-        INSERT INTO system_event_log (event_type, affected_id, details)
+        INSERT INTO system_event_logs (event_type, affected_id, details)
         VALUES (
             'ARCHIVE',
             NEW.trip_id,
@@ -1387,11 +1386,11 @@ DELIMITER ;
 DROP TRIGGER IF EXISTS audit_archiving_of_conversation;
 DELIMITER $$
 CREATE TRIGGER audit_archiving_of_conversation
-AFTER UPDATE ON conversation
+AFTER UPDATE ON conversations
 FOR EACH ROW
 BEGIN
     IF OLD.is_archived = false AND NEW.is_archived = true THEN
-        INSERT INTO system_event_log (event_type, affected_id, details)
+        INSERT INTO system_event_logs (event_type, affected_id, details)
         VALUES (
             'ARCHIVE',
             NEW.conversation_id,
@@ -1399,7 +1398,7 @@ BEGIN
     END IF;
 
     IF OLD.is_archived = true AND NEW.is_archived = false THEN
-        INSERT INTO system_event_log (event_type, affected_id, details)
+        INSERT INTO system_event_logs (event_type, affected_id, details)
         VALUES (
             'UNARCHIVE',
             NEW.conversation_id,
@@ -1418,12 +1417,12 @@ DROP TRIGGER IF EXISTS trg_user_after_update;
 DELIMITER $$
 -- Logs new user creation
 CREATE TRIGGER trg_user_after_insert
-AFTER INSERT ON user
+AFTER INSERT ON users
 FOR EACH ROW
 BEGIN
     -- Skip if the session variable is set (e.g., if insert is inside a controlled procedure like 'create_trip')
     IF @SESSION_TRIGGER_AUDIT_SKIP IS NULL OR @SESSION_TRIGGER_AUDIT_SKIP != TRUE THEN
-        INSERT INTO user_audit (
+        INSERT INTO user_audits (
             user_id,
             action,
             field_changed,
@@ -1443,12 +1442,12 @@ BEGIN
 END $$
 -- =====================================
 CREATE TRIGGER trg_user_after_update
-AFTER UPDATE ON user
+AFTER UPDATE ON users
 FOR EACH ROW
 BEGIN
     IF @SESSION_TRIGGER_AUDIT_SKIP IS NULL OR @SESSION_TRIGGER_AUDIT_SKIP != TRUE THEN
         IF NEW.email <> OLD.email THEN
-            INSERT INTO user_audit (
+            INSERT INTO user_audits (
                 user_id,
                 action,
                 field_changed,
@@ -1466,7 +1465,7 @@ BEGIN
             );
         END IF;
         IF NEW.password_hash <> OLD.password_hash THEN
-            INSERT INTO user_audit (
+            INSERT INTO user_audits (
                 user_id,
                 action,
                 field_changed,
@@ -1484,7 +1483,7 @@ BEGIN
             );
         END IF;
         IF NEW.role <> OLD.role THEN
-            INSERT INTO user_audit (
+            INSERT INTO user_audits (
                 user_id,
                 action,
                 field_changed,
@@ -1502,7 +1501,7 @@ BEGIN
             );
         END IF;
         IF NEW.name <> OLD.name THEN
-            INSERT INTO user_audit (
+            INSERT INTO user_audits (
                 user_id,
                 action,
                 field_changed,
@@ -1520,7 +1519,7 @@ BEGIN
             );
         END IF;
         IF NEW.birthdate <> OLD.birthdate THEN
-            INSERT INTO user_audit (
+            INSERT INTO user_audits (
                 user_id,
                 action,
                 field_changed,
@@ -1538,7 +1537,7 @@ BEGIN
             );
         END IF;
         IF NEW.is_deleted <> OLD.is_deleted THEN
-            INSERT INTO user_audit (
+            INSERT INTO user_audits (
                 user_id,
                 action,
                 field_changed,
@@ -1560,12 +1559,12 @@ END$$
 -- =====================================
 -- Logs new trip creation
 CREATE TRIGGER trg_trip_after_insert
-AFTER INSERT ON trip
+AFTER INSERT ON trips
 FOR EACH ROW
 BEGIN
     -- Skip if the session variable is set (e.g., if insert is inside a controlled procedure like 'create_trip')
     IF @SESSION_TRIGGER_AUDIT_SKIP IS NULL OR @SESSION_TRIGGER_AUDIT_SKIP != TRUE THEN
-        INSERT INTO trip_audit (
+        INSERT INTO trip_audits (
             trip_id,
             action,
             field_changed,
@@ -1586,14 +1585,14 @@ END $$
 -- =====================================
 -- Logs new conversation creation
 CREATE TRIGGER trg_conversation_after_insert
-AFTER INSERT ON conversation
+AFTER INSERT ON conversations
 FOR EACH ROW
 BEGIN
     -- Skip if the session variable is set, as procedures like 'create_group_conversation_for_trip_destination' already insert into conversation_audit
     IF @SESSION_TRIGGER_AUDIT_SKIP IS NULL OR @SESSION_TRIGGER_AUDIT_SKIP != TRUE THEN
         -- If the insert is NOT from a controlled procedure, we try to create a basic audit log entry.
         -- NOTE: We cannot determine the `changed_by` user here easily, so we use NULL.
-        INSERT INTO conversation_audit (
+        INSERT INTO conversation_audits (
             conversation_id,
             affected_user_id,
             action,
@@ -1610,12 +1609,12 @@ END $$
 -- =====================================
 -- Logs when a participant is added to a conversation
 CREATE TRIGGER trg_conversation_participant_after_insert
-AFTER INSERT ON conversation_participant
+AFTER INSERT ON conversation_participants
 FOR EACH ROW
 BEGIN
     -- Skip if the session variable is set, as procedures like 'insert_new_private_conversation' already insert into conversation_audit
     IF @SESSION_TRIGGER_AUDIT_SKIP IS NULL OR @SESSION_TRIGGER_AUDIT_SKIP != TRUE THEN
-        INSERT INTO conversation_audit (
+        INSERT INTO conversation_audits (
             conversation_id,
             affected_user_id,
             action,
@@ -1632,12 +1631,12 @@ END $$
 -- =====================================
 -- Logs when a new buddy entry is created (request to join)
 CREATE TRIGGER trg_buddy_after_insert
-AFTER INSERT ON buddy
+AFTER INSERT ON buddies
 FOR EACH ROW
 BEGIN
     -- Skip if the session variable is set (meaning a stored procedure is handling the audit)
     IF @SESSION_TRIGGER_AUDIT_SKIP IS NULL OR @SESSION_TRIGGER_AUDIT_SKIP != TRUE THEN
-        INSERT INTO buddy_audit (
+        INSERT INTO buddy_audits (
             buddy_id,
             action,
             reason,

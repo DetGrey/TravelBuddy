@@ -153,16 +153,13 @@ namespace TravelBuddy.Api.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> ChangePassword([FromRoute] int userId, [FromBody] PasswordChangeRequestDto request)
+        public async Task<IActionResult> ChangePassword([FromRoute] int userId, [FromBody] ChangePasswordRequestDto request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             if (!User.IsSelfOrAdmin(userId)) return Forbid();
 
-            var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
-            if (userEmail == null) return Problem("Claims error", statusCode: StatusCodes.Status404NotFound);
-
-            var (success, errorMessage) = await _userService.ChangePasswordAsync(request, userEmail, userId);
+            var (success, errorMessage) = await _userService.ChangePasswordAsync(request, userId);
             if (!success) return BadRequest(new { error = errorMessage });
 
             return NoContent();

@@ -24,7 +24,7 @@ public partial class SharedKernelDbContext : DbContext
         {
             entity.HasKey(e => e.EventId).HasName("PRIMARY");
 
-            entity.ToTable("system_event_log");
+            entity.ToTable("system_event_logs");
 
             entity.Property(e => e.EventId).HasColumnName("event_id");
             entity.Property(e => e.AffectedId).HasColumnName("affected_id");

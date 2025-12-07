@@ -54,7 +54,12 @@ public partial class TripsDbContext : DbContext
         {
             entity.HasKey(e => e.BuddyId).HasName("PRIMARY");
 
-            entity.ToTable("buddy");
+            entity.ToTable("buddies", t =>
+            {
+                t.HasCheckConstraint("chk_buddy_person_count", "person_count >= 1");
+                t.HasCheckConstraint("chk_buddy_note_not_empty", "CHAR_LENGTH(TRIM(note)) > 0");
+                t.HasCheckConstraint("chk_buddy_departure_reason_not_empty", "CHAR_LENGTH(TRIM(departure_reason)) > 0");
+            });
 
             entity.HasIndex(e => e.UserId, "fk_buddy_user");
 
@@ -93,7 +98,10 @@ public partial class TripsDbContext : DbContext
         {
             entity.HasKey(e => e.AuditId).HasName("PRIMARY");
 
-            entity.ToTable("buddy_audit");
+            entity.ToTable("buddy_audits", t =>
+            {
+                t.HasCheckConstraint("chk_buddy_audit_reason_not_empty", "CHAR_LENGTH(TRIM(reason)) > 0");
+            });
 
             entity.HasIndex(e => e.BuddyId, "fk_buddy_audit_buddy");
 
@@ -127,7 +135,14 @@ public partial class TripsDbContext : DbContext
         {
             entity.HasKey(e => e.DestinationId).HasName("PRIMARY");
 
-            entity.ToTable("destination");
+            entity.ToTable("destinations", t =>
+            {
+                t.HasCheckConstraint("chk_destination_name_not_empty", "CHAR_LENGTH(TRIM(name)) > 0");
+                t.HasCheckConstraint("chk_destination_state_not_empty", "CHAR_LENGTH(TRIM(state)) > 0");
+                t.HasCheckConstraint("chk_destination_country_not_empty", "CHAR_LENGTH(TRIM(country)) > 0");
+                t.HasCheckConstraint("chk_destination_longitude", "longitude BETWEEN -180 AND 180");
+                t.HasCheckConstraint("chk_destination_latitude", "latitude BETWEEN -90 AND 90");
+            });
 
             entity.HasIndex(e => new { e.Country, e.State }, "idx_dest_contry_state");
 
@@ -153,7 +168,13 @@ public partial class TripsDbContext : DbContext
         {
             entity.HasKey(e => e.TripId).HasName("PRIMARY");
 
-            entity.ToTable("trip");
+            entity.ToTable("trips", t =>
+            {
+                t.HasCheckConstraint("chk_trip_name_not_empty", "CHAR_LENGTH(TRIM(trip_name)) > 0");
+                t.HasCheckConstraint("chk_trip_max_buddies", "max_buddies >= 1");
+                t.HasCheckConstraint("chk_trip_description_not_empty", "CHAR_LENGTH(TRIM(description)) > 0");
+                t.HasCheckConstraint("chk_trip_dates", "end_date >= start_date");
+            });
 
             entity.HasIndex(e => e.OwnerId, "fk_trip_owner");
 
@@ -182,7 +203,12 @@ public partial class TripsDbContext : DbContext
         {
             entity.HasKey(e => e.AuditId).HasName("PRIMARY");
 
-            entity.ToTable("trip_audit");
+            entity.ToTable("trip_audits", t =>
+            {
+                t.HasCheckConstraint("chk_trip_audit_field_not_empty", "CHAR_LENGTH(TRIM(field_changed)) > 0");
+                t.HasCheckConstraint("chk_trip_audit_old_value_not_empty", "CHAR_LENGTH(TRIM(old_value)) > 0");
+                t.HasCheckConstraint("chk_trip_audit_new_value_not_empty", "CHAR_LENGTH(TRIM(new_value)) > 0");
+            });
 
             entity.HasIndex(e => e.TripId, "fk_trip_audit_trip");
 
@@ -222,7 +248,11 @@ public partial class TripsDbContext : DbContext
         {
             entity.HasKey(e => e.TripDestinationId).HasName("PRIMARY");
 
-            entity.ToTable("trip_destination");
+            entity.ToTable("trip_destinations", t =>
+            {
+                t.HasCheckConstraint("chk_trip_destination_dates", "end_date >= start_date");
+                t.HasCheckConstraint("chk_trip_destination_description_not_empty", "CHAR_LENGTH(TRIM(description)) > 0");
+            });
 
             entity.HasIndex(e => new { e.StartDate, e.EndDate }, "idx_td_dates");
 
@@ -256,7 +286,7 @@ public partial class TripsDbContext : DbContext
         {
             entity.HasKey(e => e.UserId).HasName("PRIMARY");
 
-            entity.ToTable("user");
+            entity.ToTable("users");
 
             entity.HasIndex(e => e.Email, "email").IsUnique();
 

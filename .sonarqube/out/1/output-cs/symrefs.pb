@@ -1,4 +1,4 @@
-ñ
+ï¿½
 yC:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\UserService.cs
  ! +
 
@@ -22,16 +22,20 @@ yC:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\sr
 
 B H
 
- '
+
+
+ '
 
-, 2
+
+
+, 2
 
 3 F
 
 ` g
 
 p u
-	{ 
+	{ ï¿½
 
 # 3
 
@@ -64,9 +68,9 @@ yC:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\sr
 
 MM@ S
 MMm tUU9 @XX= D
-	MM} ‚QQ< A
+	MM} ï¿½QQ< A
 
-MMˆ YY5 ;
+MMï¿½ ï¿½YY5 ;
 OO QQ +YY  (
 QQ RR RR  $UUN R
 UU VV 
@@ -85,17 +89,17 @@ yC:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\sr
 ||5 G
 ~~   .
  
-€€ l
+ï¿½ï¿½ l
 
-€€" $
- 
-‚‚ 
-ƒƒ 
-„„ 
-…… 
-†† 
-‡‡ 
-ˆˆ „
+ï¿½ï¿½" $
+ï¿½ï¿½ 
+ï¿½ï¿½ 
+ï¿½ï¿½ 
+ï¿½ï¿½ 
+ï¿½ï¿½ 
+ï¿½ï¿½ 
+ï¿½ï¿½ 
+ï¿½ï¿½ ï¿½
 ~C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\Models\UserAudit.cs
 
  
@@ -108,7 +112,9 @@ yC:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\sr
 
  
 
- 
+
+
+ 
 
  
 
@@ -118,7 +124,7 @@ yC:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\sr
 
  ,
 
- ç
+ ï¿½
 yC:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\Models\User.cs
 
  
@@ -131,18 +137,20 @@ yC:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\sr
 
  
 
- 
+
+
+ 
 
  
 
  
 
-* 4Ÿ
-„C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\IUserRepositoryFactory.cs
+* 4ï¿½
+ï¿½C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\IUserRepositoryFactory.cs
 
  +
 
- )³
+ )ï¿½
 }C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\IUserRepository.cs
 
   
@@ -165,11 +173,17 @@ yC:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\sr
 
 N Z
 
-/ B
+
+
+/ B
 
-G M
+
+
+G M
 
-V b
+
+
+V b
 
   
 
@@ -177,13 +191,15 @@ yC:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\sr
 
  '
 
-! 3–
-‹C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\Infrastructure\PasswordHasher.cs
+! 3ï¿½
+ï¿½C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\Infrastructure\PasswordHasher.cs
 
  &
 
  )
-1 9 "
+1 9
+
+ "
 
 
   - 1
@@ -195,20 +211,21 @@ yC:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\sr
   0 5 $
     
  %%! -
- %% 	
-–C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\Infrastructure\Neo4j\Neo4jUserRepository.cs
+ %% ï¿½	
+ï¿½C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\Infrastructure\Neo4j\Neo4jUserRepository.cs
 
-  `
+
+  `
 
 
  $ ** ":: "VV tt &
- 
- "
-³³ "
+ï¿½ï¿½ 
+ï¿½ï¿½ "
+ï¿½ï¿½ "
 ' - ,
  'KK' 6
-®®' 6
-ÂÂ$ 3Z
+ï¿½ï¿½' 6
+ï¿½ï¿½$ 3Z
 0 6 1 7     !! !## $$ 
   "" !(
 R T% '. 08 :
@@ -230,43 +247,45 @@ yC:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\sr
 oo[ gqq& 2{{. :
 tt ~~  
 ~~  
- %
+ï¿½ï¿½ %
 
- 
-‚‚ 
+ï¿½ï¿½ 
+ï¿½ï¿½ 
 
-ˆˆ< O
+ï¿½ï¿½< O
 
-ˆˆT Z
-““& ,$
+ï¿½ï¿½T Z
+ï¿½ï¿½& ,$
 
-ˆˆc o
-ŠŠ& 2
-““. :
+ï¿½ï¿½c o
+ï¿½ï¿½& 2
+ï¿½ï¿½. :
 
-›› -
+ï¿½ï¿½ -
 
-››2 8
-ªª" (
+ï¿½ï¿½2 8
+ï¿½ï¿½" (
 
- 
-­­ $
+ï¿½ï¿½ 
+ï¿½ï¿½ $
 
-­­ 
-®® 
-®®7 =
+ï¿½ï¿½ 
+ï¿½ï¿½ 
+ï¿½ï¿½7 =
 
-±±) 4
+ï¿½ï¿½) 4
 
-³³ 
-ÂÂ 
+ï¿½ï¿½ 
+ï¿½ï¿½ 
 
-ÅÅ. @Ó
-‘C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\Infrastructure\MySql\UsersDbContext.cs
+ï¿½ï¿½. @ï¿½
+ï¿½C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\Infrastructure\MySql\UsersDbContext.cs
  #+ 9
 ; B		 
 
- $
+
+
+ $
 
 $ .
 
@@ -281,7 +300,7 @@ yC:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\sr
 $$ $$! "
 '' ''! "
 ** **! "
--- --! "–
+-- --! "ï¿½
 33' -55 77 88 :: << == @@ AA DD GG JJ NN PP RR 
 55 55  
 88 88! "
@@ -300,10 +319,11 @@ yC:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\sr
 SS  SS$ %
 ZZ 'WW 
 
-ZZ5 Aû
-–C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\Infrastructure\MySql\MySqlUserRepository.cs
+ZZ5 Aï¿½
+ï¿½C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\Infrastructure\MySql\MySqlUserRepository.cs
 
-  n
+
+  n
 
 
 $ ,     ''' %,, 55 ;; DD 
@@ -333,40 +353,42 @@ yC:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\sr
 
 88) 4
 
-BB. @”
-šC:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\Infrastructure\MongoDb\MongoDbUserRepository.cs¤
- !!* 6''6 B,,( 4AA' 3NN" .]]" .qq &
-ˆˆ& 2
-ŠŠ& 2
-& 2
-ŸŸ )
-   )
-££& 2
-³³" .T
+BB. @ï¿½
+ï¿½C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\Infrastructure\MongoDb\MongoDbUserRepository.csï¿½
+
+
+ !!* 6''6 B,,( 4AA' 3NN" .]]" .qq &
+ï¿½ï¿½& 2
+ï¿½ï¿½& 2
+ï¿½ï¿½& 2
+ï¿½ï¿½ )
+ï¿½ï¿½ )
+ï¿½ï¿½& 2
+ï¿½ï¿½" .T
  00 #BB) /FF  ]]A Gss 
-ˆˆE K
-ŸŸ< B
+ï¿½ï¿½E K
+ï¿½ï¿½< B
  11 tt (
  22 !NNA Fuu 6
  "33# /vv 
-ŒŒ  ,
-¤¤  ,(
+ï¿½ï¿½  ,
+ï¿½ï¿½  ,(
  "44  )550 9ww B
  77  )zz 
-‹‹  )
-  < E
-³³A J
+ï¿½ï¿½  )
+ï¿½ï¿½< E
+ï¿½ï¿½A J
  88 {{ 
 
  &`
 !!8 H'' @@ -PP ,__ , "
-# 3
-¦¦ &
-µµ -
+ï¿½ï¿½# 3
+ï¿½ï¿½ &
+ï¿½ï¿½ -
 ##2 8&& !
 && '' '*
 ,, 'TT( 3cc( 3
-ºº *Z
+ï¿½ï¿½ *Z
 ,,5 800 11 22 33 "44 55, /77 88 
 >>  2nn$ 6
 @@ FF 
@@ -388,68 +410,68 @@ yC:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\sr
 ii( ,ll nn ss tt uu vv #ww  xx zz  {{ 
 qq 2 5
 
-……@ K
+ï¿½ï¿½@ K
 
-……P V
-ˆˆM S
+ï¿½ï¿½P V
+ï¿½ï¿½M S
 
-……_ k
-ŒŒ. :
+ï¿½ï¿½_ k
+ï¿½ï¿½. :
 
-ˆˆ 
-C I
+ï¿½ï¿½ 
+ï¿½ï¿½C I
 
-ˆˆ> ?
-ˆˆC D
+ï¿½ï¿½> ?
+ï¿½ï¿½C D
 
-ŠŠ 
-K Q
+ï¿½ï¿½ 
+ï¿½ï¿½K Q
 
-‹‹ 
-‹‹ 
+ï¿½ï¿½ 
+ï¿½ï¿½ 
 
-ŒŒ 
-ŒŒ $
+ï¿½ï¿½ 
+ï¿½ï¿½ $
 
- 
- 
-1 7
+ï¿½ï¿½ 
+ï¿½ï¿½ 
+ï¿½ï¿½1 7
 
-››@ S
+ï¿½ï¿½@ S
 
-››X ^
-ŸŸD J
+ï¿½ï¿½X ^
+ï¿½ï¿½D J
 
-››g s
-¤¤. :
+ï¿½ï¿½g s
+ï¿½ï¿½. :
 
- 
-¦¦6 <
+ï¿½ï¿½ 
+ï¿½ï¿½6 <
 
-ŸŸ5 6
-ŸŸ: ;
+ï¿½ï¿½5 6
+ï¿½ï¿½: ;
 
-  5 6
-  : ;
+ï¿½ï¿½5 6
+ï¿½ï¿½: ;
 
-££ 
-¦¦> D
+ï¿½ï¿½ 
+ï¿½ï¿½> D
 
-¤¤ 
-¤¤ 
+ï¿½ï¿½ 
+ï¿½ï¿½ 
 
-±±- 8
+ï¿½ï¿½- 8
 
-³³ 
-¶¶ 
+ï¿½ï¿½ 
+ï¿½ï¿½ 
 
-³³: ;
-³³? @
+ï¿½ï¿½: ;
+ï¿½ï¿½? @
 
-µµ 
-ºº 
+ï¿½ï¿½ 
+ï¿½ï¿½ 
 
-½½2 D¸
+ï¿½ï¿½2 Dï¿½
 zC:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\DTOs\UserDto.cs
 
  
@@ -460,7 +482,7 @@ zC:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\sr
 
  
 
-		 í
+		 ï¿½
 C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\DTOs\UserAuditDto.cs
 
  
@@ -473,7 +495,7 @@ zC:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\sr
 
  
 
- 
+ ChangePasswordRequestDto
 
 		 
 
@@ -481,8 +503,8 @@ zC:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\sr
 
 	 
 
- Ä
-…C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\DTOs\RegisterRequestDto.cs
+ ï¿½
+ï¿½C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\DTOs\RegisterRequestDto.cs
 
  #
 
@@ -494,8 +516,8 @@ zC:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\sr
 
  
 
- !²
-‹C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\DTOs\PasswordChangeRequestDto.cs
+ !ï¿½
+ï¿½C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\DTOs\PasswordChangeRequestDto.cs
 
  )
 
@@ -503,8 +525,8 @@ zC:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\sr
 
 
 
- !©
-‚C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\DTOs\LoginRequestDto.cs
+ !ï¿½
+ï¿½C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\DTOs\LoginRequestDto.cs
 
   
 
@@ -512,8 +534,8 @@ zC:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\sr
 
 
 
- ©
-‚C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\DTOs\AuthResponseDto.cs
+ ï¿½
+ï¿½C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\DTOs\AuthResponseDto.cs
 
  !
 

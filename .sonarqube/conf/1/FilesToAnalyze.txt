@@ -1,6 +1,6 @@
 ﻿C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\DTOs\AuthResponseDto.cs
 C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\DTOs\LoginRequestDto.cs
-C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\DTOs\PasswordChangeRequestDto.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\DTOs\ChangePasswordRequestDto.cs
 C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\DTOs\RegisterRequestDto.cs
 C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\DTOs\UserAuditDto.cs
 C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Users\DTOs\UserDto.cs

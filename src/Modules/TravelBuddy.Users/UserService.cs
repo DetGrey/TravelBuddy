@@ -11,7 +11,7 @@ namespace TravelBuddy.Users
         Task<User?> RegisterAsync(RegisterRequestDto request);
         Task<(bool Success, string? ErrorMessage)> DeleteUser(int userId);
         Task<UserDto?> GetUserByIdAsync(int userId);
-        Task<(bool Success, string? ErrorMessage)> ChangePasswordAsync(PasswordChangeRequestDto request, string email, int userId);
+        Task<(bool Success, string? ErrorMessage)> ChangePasswordAsync(ChangePasswordRequestDto request, int userId);
 
         // Gets a list of all users from the database.
         Task<IEnumerable<UserDto>> GetAllUsersAsync();
@@ -44,6 +44,9 @@ namespace TravelBuddy.Users
 
         public async Task<User?> RegisterAsync(RegisterRequestDto request)
         {
+            if (request.Email.Length < 6) return null;
+            if (request.Password.Length < 6) return null;
+            if (request.Birthdate == null) return null;
             var userRepository = GetRepo();
 
             var existing = await userRepository.GetByEmailAsync(request.Email);
@@ -56,7 +59,7 @@ namespace TravelBuddy.Users
                 Name = request.Name,
                 Email = request.Email,
                 PasswordHash = hashedPassword,
-                Birthdate = request.Birthdate,
+                Birthdate = request.Birthdate.Value,
                 Role = "user"
             };
 
@@ -74,11 +77,11 @@ namespace TravelBuddy.Users
             return await userRepository.DeleteAsync(userId, hashedPassword);
         }
 
-        public async Task<(bool Success, string? ErrorMessage)> ChangePasswordAsync(PasswordChangeRequestDto request, string email, int userId)
+        public async Task<(bool Success, string? ErrorMessage)> ChangePasswordAsync(ChangePasswordRequestDto request, int userId)
         {
             var userRepository = GetRepo();
 
-            var user = await userRepository.GetByEmailAsync(email);
+            var user = await userRepository.GetUserByIdAsync(userId);
             if (user == null || user.IsDeleted) return (false, "User not found or is deleted.");
 
             // Note: To actually change password from generated users, comment out the two lines below
