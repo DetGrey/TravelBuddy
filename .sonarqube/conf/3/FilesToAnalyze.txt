@@ -1,0 +1,15 @@
+﻿C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Messaging\DTOs\ConversationAuditDto.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Messaging\DTOs\ConversationDtos.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Messaging\DTOs\CreateConversationDto.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Messaging\IMessagingRepository.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Messaging\IMessagingRepositoryFactory.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Messaging\Infrastructure\MongoDb\MongoDbMessagingRepository.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Messaging\Infrastructure\MySql\MessagingDbContext.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Messaging\Infrastructure\MySql\MySqlMessagingRepository.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Messaging\Infrastructure\Neo4j\Neo4jMessagingRepository.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Messaging\MessagingService.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Messaging\Models\Conversation.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Messaging\Models\ConversationAudit.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Messaging\Models\ConversationOverview.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Messaging\Models\ConversationParticipant.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Modules\TravelBuddy.Messaging\Models\Message.cs

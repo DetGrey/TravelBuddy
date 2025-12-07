@@ -1,0 +1,6 @@
+﻿C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Shared\TravelBuddy.SharedKernel\Infrastructure\MySql\MySqlSharedKernelRepository.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Shared\TravelBuddy.SharedKernel\Infrastructure\MySql\SharedKernelDbContext.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Shared\TravelBuddy.SharedKernel\ISharedKernelRepository.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Shared\TravelBuddy.SharedKernel\ISharedKernelRepositoryFactory.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Shared\TravelBuddy.SharedKernel\Models\SystemEventLog.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Shared\TravelBuddy.SharedKernel\SharedKernelService.cs

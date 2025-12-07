@@ -1,0 +1,5 @@
+[
+  {
+    "text": "The sonar.sources and sonar.tests properties are not supported by the Scanner for .NET and are ignored. They are automatically computed based on your repository. You can fine-tune the analysis and exclude some files by using the sonar.exclusions, sonar.inclusions, sonar.test.exclusions, and sonar.test.inclusions properties."
+  }
+]

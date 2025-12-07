@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ProjectInfo xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.sonarsource.com/msbuild/integration/2015/1">
+  <ProjectName>TravelBuddy.SharedKernel</ProjectName>
+  <ProjectLanguage>C#</ProjectLanguage>
+  <ProjectType>Product</ProjectType>
+  <ProjectGuid>45b62d57-26f6-c7fa-b0a2-afe61583515e</ProjectGuid>
+  <FullPath>C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\Shared\TravelBuddy.SharedKernel\TravelBuddy.SharedKernel.csproj</FullPath>
+  <IsExcluded>false</IsExcluded>
+  <AnalysisResultFiles>
+    <AnalysisResultFile Id="FilesToAnalyze" Location="C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\.sonarqube\conf\0\FilesToAnalyze.txt" />
+  </AnalysisResultFiles>
+  <AnalysisSettings>
+    <Property Name="sonar.cs.roslyn.reportFilePaths">C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\.sonarqube\out\0\Issues.json</Property>
+    <Property Name="sonar.cs.analyzer.projectOutPaths">C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\.sonarqube\out\0</Property>
+    <Property Name="sonar.cs.scanner.telemetry">C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\.sonarqube\out\0\Telemetry.json</Property>
+  </AnalysisSettings>
+  <Configuration>Debug</Configuration>
+  <Platform>AnyCPU</Platform>
+  <TargetFramework>net9.0</TargetFramework>
+</ProjectInfo>

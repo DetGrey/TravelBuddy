@@ -1,0 +1,2610 @@
+{
+  "$schema": "http://json.schemastore.org/sarif-1.0.0",
+  "version": "1.0.0",
+  "runs": [
+    {
+      "tool": {
+        "name": "Microsoft (R) Visual C# Compiler",
+        "version": "4.14.0.0",
+        "fileVersion": "4.14.0-3.25465.8 (b0a9adbf)",
+        "semanticVersion": "4.14.0",
+        "language": "en-US"
+      },
+      "results": [
+        {
+          "ruleId": "CS8618",
+          "level": "warning",
+          "message": "Non-nullable property 'Buddies' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.",
+          "suppressionStates": [
+            "suppressedInSource"
+          ],
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 12,
+                  "endLine": 10,
+                  "endColumn": 26
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 15,
+                  "startColumn": 33,
+                  "endLine": 15,
+                  "endColumn": 40
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8618",
+          "level": "warning",
+          "message": "Non-nullable property 'BuddyAudits' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.",
+          "suppressionStates": [
+            "suppressedInSource"
+          ],
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 12,
+                  "endLine": 10,
+                  "endColumn": 26
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 17,
+                  "startColumn": 38,
+                  "endLine": 17,
+                  "endColumn": 49
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8618",
+          "level": "warning",
+          "message": "Non-nullable property 'Destinations' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.",
+          "suppressionStates": [
+            "suppressedInSource"
+          ],
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 12,
+                  "endLine": 10,
+                  "endColumn": 26
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 19,
+                  "startColumn": 39,
+                  "endLine": 19,
+                  "endColumn": 51
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8618",
+          "level": "warning",
+          "message": "Non-nullable property 'Trips' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.",
+          "suppressionStates": [
+            "suppressedInSource"
+          ],
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 12,
+                  "endLine": 10,
+                  "endColumn": 26
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 21,
+                  "startColumn": 32,
+                  "endLine": 21,
+                  "endColumn": 37
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8618",
+          "level": "warning",
+          "message": "Non-nullable property 'TripAudits' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.",
+          "suppressionStates": [
+            "suppressedInSource"
+          ],
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 12,
+                  "endLine": 10,
+                  "endColumn": 26
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 23,
+                  "startColumn": 37,
+                  "endLine": 23,
+                  "endColumn": 47
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8618",
+          "level": "warning",
+          "message": "Non-nullable property 'TripDestinations' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.",
+          "suppressionStates": [
+            "suppressedInSource"
+          ],
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 12,
+                  "endLine": 10,
+                  "endColumn": 26
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 25,
+                  "startColumn": 43,
+                  "endLine": 25,
+                  "endColumn": 59
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8618",
+          "level": "warning",
+          "message": "Non-nullable property 'Users' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.",
+          "suppressionStates": [
+            "suppressedInSource"
+          ],
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 12,
+                  "endLine": 10,
+                  "endColumn": 26
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 27,
+                  "startColumn": 32,
+                  "endLine": 27,
+                  "endColumn": 37
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8618",
+          "level": "warning",
+          "message": "Non-nullable property 'TripDestinationSearchResults' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.",
+          "suppressionStates": [
+            "suppressedInSource"
+          ],
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 12,
+                  "endLine": 10,
+                  "endColumn": 26
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 29,
+                  "startColumn": 47,
+                  "endLine": 29,
+                  "endColumn": 75
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8618",
+          "level": "warning",
+          "message": "Non-nullable property 'BuddyTripSummaries' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.",
+          "suppressionStates": [
+            "suppressedInSource"
+          ],
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 12,
+                  "endLine": 10,
+                  "endColumn": 26
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 31,
+                  "startColumn": 36,
+                  "endLine": 31,
+                  "endColumn": 54
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8618",
+          "level": "warning",
+          "message": "Non-nullable property 'PendingBuddyRequests' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.",
+          "suppressionStates": [
+            "suppressedInSource"
+          ],
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 12,
+                  "endLine": 10,
+                  "endColumn": 26
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 33,
+                  "startColumn": 39,
+                  "endLine": 33,
+                  "endColumn": 59
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8618",
+          "level": "warning",
+          "message": "Non-nullable property 'TripDestinationInfo' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.",
+          "suppressionStates": [
+            "suppressedInSource"
+          ],
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 12,
+                  "endLine": 10,
+                  "endColumn": 26
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 35,
+                  "startColumn": 39,
+                  "endLine": 35,
+                  "endColumn": 58
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8618",
+          "level": "warning",
+          "message": "Non-nullable property 'BuddyInfo' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.",
+          "suppressionStates": [
+            "suppressedInSource"
+          ],
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 12,
+                  "endLine": 10,
+                  "endColumn": 26
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 37,
+                  "startColumn": 29,
+                  "endLine": 37,
+                  "endColumn": 38
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8618",
+          "level": "warning",
+          "message": "Non-nullable property 'BuddyRequestInfo' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.",
+          "suppressionStates": [
+            "suppressedInSource"
+          ],
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 12,
+                  "endLine": 10,
+                  "endColumn": 26
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 39,
+                  "startColumn": 36,
+                  "endLine": 39,
+                  "endColumn": 52
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8618",
+          "level": "warning",
+          "message": "Non-nullable property 'SimplifiedTripDestination' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.",
+          "suppressionStates": [
+            "suppressedInSource"
+          ],
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 12,
+                  "endLine": 10,
+                  "endColumn": 26
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 41,
+                  "startColumn": 45,
+                  "endLine": 41,
+                  "endColumn": 70
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8618",
+          "level": "warning",
+          "message": "Non-nullable property 'TripHeaderInfo' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.",
+          "suppressionStates": [
+            "suppressedInSource"
+          ],
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 12,
+                  "endLine": 10,
+                  "endColumn": 26
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 42,
+                  "startColumn": 34,
+                  "endLine": 42,
+                  "endColumn": 48
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8618",
+          "level": "warning",
+          "message": "Non-nullable property 'TripOverview' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.",
+          "suppressionStates": [
+            "suppressedInSource"
+          ],
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 12,
+                  "endLine": 10,
+                  "endColumn": 26
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 43,
+                  "startColumn": 32,
+                  "endLine": 43,
+                  "endColumn": 44
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8618",
+          "level": "warning",
+          "message": "Non-nullable property 'NewTripIds' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.",
+          "suppressionStates": [
+            "suppressedInSource"
+          ],
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 12,
+                  "endLine": 10,
+                  "endColumn": 26
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 44,
+                  "startColumn": 29,
+                  "endLine": 44,
+                  "endColumn": 39
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S125",
+          "level": "warning",
+          "message": "Remove this commented out code.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 700,
+                  "startColumn": 13,
+                  "endLine": 700,
+                  "endColumn": 52
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S1135",
+          "level": "warning",
+          "message": "Complete the task associated to this 'TODO' comment.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 891,
+                  "startColumn": 16,
+                  "endLine": 891,
+                  "endColumn": 20
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S1135",
+          "level": "warning",
+          "message": "Complete the task associated to this 'TODO' comment.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 896,
+                  "startColumn": 16,
+                  "endLine": 896,
+                  "endColumn": 20
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S3251",
+          "level": "warning",
+          "message": "Supply an implementation for this partial method.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 306,
+                  "startColumn": 5,
+                  "endLine": 306,
+                  "endColumn": 12
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S101",
+          "level": "warning",
+          "message": "Rename class 'Neo4jTripRepository' to match pascal case naming rules, consider using 'Neo4JTripRepository'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 9,
+                  "startColumn": 14,
+                  "endLine": 9,
+                  "endColumn": 33
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S1192",
+          "level": "warning",
+          "message": "Define a constant instead of using this literal 'MaxId' 4 times.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 54,
+                  "startColumn": 28,
+                  "endLine": 54,
+                  "endColumn": 35
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 605,
+                  "startColumn": 46,
+                  "endLine": 605,
+                  "endColumn": 53
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 612,
+                  "startColumn": 55,
+                  "endLine": 612,
+                  "endColumn": 62
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 619,
+                  "startColumn": 50,
+                  "endLine": 619,
+                  "endColumn": 57
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "0": null,
+              "1": null,
+              "2": null
+            }
+          }
+        },
+        {
+          "ruleId": "S1192",
+          "level": "warning",
+          "message": "Define a constant instead of using this literal 'yyyy-MM-dd' 6 times.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 118,
+                  "startColumn": 43,
+                  "endLine": 118,
+                  "endColumn": 55
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 119,
+                  "startColumn": 41,
+                  "endLine": 119,
+                  "endColumn": 53
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 653,
+                  "startColumn": 59,
+                  "endLine": 653,
+                  "endColumn": 71
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 654,
+                  "startColumn": 57,
+                  "endLine": 654,
+                  "endColumn": 69
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 735,
+                  "startColumn": 81,
+                  "endLine": 735,
+                  "endColumn": 93
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 736,
+                  "startColumn": 79,
+                  "endLine": 736,
+                  "endColumn": 91
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "0": null,
+              "1": null,
+              "2": null,
+              "3": null,
+              "4": null
+            }
+          }
+        },
+        {
+          "ruleId": "S1192",
+          "level": "warning",
+          "message": "Define a constant instead of using this literal 'TripDestinationId' 6 times.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 134,
+                  "startColumn": 44,
+                  "endLine": 134,
+                  "endColumn": 63
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 225,
+                  "startColumn": 44,
+                  "endLine": 225,
+                  "endColumn": 63
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 278,
+                  "startColumn": 51,
+                  "endLine": 278,
+                  "endColumn": 70
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 441,
+                  "startColumn": 42,
+                  "endLine": 441,
+                  "endColumn": 61
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 525,
+                  "startColumn": 46,
+                  "endLine": 525,
+                  "endColumn": 65
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 833,
+                  "startColumn": 38,
+                  "endLine": 833,
+                  "endColumn": 57
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "0": null,
+              "1": null,
+              "2": null,
+              "3": null,
+              "4": null
+            }
+          }
+        },
+        {
+          "ruleId": "S1192",
+          "level": "warning",
+          "message": "Define a constant instead of using this literal 'TripId' 10 times.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 135,
+                  "startColumn": 44,
+                  "endLine": 135,
+                  "endColumn": 52
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 224,
+                  "startColumn": 44,
+                  "endLine": 224,
+                  "endColumn": 52
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 284,
+                  "startColumn": 39,
+                  "endLine": 284,
+                  "endColumn": 47
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 401,
+                  "startColumn": 38,
+                  "endLine": 401,
+                  "endColumn": 46
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 442,
+                  "startColumn": 42,
+                  "endLine": 442,
+                  "endColumn": 50
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 490,
+                  "startColumn": 28,
+                  "endLine": 490,
+                  "endColumn": 36
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 520,
+                  "startColumn": 29,
+                  "endLine": 520,
+                  "endColumn": 37
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 526,
+                  "startColumn": 46,
+                  "endLine": 526,
+                  "endColumn": 54
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 541,
+                  "startColumn": 24,
+                  "endLine": 541,
+                  "endColumn": 32
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 837,
+                  "startColumn": 38,
+                  "endLine": 837,
+                  "endColumn": 46
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "0": null,
+              "1": null,
+              "2": null,
+              "3": null,
+              "4": null,
+              "5": null,
+              "6": null,
+              "7": null,
+              "8": null
+            }
+          }
+        },
+        {
+          "ruleId": "S1192",
+          "level": "warning",
+          "message": "Define a constant instead of using this literal 'DestinationName' 6 times.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 137,
+                  "startColumn": 44,
+                  "endLine": 137,
+                  "endColumn": 61
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 226,
+                  "startColumn": 44,
+                  "endLine": 226,
+                  "endColumn": 61
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 288,
+                  "startColumn": 47,
+                  "endLine": 288,
+                  "endColumn": 64
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 445,
+                  "startColumn": 42,
+                  "endLine": 445,
+                  "endColumn": 59
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 529,
+                  "startColumn": 46,
+                  "endLine": 529,
+                  "endColumn": 63
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 834,
+                  "startColumn": 38,
+                  "endLine": 834,
+                  "endColumn": 55
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "0": null,
+              "1": null,
+              "2": null,
+              "3": null,
+              "4": null
+            }
+          }
+        },
+        {
+          "ruleId": "S1192",
+          "level": "warning",
+          "message": "Define a constant instead of using this literal 'MaxBuddies' 6 times.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 142,
+                  "startColumn": 44,
+                  "endLine": 142,
+                  "endColumn": 56
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 285,
+                  "startColumn": 39,
+                  "endLine": 285,
+                  "endColumn": 51
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 405,
+                  "startColumn": 38,
+                  "endLine": 405,
+                  "endColumn": 50
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 448,
+                  "startColumn": 42,
+                  "endLine": 448,
+                  "endColumn": 54
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 532,
+                  "startColumn": 46,
+                  "endLine": 532,
+                  "endColumn": 58
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 549,
+                  "startColumn": 37,
+                  "endLine": 549,
+                  "endColumn": 49
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "0": null,
+              "1": null,
+              "2": null,
+              "3": null,
+              "4": null
+            }
+          }
+        },
+        {
+          "ruleId": "S1192",
+          "level": "warning",
+          "message": "Define a constant instead of using this literal 'DestinationStartDate' 4 times.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 279,
+                  "startColumn": 64,
+                  "endLine": 279,
+                  "endColumn": 86
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 443,
+                  "startColumn": 55,
+                  "endLine": 443,
+                  "endColumn": 77
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 527,
+                  "startColumn": 59,
+                  "endLine": 527,
+                  "endColumn": 81
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 835,
+                  "startColumn": 51,
+                  "endLine": 835,
+                  "endColumn": 73
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "0": null,
+              "1": null,
+              "2": null
+            }
+          }
+        },
+        {
+          "ruleId": "S1192",
+          "level": "warning",
+          "message": "Define a constant instead of using this literal 'DestinationEndDate' 4 times.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 280,
+                  "startColumn": 64,
+                  "endLine": 280,
+                  "endColumn": 84
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 444,
+                  "startColumn": 55,
+                  "endLine": 444,
+                  "endColumn": 75
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 528,
+                  "startColumn": 59,
+                  "endLine": 528,
+                  "endColumn": 79
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 836,
+                  "startColumn": 51,
+                  "endLine": 836,
+                  "endColumn": 71
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "0": null,
+              "1": null,
+              "2": null
+            }
+          }
+        },
+        {
+          "ruleId": "S3776",
+          "level": "warning",
+          "message": "Refactor this method to reduce its Cognitive Complexity from 43 to the 15 allowed.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 148,
+                  "startColumn": 69,
+                  "endLine": 148,
+                  "endColumn": 85
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 161,
+                  "startColumn": 13,
+                  "endLine": 161,
+                  "endColumn": 20
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 163,
+                  "startColumn": 17,
+                  "endLine": 163,
+                  "endColumn": 24
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 165,
+                  "startColumn": 21,
+                  "endLine": 165,
+                  "endColumn": 23
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 172,
+                  "startColumn": 21,
+                  "endLine": 172,
+                  "endColumn": 23
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 172,
+                  "startColumn": 43,
+                  "endLine": 172,
+                  "endColumn": 45
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 174,
+                  "startColumn": 21,
+                  "endLine": 174,
+                  "endColumn": 23
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 174,
+                  "startColumn": 41,
+                  "endLine": 174,
+                  "endColumn": 43
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 178,
+                  "startColumn": 21,
+                  "endLine": 178,
+                  "endColumn": 23
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 178,
+                  "startColumn": 61,
+                  "endLine": 178,
+                  "endColumn": 63
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 182,
+                  "startColumn": 21,
+                  "endLine": 182,
+                  "endColumn": 23
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 182,
+                  "startColumn": 59,
+                  "endLine": 182,
+                  "endColumn": 61
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 190,
+                  "startColumn": 21,
+                  "endLine": 190,
+                  "endColumn": 23
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 192,
+                  "startColumn": 25,
+                  "endLine": 192,
+                  "endColumn": 27
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 196,
+                  "startColumn": 21,
+                  "endLine": 196,
+                  "endColumn": 23
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 199,
+                  "startColumn": 25,
+                  "endLine": 199,
+                  "endColumn": 27
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 210,
+                  "startColumn": 25,
+                  "endLine": 210,
+                  "endColumn": 26
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 213,
+                  "startColumn": 21,
+                  "endLine": 213,
+                  "endColumn": 23
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 213,
+                  "startColumn": 44,
+                  "endLine": 213,
+                  "endColumn": 46
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "0": "+1",
+              "1": "+2 (incl 1 for nesting)",
+              "10": "+1",
+              "11": "+3 (incl 2 for nesting)",
+              "12": "+4 (incl 3 for nesting)",
+              "13": "+3 (incl 2 for nesting)",
+              "14": "+4 (incl 3 for nesting)",
+              "15": "+3 (incl 2 for nesting)",
+              "16": "+3 (incl 2 for nesting)",
+              "17": "+1",
+              "2": "+3 (incl 2 for nesting)",
+              "3": "+3 (incl 2 for nesting)",
+              "4": "+1",
+              "5": "+3 (incl 2 for nesting)",
+              "6": "+1",
+              "7": "+3 (incl 2 for nesting)",
+              "8": "+1",
+              "9": "+3 (incl 2 for nesting)"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/MySqlTripRepository.cs",
+                "region": {
+                  "startLine": 173,
+                  "startColumn": 14,
+                  "endLine": 173,
+                  "endColumn": 31
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "S1192",
+          "level": "warning",
+          "message": "Define a constant instead of using this literal 'accepted' 7 times.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 206,
+                  "startColumn": 68,
+                  "endLine": 206,
+                  "endColumn": 78
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 279,
+                  "startColumn": 60,
+                  "endLine": 279,
+                  "endColumn": 70
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 371,
+                  "startColumn": 52,
+                  "endLine": 371,
+                  "endColumn": 62
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 453,
+                  "startColumn": 64,
+                  "endLine": 453,
+                  "endColumn": 74
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 529,
+                  "startColumn": 68,
+                  "endLine": 529,
+                  "endColumn": 78
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 864,
+                  "startColumn": 54,
+                  "endLine": 864,
+                  "endColumn": 64
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 871,
+                  "startColumn": 30,
+                  "endLine": 871,
+                  "endColumn": 40
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "0": null,
+              "1": null,
+              "2": null,
+              "3": null,
+              "4": null,
+              "5": null
+            }
+          }
+        },
+        {
+          "ruleId": "S1192",
+          "level": "warning",
+          "message": "Define a constant instead of using this literal 'pending' 5 times.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 382,
+                  "startColumn": 57,
+                  "endLine": 382,
+                  "endColumn": 66
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 746,
+                  "startColumn": 60,
+                  "endLine": 746,
+                  "endColumn": 69
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 767,
+                  "startColumn": 56,
+                  "endLine": 767,
+                  "endColumn": 65
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 820,
+                  "startColumn": 33,
+                  "endLine": 820,
+                  "endColumn": 42
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 866,
+                  "startColumn": 22,
+                  "endLine": 866,
+                  "endColumn": 31
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "0": null,
+              "1": null,
+              "2": null,
+              "3": null
+            }
+          }
+        },
+        {
+          "ruleId": "S1192",
+          "level": "warning",
+          "message": "Define a constant instead of using this literal 'Error: ' 7 times.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/MySqlTripRepository.cs",
+                "region": {
+                  "startLine": 289,
+                  "startColumn": 28,
+                  "endLine": 289,
+                  "endColumn": 37
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/MySqlTripRepository.cs",
+                "region": {
+                  "startLine": 319,
+                  "startColumn": 28,
+                  "endLine": 319,
+                  "endColumn": 37
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/MySqlTripRepository.cs",
+                "region": {
+                  "startLine": 349,
+                  "startColumn": 28,
+                  "endLine": 349,
+                  "endColumn": 37
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/MySqlTripRepository.cs",
+                "region": {
+                  "startLine": 384,
+                  "startColumn": 28,
+                  "endLine": 384,
+                  "endColumn": 37
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/MySqlTripRepository.cs",
+                "region": {
+                  "startLine": 422,
+                  "startColumn": 32,
+                  "endLine": 422,
+                  "endColumn": 41
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/MySqlTripRepository.cs",
+                "region": {
+                  "startLine": 426,
+                  "startColumn": 28,
+                  "endLine": 426,
+                  "endColumn": 37
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/MySqlTripRepository.cs",
+                "region": {
+                  "startLine": 444,
+                  "startColumn": 29,
+                  "endLine": 444,
+                  "endColumn": 38
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "0": null,
+              "1": null,
+              "2": null,
+              "3": null,
+              "4": null,
+              "5": null
+            }
+          }
+        },
+        {
+          "ruleId": "S1192",
+          "level": "warning",
+          "message": "Define a constant instead of using this literal 'PRIMARY' 7 times.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 55,
+                  "startColumn": 51,
+                  "endLine": 55,
+                  "endColumn": 60
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 94,
+                  "startColumn": 51,
+                  "endLine": 94,
+                  "endColumn": 60
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 128,
+                  "startColumn": 57,
+                  "endLine": 128,
+                  "endColumn": 66
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 154,
+                  "startColumn": 50,
+                  "endLine": 154,
+                  "endColumn": 59
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 183,
+                  "startColumn": 51,
+                  "endLine": 183,
+                  "endColumn": 60
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 223,
+                  "startColumn": 61,
+                  "endLine": 223,
+                  "endColumn": 70
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 257,
+                  "startColumn": 50,
+                  "endLine": 257,
+                  "endColumn": 59
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "0": null,
+              "1": null,
+              "2": null,
+              "3": null,
+              "4": null,
+              "5": null
+            }
+          }
+        },
+        {
+          "ruleId": "S6580",
+          "level": "warning",
+          "message": "Use a format provider when parsing date and time.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 38,
+                  "startColumn": 24,
+                  "endLine": 38,
+                  "endColumn": 41
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S6580",
+          "level": "warning",
+          "message": "Use a format provider when parsing date and time.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 41,
+                  "startColumn": 24,
+                  "endLine": 41,
+                  "endColumn": 57
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S1066",
+          "level": "warning",
+          "message": "Merge this if statement with the enclosing one.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 192,
+                  "startColumn": 25,
+                  "endLine": 192,
+                  "endColumn": 27
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 190,
+                  "startColumn": 21,
+                  "endLine": 190,
+                  "endColumn": 23
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "0": "Merge this if statement with its nested one."
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/MySqlTripRepository.cs",
+                "region": {
+                  "startLine": 102,
+                  "startColumn": 14,
+                  "endLine": 102,
+                  "endColumn": 32
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/MySqlTripRepository.cs",
+                "region": {
+                  "startLine": 270,
+                  "startColumn": 18,
+                  "endLine": 270,
+                  "endColumn": 46
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1862",
+          "level": "note",
+          "message": "Prefer the string comparison method overload of 'string.Contains(string)' that takes a 'StringComparison' enum value to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 192,
+                  "startColumn": 30,
+                  "endLine": 192,
+                  "endColumn": 81
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "LeftOffendingMethod": "ToLowerInvariant",
+              "RightOffendingMethod": null
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 486,
+                  "startColumn": 14,
+                  "endLine": 486,
+                  "endColumn": 33
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "S927",
+          "level": "warning",
+          "message": "Rename parameter 'dto' to 'createTripWithDestinationsDto' to match the interface declaration.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 593,
+                  "startColumn": 35,
+                  "endLine": 593,
+                  "endColumn": 38
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/Neo4j/Neo4jTripRepository.cs",
+                "region": {
+                  "startLine": 622,
+                  "startColumn": 50,
+                  "endLine": 622,
+                  "endColumn": 76
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "S927",
+          "level": "warning",
+          "message": "Rename parameter 'personCount' to 'changedBy' to match the interface declaration.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 668,
+                  "startColumn": 48,
+                  "endLine": 668,
+                  "endColumn": 59
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S927",
+          "level": "warning",
+          "message": "Rename parameter 'reason' to 'departureReason' to match the interface declaration.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 668,
+                  "startColumn": 68,
+                  "endLine": 668,
+                  "endColumn": 74
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 727,
+                  "startColumn": 18,
+                  "endLine": 727,
+                  "endColumn": 34
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/MySqlTripRepository.cs",
+                "region": {
+                  "startLine": 203,
+                  "startColumn": 14,
+                  "endLine": 203,
+                  "endColumn": 32
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "S927",
+          "level": "warning",
+          "message": "Rename parameter 'dto' to 'createTripWithDestinationsDto' to match the interface declaration.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 570,
+                  "startColumn": 39,
+                  "endLine": 570,
+                  "endColumn": 42
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MongoDb/MongoDbTripRepository.cs",
+                "region": {
+                  "startLine": 485,
+                  "startColumn": 18,
+                  "endLine": 485,
+                  "endColumn": 29
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "S3251",
+          "level": "warning",
+          "message": "Supply an implementation for the partial method, otherwise this call will be ignored.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Modules/TravelBuddy.Trips/Infrastructure/MySql/TripsDbContext.cs",
+                "region": {
+                  "startLine": 303,
+                  "startColumn": 9,
+                  "endLine": 303,
+                  "endColumn": 46
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        }
+      ],
+      "rules": {
+        "CA1860": {
+          "id": "CA1860",
+          "shortDescription": "Avoid using 'Enumerable.Any()' extension method",
+          "fullDescription": "Prefer using 'IsEmpty', 'Count' or 'Length' properties whichever available, rather than calling 'Enumerable.Any()'. The intent is clearer and it is more performant than using 'Enumerable.Any()' extension method.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1860",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1862": {
+          "id": "CA1862",
+          "shortDescription": "Use the 'StringComparison' method overloads to perform case-insensitive string comparisons",
+          "fullDescription": "Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1862",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CS8618": {
+          "id": "CS8618",
+          "shortDescription": "Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.",
+          "defaultLevel": "warning",
+          "helpUri": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS8618)",
+          "properties": {
+            "category": "Compiler",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Compiler",
+              "Telemetry"
+            ]
+          }
+        },
+        "S101": {
+          "id": "S101",
+          "shortDescription": "Types should be named in PascalCase",
+          "fullDescription": "Shared naming conventions allow teams to collaborate efficiently.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-101",
+          "properties": {
+            "category": "Minor Code Smell",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "TestSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S1066": {
+          "id": "S1066",
+          "shortDescription": "Mergeable \"if\" statements should be combined",
+          "fullDescription": "Nested code - blocks of code inside blocks of code - is eventually necessary, but increases complexity. This is why keeping the code as flat as possible, by avoiding unnecessary nesting, is considered a good practice.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-1066",
+          "properties": {
+            "category": "Major Code Smell",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "TestSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S1135": {
+          "id": "S1135",
+          "shortDescription": "Track uses of \"TODO\" tags",
+          "fullDescription": "Developers often use TODO tags to mark areas in the code where additional work or improvements are needed but are not implemented immediately. However, these TODO tags sometimes get overlooked or forgotten, leading to incomplete or unfinished code. This rule aims to identify and address unattended TODO tags to ensure a clean and maintainable codebase. This description explores why this is a problem and how it can be fixed to improve the overall code quality.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-1135",
+          "properties": {
+            "category": "Info Code Smell",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "TestSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S1192": {
+          "id": "S1192",
+          "shortDescription": "String literals should not be duplicated",
+          "fullDescription": "Duplicated string literals make the process of refactoring complex and error-prone, as any change would need to be propagated on all occurrences.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-1192",
+          "properties": {
+            "category": "Minor Code Smell",
+            "isEnabledByDefault": false,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S125": {
+          "id": "S125",
+          "shortDescription": "Sections of code should not be commented out",
+          "fullDescription": "Commented-out code distracts the focus from the actual executed code. It creates a noise that increases maintenance code. And because it is never executed, it quickly becomes out of date and invalid.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-125",
+          "properties": {
+            "category": "Major Code Smell",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "TestSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S3251": {
+          "id": "S3251",
+          "shortDescription": "Implementations should be provided for \"partial\" methods",
+          "fullDescription": "partial methods allow an increased degree of flexibility in programming a system. Hooks can be added to generated code by invoking methods that define their signature, but might not have an implementation yet. But if the implementation is still missing when the code makes it to production, the compiler silently removes the call. In the best case scenario, such calls simply represent cruft, but in they worst case they are critical, missing functionality, the loss of which will lead to unexpected results at runtime.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-3251",
+          "properties": {
+            "category": "Minor Code Smell",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S3776": {
+          "id": "S3776",
+          "shortDescription": "Cognitive Complexity of methods should not be too high",
+          "fullDescription": "This rule raises an issue when the code cognitive complexity of a function is above a certain threshold.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-3776",
+          "properties": {
+            "category": "Critical Code Smell",
+            "isEnabledByDefault": false,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "TestSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S6580": {
+          "id": "S6580",
+          "shortDescription": "Use a format provider when parsing date and time",
+          "fullDescription": "When converting a string representation of a date and time to a DateTime object or any other temporal type with one of the available system parsing methods, you should always provide an IFormatProvider parameter.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-6580",
+          "properties": {
+            "category": "Major Code Smell",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "TestSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S927": {
+          "id": "S927",
+          "shortDescription": "Parameter names should match base declaration and other partial definitions",
+          "fullDescription": "Parameters are part of the method signature and its identity.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-927",
+          "properties": {
+            "category": "Critical Code Smell",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "TestSourceScope",
+              "SonarWay"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

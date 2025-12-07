@@ -1,6 +1,21 @@
 USE travel_buddy;
 show tables;
 
+SELECT COUNT(*) AS total_users
+FROM user;
+
+SELECT
+    user_id,
+    Name,
+    Email,
+    is_deleted
+FROM user
+WHERE user_id IN (5, 54, 75);
+
+SELECT COUNT(*) AS deleted_users
+FROM user
+WHERE is_deleted = 1;
+
 SELECT *
 FROM trip_destination
 JOIN travel_buddy.buddy b on trip_destination.trip_destination_id = b.trip_destination_id

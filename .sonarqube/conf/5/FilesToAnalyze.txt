@@ -1,0 +1,24 @@
+﻿C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Api\Auth\ClaimsPrincipalExtensions.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Api\Auth\JWTTokenGenerator.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Api\Controllers\AdminController.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Api\Controllers\BuddyRequestsController.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Api\Controllers\DestinationsController.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Api\Controllers\MessagingController.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Api\Controllers\TripDestinationsController.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Api\Controllers\UsersController.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Api\Controllers\UserTripsController.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Api\Factories\MessagingRepositoryFactory.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Api\Factories\SharedKernelRepositoryFactory copy.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Api\Factories\TripRepositoryFactory.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Api\Factories\UserRepositoryFactory.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Api\Program.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Api\Swagger\AddDatabaseHeaderParameter.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Api\obj\Debug\net9.0\TravelBuddy.Api.GlobalUsings.g.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Api\obj\Debug\net9.0\.NETCoreApp,Version=v9.0.AssemblyAttributes.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Api\obj\Debug\net9.0\TravelBuddy.Api.AssemblyInfo.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Api\obj\Debug\net9.0\TravelBuddy.Api.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Api\appsettings.Development.json
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Api\appsettings.json
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Api\add_secrets.md
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Api\TravelBuddy.Api.http
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Api\Properties\launchSettings.json

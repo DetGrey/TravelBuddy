@@ -1,0 +1,8 @@
+﻿C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Migrator\Models\ConversationDocument.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Migrator\Models\DestinationDocument.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Migrator\Models\MessageDocument.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Migrator\Models\TripDocument.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Migrator\Models\UserDocument.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Migrator\Program.cs
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Migrator\.env
+C:\Users\natha\OneDrive\Skrivebord\Kea-it-arkitektur\5. semester\TravelBuddy\src\TravelBuddy.Migrator\appsettings.json

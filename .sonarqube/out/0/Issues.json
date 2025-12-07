@@ -1,0 +1,128 @@
+{
+  "$schema": "http://json.schemastore.org/sarif-1.0.0",
+  "version": "1.0.0",
+  "runs": [
+    {
+      "tool": {
+        "name": "Microsoft (R) Visual C# Compiler",
+        "version": "4.14.0.0",
+        "fileVersion": "4.14.0-3.25465.8 (b0a9adbf)",
+        "semanticVersion": "4.14.0",
+        "language": "en-US"
+      },
+      "results": [
+        {
+          "ruleId": "CS8618",
+          "level": "warning",
+          "message": "Non-nullable property 'SystemEventLogs' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.",
+          "suppressionStates": [
+            "suppressedInSource"
+          ],
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Shared/TravelBuddy.SharedKernel/Infrastructure/MySql/SharedKernelDbContext.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 12,
+                  "endLine": 10,
+                  "endColumn": 33
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Shared/TravelBuddy.SharedKernel/Infrastructure/MySql/SharedKernelDbContext.cs",
+                "region": {
+                  "startLine": 15,
+                  "startColumn": 42,
+                  "endLine": 15,
+                  "endColumn": 57
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S3251",
+          "level": "warning",
+          "message": "Supply an implementation for this partial method.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Shared/TravelBuddy.SharedKernel/Infrastructure/MySql/SharedKernelDbContext.cs",
+                "region": {
+                  "startLine": 46,
+                  "startColumn": 5,
+                  "endLine": 46,
+                  "endColumn": 12
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S3251",
+          "level": "warning",
+          "message": "Supply an implementation for the partial method, otherwise this call will be ignored.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///C:/Users/natha/OneDrive/Skrivebord/Kea-it-arkitektur/5.%20semester/TravelBuddy/src/Shared/TravelBuddy.SharedKernel/Infrastructure/MySql/SharedKernelDbContext.cs",
+                "region": {
+                  "startLine": 43,
+                  "startColumn": 9,
+                  "endLine": 43,
+                  "endColumn": 46
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        }
+      ],
+      "rules": {
+        "CS8618": {
+          "id": "CS8618",
+          "shortDescription": "Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.",
+          "defaultLevel": "warning",
+          "helpUri": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS8618)",
+          "properties": {
+            "category": "Compiler",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Compiler",
+              "Telemetry"
+            ]
+          }
+        },
+        "S3251": {
+          "id": "S3251",
+          "shortDescription": "Implementations should be provided for \"partial\" methods",
+          "fullDescription": "partial methods allow an increased degree of flexibility in programming a system. Hooks can be added to generated code by invoking methods that define their signature, but might not have an implementation yet. But if the implementation is still missing when the code makes it to production, the compiler silently removes the call. In the best case scenario, such calls simply represent cruft, but in they worst case they are critical, missing functionality, the loss of which will lead to unexpected results at runtime.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-3251",
+          "properties": {
+            "category": "Minor Code Smell",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "SonarWay"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}
