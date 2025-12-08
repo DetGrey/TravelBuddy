@@ -1219,6 +1219,9 @@ BEGIN
         SET MESSAGE_TEXT = 'User cannot create conversation with themselves';
     END IF;
 
+    -- To prevent two users creating a conversation with eachother at the same time
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+
     START TRANSACTION;
   
     SELECT c.conversation_id INTO v_existing_conversation_id
@@ -1641,8 +1644,12 @@ BEGIN
         SET MESSAGE_TEXT = 'person_count must be greater than zero';
     END IF;
 
+    -- To prevent e.g. two users from both requesting when there's only 1 spot left
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+
     START TRANSACTION;
 
+    -- This read now locks the rows involved in the sum calculation
     SET v_remaining_capacity = get_trip_destination_remaining_capacity(p_trip_destination_id);
 
     IF v_remaining_capacity < p_person_count THEN

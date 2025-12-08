@@ -1243,8 +1243,7 @@ RETURN b.buddyId AS BuddyId
             return await session.ExecuteWriteAsync(async tx =>
             {
                 var cypher = @"
-                    MATCH (t:Trip {tripId: $tripId})
-                    WHERE t.ownerId = $ownerId
+                    MATCH (u:User {userId: $ownerId})-[:OWNS]->(t:Trip {tripId: $tripId})
                     WITH t, t.tripName AS oldTripName, t.description AS oldDescription
                     " + ((tripName == null || string.IsNullOrEmpty(tripName)) ? "" : "SET t.tripName = $tripName ") +
                     (string.IsNullOrEmpty(description) ? "" : "SET t.description = $description ") + @"
@@ -1306,14 +1305,12 @@ RETURN b.buddyId AS BuddyId
             return await session.ExecuteWriteAsync(async tx =>
             {
                 var cypher = @"
-                    MATCH (td:TripDestination {tripDestinationId: $tripDestinationId})
-                    MATCH (t:Trip {tripId: td.tripId})
-                    WHERE t.ownerId = $ownerId
-                    WITH td, t, td.description AS oldDescription
+                    MATCH (u:User {userId: $ownerId})-[:OWNS]->(t:Trip)-[td:HAS_STOP {tripDestinationId: $tripDestinationId}]->(d:Destination)
+                    WITH t, td, td.description AS oldDescription
                     SET td.description = $description
-                    WITH td, t, oldDescription
+                    WITH t, td, oldDescription
                     OPTIONAL MATCH (maxAudit:TripAudit)
-                    WITH td, t, oldDescription, coalesce(max(maxAudit.AuditId), 0) AS maxId
+                    WITH t, td, oldDescription, coalesce(max(maxAudit.AuditId), 0) AS maxId
                     FOREACH (_ IN CASE WHEN oldDescription <> $description OR (oldDescription IS NULL AND $description IS NOT NULL) OR (oldDescription IS NOT NULL AND $description IS NULL) THEN [1] ELSE [] END |
                         CREATE (audit:TripAudit {
                             AuditId: maxId + 1,

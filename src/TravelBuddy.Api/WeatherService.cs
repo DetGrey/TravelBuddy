@@ -15,7 +15,7 @@ public class VisualCrossingWeatherService : IWeatherService
     public VisualCrossingWeatherService(HttpClient httpClient, IConfiguration config)
     {
         _httpClient = httpClient;
-        _apiKey = config["VisualCrossing:ApiKey"]; // Store key in appsettings.json
+        _apiKey = config["VisualCrossing:ApiKey"] ?? throw new InvalidOperationException("VisualCrossing:ApiKey is not configured");
     }
 
     public async Task<WeatherSummary?> GetWeatherForTripAsync(string location, DateOnly start, DateOnly end)
@@ -34,7 +34,9 @@ public class VisualCrossingWeatherService : IWeatherService
             if (!response.IsSuccessStatusCode) return null; // Fail gracefully
 
             var json = await response.Content.ReadAsStringAsync();
-            dynamic data = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+            dynamic? data = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+            
+            if (data == null) return null;
 
             // Calculate averages or grab the first day's overview
             // For a trip, an average of the days is usually best for a summary
@@ -53,7 +55,7 @@ public class VisualCrossingWeatherService : IWeatherService
                 Math.Round(totalMax / count, 1),
                 Math.Round(totalMin / count, 1),
                 (string)data.description, // Overall trip description
-                (string)data.days[0].icon // Use the first day's icon or a generic one
+                (string)data.days![0].icon // Use the first day's icon or a generic one
             );
         }
         catch

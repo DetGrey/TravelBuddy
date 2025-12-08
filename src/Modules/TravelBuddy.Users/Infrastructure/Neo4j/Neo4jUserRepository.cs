@@ -269,7 +269,7 @@ public class Neo4jUserRepository : IUserRepository
                    a.fieldChanged as FieldChanged, a.oldValue as OldValue,
                    a.newValue as NewValue, cb.userId as ChangedBy,
                    a.timestamp as Timestamp
-            ORDER BY a.auditId DESC
+            ORDER BY a.timestamp ASC
         ";
         
         var cursor = await session.RunAsync(cypher);

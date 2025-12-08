@@ -204,9 +204,6 @@ namespace TravelBuddy.Api.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var changedBy = User.GetUserId();
-            if (changedBy == null) return Unauthorized();
-
             if (!User.IsSelfOrAdmin(userId)) return Forbid();
 
             var (success, errorMessage) = await _tripService.UpdateTripInfoAsync(
@@ -240,9 +237,6 @@ namespace TravelBuddy.Api.Controllers
         )
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-
-            var changedBy = User.GetUserId();
-            if (changedBy == null) return Unauthorized();
 
             if (!User.IsSelfOrAdmin(userId)) return Forbid();
 

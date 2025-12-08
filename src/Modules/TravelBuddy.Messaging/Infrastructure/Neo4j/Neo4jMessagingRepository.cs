@@ -565,9 +565,8 @@ namespace TravelBuddy.Messaging
                     // PERMANENTLY delete the conversation and all relationships
                     var deleteCypher = @"
                         MATCH (c:Conversation {conversationId: $conversationId})
-                        OPTIONAL MATCH (c)-[r]-()
-                        OPTIONAL MATCH (m:Message)-[mr]-(c)
-                        DELETE mr, m, r, c
+                        OPTIONAL MATCH (c)-[:HAS_MESSAGE]->(m:Message)
+                        DETACH DELETE m, c
                     ";
                     await tx.RunAsync(deleteCypher, new { conversationId });
 
