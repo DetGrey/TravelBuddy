@@ -69,75 +69,69 @@ Your project components should be organized as follows. This structure assumes y
 #### Prerequisites (Updated for Local Test Environment)
 
   * **.NET SDK** (e.g., .NET 8 or later)
-  * **Local MySQL Server** (v8.0+ running locally or via Docker)
-  * **Local MongoDB Server** (running locally or via Docker)
-  * **MySQL Client/IDE** (e.g., MySQL Workbench)
-  * **SQL files**: `1_create_db_tables.sql`, `2_stored_objects.sql`, `3_seed_data.sql`
+  * **Bash terminal**
   * **Database Credentials**: Connection strings must be updated in the C\# project configuration files to point to the **local** instances (e.g., `localhost` or `127.0.0.1`).
 
 -----
 
-### 2. Local Database Import (MySQL)
+#### Add the env variables
 
-Follow these steps to set up the relational database schema and data on your **local MySQL instance**.
-
-1.  **Start Local MySQL:** Ensure your local MySQL server is running.
-2.  **Connect Locally:** Open your MySQL client and connect using your local server credentials (e.g., `localhost:3306`).
-3.  **Run Setup Scripts (in order):** Execute the SQL files located in the `mysql/` folder sequentially:
-      * **Schema & Tables:** Run `1_create_db_tables.sql`.
-      * **Stored Logic:** Run `2_stored_objects.sql`.
-      * **Seed Data:** Run `3_seed_data.sql`.
-
-> **Verification:** Confirm the `travel_buddy` schema, tables, and stored procedures exist on the local MySQL instance.
-
------
-
-### 3. Local MongoDB Preparation
-
-The MongoDB server only needs to be running locally, as the Migrator handles the initial data population.
-
-1.  **Start Local MongoDB:** Ensure your local MongoDB server is running.
-2.  **Create .env file:** Inside `src/TravelBuddy.Migrator` create a .env file with following variables and update values to your local information:
+1.  **Create .env file:** Inside `src/TravelBuddy.Migrator` create a .env file with following variables and update values to your local information:
 ```bash
 MYSQL_HOST=localhost
-MYSQL_PORT=3306
-MYSQL_USER=root
-MYSQL_PASSWORD=YOUR_PASSWORD
+MYSQL_PORT=3307
+MYSQL_USER=migrator
+MYSQL_PASSWORD=migrator_password
 MYSQL_DATABASE=travel_buddy
 
-MONGO_CONNECTION=mongodb://localhost:27017
+MONGO_CONNECTION=mongodb://root:password@localhost:27017
 MONGO_DATABASE=travel_buddy_mongo
+
+NEO4J_URI=bolt://localhost:7687
+NEO4J_USER=neo4j
+NEO4J_PASSWORD=password
+```
+
+2. **Add connection strings:** Inside `src/TravelBuddy.Api` run following in a bash terminal
+
+Setup env ConnectionStrings, but remember to update password (and the other values if you are not using the default ones):
+```bash
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;Port=3307;Database=travel_buddy;User=backend_api;Pwd=backend_api_password;"
+
+dotnet user-secrets set "ConnectionStrings:MongoDbConnection" "mongodb://root:password@localhost:27017/travel_buddy?authSource=admin"
+
+dotnet user-secrets set "ConnectionStrings:Neo4jUri" "bolt://localhost:7687"
+dotnet user-secrets set "ConnectionStrings:Neo4jUser" "neo4j"
+dotnet user-secrets set "ConnectionStrings:Neo4jPassword" "password"
+```
+3. To access our endpoint with external API for weather (Visual Crossing) either add your own api key or find ours in the report. Change `API_KEY` before running the code below:
+```bash
+dotnet user-secrets set "VisualCrossing:ApiKey" "API_KEY"
 ```
 
 -----
 
-### 4. Component Launch (Migrator & API)
-
-With the local databases configured and running, launch the application components.
-
-#### A. Run the Migrator
+### 2. Run the databases and migrator
 
 1.  **Navigate** to the migrator project folder:
     ```bash
     cd src/TravelBuddy.Migrator
     ```
-2.  **Execute** the migrator. This reads data from the local MySQL instance and populates the local MongoDB instance.
+2.  **Execute** the code below to set up the databases and run the migrator to populate the mongodb and neo4j databases.
     ```bash
-    dotnet run
+    docker-compose rm -sf test_mysql test_mongodb test_neo4j migrator && \
+    docker-compose up -d test_mysql test_mongodb test_neo4j && \
+    docker-compose up --build migrator
     ```
-    Wait for the Migrator process to complete.
+    Wait for the process to complete.
 
-#### B. Run the API
+### 3. Run the API
 
 1.  **Navigate** to the API project folder:
     ```bash
     cd src/TravelBuddy.Api
     ```
-2.  **Setup env ConnectionStrings** for MySql connection but remember to update password (and the other values if you are not using the default ones):
-    ```bash
-    dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=127.0.0.1;Port=3306;Database=travel_buddy;User=root;Password=YOUR_PASSWORD;"
-    ```
-3.  **Execute** the API service:
+2.  **Execute** the API service:
     ```bash
     dotnet run
     ```
