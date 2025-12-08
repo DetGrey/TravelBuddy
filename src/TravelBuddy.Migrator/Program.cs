@@ -487,14 +487,11 @@ using (var sharedKernelDbContext = new TravelBuddy.SharedKernel.Infrastructure.S
         EventId = e.EventId,
         EventType = e.EventType,
         AffectedId = e.AffectedId,
-        TriggeredAt = e.TriggeredAt,
+        Timestamp = e.Timestamp,
         Details = e.Details
     }).ToList();
     if (systemEventLogDocs.Count > 0)
     {
-        Console.WriteLine("First system event log details:");
-        var firstLog = systemEventLogDocs[0];
-        Console.WriteLine($" All fields: EventId={firstLog.EventId}, EventType={firstLog.EventType}, AffectedId={firstLog.AffectedId}, TriggeredAt={firstLog.TriggeredAt}, Details={firstLog.Details}");
         await systemEventLogCollection.InsertManyAsync(systemEventLogDocs);
     }
     Console.WriteLine($"System event logs migrated: {systemEventLogDocs.Count}");
@@ -917,14 +914,14 @@ using (var sharedKernelDbContext = new SharedKernelDbContext(
                 eventId = e.EventId,
                 eventType = e.EventType,
                 affectedId = e.AffectedId,
-                triggeredAt = e.TriggeredAt?.ToUniversalTime().ToString("o", CultureInfo.InvariantCulture),
+                timestamp = e.Timestamp?.ToUniversalTime().ToString("o", CultureInfo.InvariantCulture),
                 details = e.Details
             };
             await logSession.RunAsync(@"
                 MERGE (l:SystemEventLog { eventId: $eventId })
                 SET l.eventType = $eventType,
                     l.affectedId = $affectedId,
-                    l.triggeredAt = datetime($triggeredAt),
+                    l.timestamp = datetime($timestamp),
                     l.details = $details
             ", parameters);
         }

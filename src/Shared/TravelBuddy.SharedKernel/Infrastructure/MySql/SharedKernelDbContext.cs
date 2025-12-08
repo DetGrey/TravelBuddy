@@ -34,10 +34,10 @@ public partial class SharedKernelDbContext : DbContext
             entity.Property(e => e.EventType)
                 .HasMaxLength(100)
                 .HasColumnName("event_type");
-            entity.Property(e => e.TriggeredAt)
+            entity.Property(e => e.Timestamp)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("datetime")
-                .HasColumnName("triggered_at");
+                .HasColumnName("timestamp");
         });
 
         OnModelCreatingPartial(modelBuilder);

@@ -15,7 +15,7 @@ public class SystemEventLogDocument
 
     public int? AffectedId { get; set; }
 
-    public DateTime? TriggeredAt { get; set; }
+    public DateTime? Timestamp { get; set; }
 
     public string? Details { get; set; }
 }
@@ -42,7 +42,7 @@ public class MongoDbSharedKernelRepository : ISharedKernelRepository
             EventId = doc.EventId,
             EventType = doc.EventType,
             AffectedId = doc.AffectedId,
-            TriggeredAt = doc.TriggeredAt,
+            Timestamp = doc.Timestamp,
             Details = doc.Details
         }).ToList();
     }

@@ -20,9 +20,9 @@ public class Neo4jSharedKernelRepository : ISharedKernelRepository
             "RETURN l.eventId AS eventId, " +
             "       l.eventType AS eventType, " +
             "       l.affectedId AS affectedId, " +
-            "       l.triggeredAt AS triggeredAt, " +
+            "       l.timestamp AS timestamp, " +
             "       l.details AS details " +
-            "ORDER BY l.triggeredAt DESC");
+            "ORDER BY l.timestamp DESC");
 
         var logs = new List<SystemEventLog>();
         
@@ -33,7 +33,7 @@ public class Neo4jSharedKernelRepository : ISharedKernelRepository
                 EventId = record["eventId"].As<int>(),
                 EventType = record["eventType"].As<string>(),
                 AffectedId = record["affectedId"] == null ? null : record["affectedId"].As<int?>(),
-                TriggeredAt = ConvertNeo4jDateTime(record["triggeredAt"]),
+                Timestamp = ConvertNeo4jDateTime(record["timestamp"]),
                 Details = record["details"] == null ? null : record["details"].As<string>()
             };
             logs.Add(log);

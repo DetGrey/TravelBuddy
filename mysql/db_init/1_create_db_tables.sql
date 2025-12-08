@@ -212,6 +212,6 @@ CREATE TABLE IF NOT EXISTS system_event_logs (
     event_id INT AUTO_INCREMENT PRIMARY KEY,
     event_type VARCHAR(100) NOT NULL CHECK (CHAR_LENGTH(TRIM(event_type)) > 0),
     affected_id INT,
-    triggered_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
     details VARCHAR(255)
 );

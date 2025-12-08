@@ -11,7 +11,7 @@ public partial class SystemEventLog
 
     public int? AffectedId { get; set; }
 
-    public DateTime? TriggeredAt { get; set; }
+    public DateTime? Timestamp { get; set; }
 
     public string? Details { get; set; }
 }
