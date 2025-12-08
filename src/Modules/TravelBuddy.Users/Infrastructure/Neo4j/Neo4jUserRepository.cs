@@ -344,28 +344,3 @@ public class Neo4jUserRepository : IUserRepository
         return DateTime.MinValue;
     }
 }
-
-/*
-public async Task<IEnumerable<User>> GetAllAsync()
-    {
-        // TODO Placeholder: Return an empty list of Users
-        /* // Retrieve all Person nodes who know other persons
-        var result = await _driver.ExecutableQuery(@"
-            MATCH (p:Person)-[:KNOWS]->(:Person)
-            RETURN p.name AS name
-            ")
-            .WithConfig(new QueryConfig(database: "neo4j"))
-            .ExecuteAsync();
-
-        // Loop through results and print people's name
-        foreach (var record in result.Result) {
-            Console.WriteLine(record.Get<string>("name"));
-        }
-
-        // Summary information
-        var summary = result.Summary;
-        Console.WriteLine($"The query `{summary.Query.Text}` returned {result.Result.Count()} results in {summary.ResultAvailableAfter.Milliseconds} ms.");
-        
-        return await Task.FromResult<IEnumerable<User>>(new List<User>());
-    }
-*/

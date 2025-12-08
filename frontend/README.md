@@ -147,11 +147,4 @@ If your backend changes or has additional routes, I can adapt the helper functio
 
 ## Missing endpoints (TODOs for the backend)
 
-These frontend pages expect the following server endpoints which are not currently implemented in the backend. The code contains TODO comments where these helpers are used and will need server-side endpoints to be added later:
-
-- POST /api/trip-destinations  — create a trip / trip-destination (used by `src/pages/CreateTripPage.jsx` and `src/services/tripsService.js`)
-- GET /api/trip-destinations/{id}  — fetch a single trip/destination's details (used by `src/pages/TripDetailsPage.jsx` and `src/services/tripsService.js`)
 - POST /api/conversations  — create a new direct conversation with a user (used by `src/pages/NewConversationPage.jsx` / `src/services/messagesService.js`)
-
-When these endpoints are added server-side I can finish wiring the pages so they behave fully end-to-end.
-
