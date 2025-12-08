@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import NavBar from '../components/NavBar';
 import { AuthContext } from '../context/AuthContext';
 import tripsService from '../services/tripsService';
-import categorizeAndSortTrips from '../utils/categorizeAndSortTrips';
+import categorizeAndSortTrips from '../utils/CategorizeAndSortTrips';
 import TripCard from '../components/TripCard';
 import PendingRequestsCard from '../components/PendingRequestCard';
 

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import formatDate from '../utils/formatDate';
+import formatDate from '../utils/FormatDate';
 
 const TripCard = ({ t }) => {
   const isOwned = t.destinations !== undefined; // owned trips have destinations array

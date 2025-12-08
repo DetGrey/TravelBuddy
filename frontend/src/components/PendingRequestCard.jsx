@@ -1,7 +1,7 @@
 // PendingRequestsCard.jsx
 import React from "react";
 import { Link } from "react-router-dom";
-import formatDate from '../utils/formatDate';
+import formatDate from '../utils/FormatDate';
 
 const PendingRequestsCard = ({
   pendingRequests,
