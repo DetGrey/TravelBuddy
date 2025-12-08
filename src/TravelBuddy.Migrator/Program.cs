@@ -492,6 +492,9 @@ using (var sharedKernelDbContext = new TravelBuddy.SharedKernel.Infrastructure.S
     }).ToList();
     if (systemEventLogDocs.Count > 0)
     {
+        Console.WriteLine("First system event log details:");
+        var firstLog = systemEventLogDocs[0];
+        Console.WriteLine($" All fields: EventId={firstLog.EventId}, EventType={firstLog.EventType}, AffectedId={firstLog.AffectedId}, TriggeredAt={firstLog.TriggeredAt}, Details={firstLog.Details}");
         await systemEventLogCollection.InsertManyAsync(systemEventLogDocs);
     }
     Console.WriteLine($"System event logs migrated: {systemEventLogDocs.Count}");
@@ -920,6 +923,7 @@ using (var sharedKernelDbContext = new SharedKernelDbContext(
             await logSession.RunAsync(@"
                 MERGE (l:SystemEventLog { eventId: $eventId })
                 SET l.eventType = $eventType,
+                    l.affectedId = $affectedId,
                     l.triggeredAt = datetime($triggeredAt),
                     l.details = $details
             ", parameters);

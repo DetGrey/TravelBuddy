@@ -74,8 +74,26 @@ public class MySqlMessagingRepository : IMessagingRepository
         return message;
     }
 
-    // ------------------------------- AUDIT TABLES -------------------------------
-    public async Task<IEnumerable<ConversationAudit>> GetConversationAuditsAsync()
+        public async Task<(bool Success, string? ErrorMessage)> DeleteConversationAsync(int conversationId, int changedBy)
+        {
+            try
+            {
+                await _context.Database.ExecuteSqlInterpolatedAsync($@"
+                    CALL admin_delete_conversation(
+                        {conversationId},
+                        {changedBy}
+                    )");
+
+                return (true, null);
+            }
+            catch (Exception ex)
+            {
+                return (false, "Error: " + ex.Message);
+            }
+        }
+
+        // ------------------------------- AUDIT TABLES -------------------------------
+        public async Task<IEnumerable<ConversationAudit>> GetConversationAuditsAsync()
     {
         return await _context.ConversationAudits
             .AsNoTracking()

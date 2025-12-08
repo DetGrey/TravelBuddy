@@ -275,4 +275,49 @@ public class RegistrationTests : BaseIntegrationTest
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
     }
+    // ------------------------------------------------ Edge cases ------------------------------------------------
+    // Case Insensitivity Collision
+    [Theory]
+    [InlineData("uniqueemail@test.com", "UniqueEmail@Test.com")]
+    public async Task Register_WithEmail_CaseInsensitivityCollision_ReturnsConflict(string lowercaseEmail, string uppercaseEmail)
+    {
+        var rawPassword = "Password123!";
+        var lowerRegisterDto = new RegisterRequestDto
+        { 
+            Email = lowercaseEmail, 
+            Password = rawPassword, 
+            Name = "lowercase user",
+            Birthdate = new DateOnly(1990, 1, 1)
+        };
+        var UpperRegisterDto = new RegisterRequestDto
+        { 
+            Email = uppercaseEmail, 
+            Password = rawPassword, 
+            Name = "uppercase user",
+            Birthdate = new DateOnly(1990, 1, 1)
+        };
+
+        var response = await _client.PostAsJsonAsync("/api/users/register", lowerRegisterDto);
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var authResponse = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
+        authResponse.Should().NotBeNull();
+
+        var conflictResponse = await _client.PostAsJsonAsync("/api/users/register", UpperRegisterDto);
+        conflictResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
+            var userInDb = db.Users.FirstOrDefault(u => u.Email == lowercaseEmail);
+           
+            userInDb.Should().NotBeNull();
+            userInDb.Name.Should().Be("lowercase user");
+
+             var uppercaseUserInDb = db.Users.FirstOrDefault(u => u.Email == uppercaseEmail);
+            // uppercase should be null or show lowercase user only
+            uppercaseUserInDb.Should().BeNull("because email registration should be case-insensitive and prevent duplicates");
+        }
+    }
+
 }

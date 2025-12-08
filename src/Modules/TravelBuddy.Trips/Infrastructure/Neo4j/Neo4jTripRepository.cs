@@ -1019,7 +1019,7 @@ RETURN b.buddyId AS BuddyId
                    a.fieldChanged as FieldChanged, a.oldValue as OldValue,
                    a.newValue as NewValue, cb.userId as ChangedBy,
                    a.timestamp as Timestamp
-            ORDER BY a.auditId DESC
+            ORDER BY a.timestamp ASC
         ";
         
         var cursor = await session.RunAsync(cypher);
@@ -1047,7 +1047,7 @@ RETURN b.buddyId AS BuddyId
             RETURN a.auditId as AuditId, a.buddyId as BuddyId, a.action as Action,
                    a.reason as Reason, u.userId as ChangedBy,
                    a.timestamp as Timestamp
-            ORDER BY a.auditId DESC
+            ORDER BY a.timestamp ASC
         ";
         
         var cursor = await session.RunAsync(cypher);
@@ -1062,6 +1062,286 @@ RETURN b.buddyId AS BuddyId
             ChangedBy = r["ChangedBy"].As<int?>(),
             Timestamp = ParseDateTime(r["Timestamp"])
         }).ToList();
+    }
+
+    // ------------------------------- ADMIN DELETION METHODS -------------------------------
+    public async Task<(bool Success, string? ErrorMessage)> DeleteTripAsync(int tripId, int changedBy)
+    {
+        await using var session = _driver.AsyncSession();
+        
+        try
+        {
+            return await session.ExecuteWriteAsync(async tx =>
+            {
+                // Get trip name for audit
+                var checkCypher = @"
+                    MATCH (t:Trip {tripId: $tripId})
+                    RETURN t.tripName as TripName
+                ";
+                var checkCursor = await tx.RunAsync(checkCypher, new { tripId });
+                var checkRecords = await checkCursor.ToListAsync();
+                
+                if (!checkRecords.Any())
+                    return (false, "No trip found with the given trip_id");
+
+                var tripName = checkRecords.First()["TripName"].As<string?>();
+
+                // Get next audit ID
+                var auditIdCypher = @"
+                    MATCH (a:TripAudit)
+                    RETURN coalesce(max(a.auditId), 0) + 1 as NextId
+                ";
+                var auditIdCursor = await tx.RunAsync(auditIdCypher);
+                var auditIdRecord = await auditIdCursor.SingleAsync();
+                var nextAuditId = auditIdRecord["NextId"].As<int>();
+
+                // Create audit node
+                var auditCypher = @"
+                    CREATE (a:TripAudit {
+                        auditId: $auditId,
+                        tripId: $tripId,
+                        action: 'deleted',
+                        fieldChanged: 'trip',
+                        oldValue: $tripName,
+                        newValue: null,
+                        timestamp: datetime()
+                    })
+                    WITH a
+                    MATCH (u:User {userId: $changedBy})
+                    CREATE (u)-[:CHANGED]->(a)
+                ";
+                await tx.RunAsync(auditCypher, new { auditId = nextAuditId, tripId, tripName, changedBy });
+
+                // Delete trip and all relationships
+                var deleteCypher = @"
+                    MATCH (t:Trip {tripId: $tripId})
+                    OPTIONAL MATCH (t)-[r]-()
+                    DELETE r, t
+                ";
+                await tx.RunAsync(deleteCypher, new { tripId });
+
+                return (true, (string?)null);
+            });
+        }
+        catch (Exception ex)
+        {
+            return (false, "Error: " + ex.Message);
+        }
+    }
+
+    public async Task<(bool Success, string? ErrorMessage)> DeleteTripDestinationAsync(int tripDestinationId, int changedBy)
+    {
+        await using var session = _driver.AsyncSession();
+        
+        try
+        {
+            return await session.ExecuteWriteAsync(async tx =>
+            {
+                // Get trip and destination info for audit
+                var checkCypher = @"
+                    MATCH (t:Trip)-[hs:HAS_STOP {tripDestinationId: $tripDestinationId}]->(d:Destination)
+                    RETURN t.tripId as TripId, d.name as DestinationName
+                ";
+                var checkCursor = await tx.RunAsync(checkCypher, new { tripDestinationId });
+                var checkRecords = await checkCursor.ToListAsync();
+                
+                if (!checkRecords.Any())
+                    return (false, "No trip destination found with the given trip_destination_id");
+
+                var tripId = checkRecords.First()["TripId"].As<int>();
+                var destinationName = checkRecords.First()["DestinationName"].As<string?>();
+
+                // Get next audit ID
+                var auditIdCypher = @"
+                    MATCH (a:TripAudit)
+                    RETURN coalesce(max(a.auditId), 0) + 1 as NextId
+                ";
+                var auditIdCursor = await tx.RunAsync(auditIdCypher);
+                var auditIdRecord = await auditIdCursor.SingleAsync();
+                var nextAuditId = auditIdRecord["NextId"].As<int>();
+
+                // Create audit node
+                var auditCypher = @"
+                    CREATE (a:TripAudit {
+                        auditId: $auditId,
+                        tripId: $tripId,
+                        action: 'deleted',
+                        fieldChanged: 'trip_destination',
+                        oldValue: 'Destination: ' + $destinationName,
+                        newValue: null,
+                        timestamp: datetime()
+                    })
+                    WITH a
+                    MATCH (u:User {userId: $changedBy})
+                    CREATE (u)-[:CHANGED]->(a)
+                ";
+                await tx.RunAsync(auditCypher, new { auditId = nextAuditId, tripId, destinationName, changedBy });
+
+                // Delete the HAS_STOP relationship and any BUDDY_ON relationships
+                var deleteCypher = @"
+                    MATCH (t:Trip)-[hs:HAS_STOP {tripDestinationId: $tripDestinationId}]->(d:Destination)
+                    OPTIONAL MATCH ()-[b:BUDDY_ON {tripDestinationId: $tripDestinationId}]->()
+                    DELETE hs, b
+                ";
+                await tx.RunAsync(deleteCypher, new { tripDestinationId });
+
+                return (true, (string?)null);
+            });
+        }
+        catch (Exception ex)
+        {
+            return (false, "Error: " + ex.Message);
+        }
+    }
+    
+    public async Task<(bool Success, string? ErrorMessage)> DeleteDestinationAsync(int destinationId, int changedBy)
+    {
+        await using var session = _driver.AsyncSession();
+        
+        try
+        {
+            return await session.ExecuteWriteAsync(async tx =>
+            {
+                // Check if destination exists
+                var checkCypher = @"
+                    MATCH (d:Destination {destinationId: $destinationId})
+                    RETURN d.name as DestinationName
+                ";
+                var checkCursor = await tx.RunAsync(checkCypher, new { destinationId });
+                var checkRecords = await checkCursor.ToListAsync();
+                
+                if (!checkRecords.Any())
+                    return (false, "No destination found with the given destination_id");
+
+                // PERMANENTLY delete the destination and all relationships
+                var deleteCypher = @"
+                    MATCH (d:Destination {destinationId: $destinationId})
+                    OPTIONAL MATCH (d)-[r]-()
+                    DELETE r, d
+                ";
+                await tx.RunAsync(deleteCypher, new { destinationId });
+
+                return (true, (string?)null);
+            });
+        }
+        catch (Exception ex)
+        {
+            return (false, "Error: " + ex.Message);
+        }
+    }
+
+    public async Task<(bool Success, string? ErrorMessage)> UpdateTripInfoAsync(int tripId, int ownerId, string? tripName, string? description)
+    {
+        await using var session = _driver.AsyncSession();
+        
+        try
+        {
+            // Only update if at least one field is provided (not null/empty)
+            if ((tripName == null || string.IsNullOrEmpty(tripName)) && string.IsNullOrEmpty(description))
+                return (true, null);
+            
+            return await session.ExecuteWriteAsync(async tx =>
+            {
+                var cypher = @"
+                    MATCH (t:Trip {tripId: $tripId})
+                    WHERE t.ownerId = $ownerId
+                    WITH t, t.tripName AS oldTripName, t.description AS oldDescription
+                    " + ((tripName == null || string.IsNullOrEmpty(tripName)) ? "" : "SET t.tripName = $tripName ") +
+                    (string.IsNullOrEmpty(description) ? "" : "SET t.description = $description ") + @"
+                    WITH t, oldTripName, oldDescription
+                    OPTIONAL MATCH (maxAudit:TripAudit)
+                    WITH t, oldTripName, oldDescription, coalesce(max(maxAudit.AuditId), 0) AS maxId
+                    " + ((tripName == null || string.IsNullOrEmpty(tripName)) ? "" : @"FOREACH (_ IN CASE WHEN oldTripName <> $tripName THEN [1] ELSE [] END |
+                        CREATE (audit:TripAudit {
+                            AuditId: maxId + 1,
+                            TripId: $tripId,
+                            Action: 'updated',
+                            FieldChanged: 'trip_name',
+                            OldValue: oldTripName,
+                            NewValue: $tripName,
+                            ChangedBy: $ownerId,
+                            Timestamp: datetime()
+                        })
+                    )
+                    ") + (string.IsNullOrEmpty(description) ? "" : @"FOREACH (_ IN CASE WHEN oldDescription <> $description OR (oldDescription IS NULL AND $description IS NOT NULL) OR (oldDescription IS NOT NULL AND $description IS NULL) THEN [1] ELSE [] END |
+                        CREATE (audit:TripAudit {
+                            AuditId: maxId + 2,
+                            TripId: $tripId,
+                            Action: 'updated',
+                            FieldChanged: 'description',
+                            OldValue: oldDescription,
+                            NewValue: $description,
+                            ChangedBy: $ownerId,
+                            Timestamp: datetime()
+                        })
+                    )
+                    ") + @"RETURN count(t) AS updatedCount
+                ";
+
+                var cursor = await tx.RunAsync(cypher, new { tripId, ownerId, tripName = (tripName == null || string.IsNullOrEmpty(tripName)) ? null : tripName, description = string.IsNullOrEmpty(description) ? null : description });
+                var records = await cursor.ToListAsync();
+                
+                if (!records.Any() || records[0]["updatedCount"].As<long>() == 0)
+                    return (false, "Trip not found or you are not the owner.");
+
+                return (true, (string?)null);
+            });
+        }
+        catch (Exception ex)
+        {
+            return (false, "Error: " + ex.Message);
+        }
+    }
+
+    public async Task<(bool Success, string? ErrorMessage)> UpdateTripDestinationDescriptionAsync(int tripDestinationId, int ownerId, string? description)
+    {
+        await using var session = _driver.AsyncSession();
+        
+        try
+        {
+            // Trip destination description must not be null or empty/whitespace
+            if (string.IsNullOrWhiteSpace(description))
+                return (false, "Trip destination description cannot be empty or whitespace.");
+            
+            return await session.ExecuteWriteAsync(async tx =>
+            {
+                var cypher = @"
+                    MATCH (td:TripDestination {tripDestinationId: $tripDestinationId})
+                    MATCH (t:Trip {tripId: td.tripId})
+                    WHERE t.ownerId = $ownerId
+                    WITH td, t, td.description AS oldDescription
+                    SET td.description = $description
+                    WITH td, t, oldDescription
+                    OPTIONAL MATCH (maxAudit:TripAudit)
+                    WITH td, t, oldDescription, coalesce(max(maxAudit.AuditId), 0) AS maxId
+                    FOREACH (_ IN CASE WHEN oldDescription <> $description OR (oldDescription IS NULL AND $description IS NOT NULL) OR (oldDescription IS NOT NULL AND $description IS NULL) THEN [1] ELSE [] END |
+                        CREATE (audit:TripAudit {
+                            AuditId: maxId + 1,
+                            TripId: t.tripId,
+                            Action: 'updated',
+                            FieldChanged: 'trip_destination_description',
+                            OldValue: oldDescription,
+                            NewValue: $description,
+                            ChangedBy: $ownerId,
+                            Timestamp: datetime()
+                        })
+                    )
+                    RETURN count(td) AS updatedCount
+                ";
+
+                var cursor = await tx.RunAsync(cypher, new { tripDestinationId, ownerId, description });
+                var records = await cursor.ToListAsync();
+                
+                if (!records.Any() || records[0]["updatedCount"].As<long>() == 0)
+                    return (false, "Trip destination not found or you are not the owner.");
+
+                return (true, (string?)null);
+            });
+        }
+        catch (Exception ex)
+        {
+            return (false, "Error: " + ex.Message);
+        }
     }
     
     private static DateTime ParseDateTime(object value)

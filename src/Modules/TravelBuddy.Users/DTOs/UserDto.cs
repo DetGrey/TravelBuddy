@@ -6,6 +6,7 @@ namespace TravelBuddy.Users.DTOs
         int UserId, 
         string Name, 
         string Email,
-        DateOnly Birthdate // Using DateOnly for proper date display without time
+        DateOnly Birthdate, // Using DateOnly for proper date display without time
+        string Role
     );
 }

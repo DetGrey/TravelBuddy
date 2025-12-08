@@ -10,8 +10,10 @@ namespace TravelBuddy.Users
         Task<User?> AuthenticateAsync(string email, string password);
         Task<User?> RegisterAsync(RegisterRequestDto request);
         Task<(bool Success, string? ErrorMessage)> DeleteUser(int userId);
+        Task<(bool Success, string? ErrorMessage)> AdminDeleteUserAsync(int userId, int changedBy);
         Task<UserDto?> GetUserByIdAsync(int userId);
         Task<(bool Success, string? ErrorMessage)> ChangePasswordAsync(ChangePasswordRequestDto request, int userId);
+        Task<(bool Success, string? ErrorMessage)> UpdateUserRoleAsync(int userId, string newRole, int changedBy);
 
         // Gets a list of all users from the database.
         Task<IEnumerable<UserDto>> GetAllUsersAsync();
@@ -77,6 +79,12 @@ namespace TravelBuddy.Users
             return await userRepository.DeleteAsync(userId, hashedPassword);
         }
 
+        public async Task<(bool Success, string? ErrorMessage)> AdminDeleteUserAsync(int userId, int changedBy)
+        {
+            var userRepository = GetRepo();
+            return await userRepository.AdminDeleteAsync(userId, changedBy);
+        }
+
         public async Task<(bool Success, string? ErrorMessage)> ChangePasswordAsync(ChangePasswordRequestDto request, int userId)
         {
             var userRepository = GetRepo();
@@ -102,7 +110,8 @@ namespace TravelBuddy.Users
                 user.UserId,
                 user.Name,
                 user.Email,
-                user.Birthdate
+                user.Birthdate,
+                user.Role
             );
         }
         public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
@@ -119,8 +128,21 @@ namespace TravelBuddy.Users
                 u.UserId,
                 u.Name,
                 u.Email,
-                u.Birthdate
+                u.Birthdate,
+                u.Role
             )).ToList();
+        }
+
+        public async Task<(bool Success, string? ErrorMessage)> UpdateUserRoleAsync(int userId, string newRole, int changedBy)
+        {
+            // Validate role
+            if (newRole != "user" && newRole != "admin")
+            {
+                return (false, "Invalid role. Must be 'user' or 'admin'.");
+            }
+
+            var userRepository = GetRepo();
+            return await userRepository.UpdateUserRoleAsync(userId, newRole, changedBy);
         }
 
         // ------------------------------- AUDIT TABLES -------------------------------

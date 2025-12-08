@@ -12,6 +12,9 @@ public interface IMessagingRepository
     Task<IReadOnlyList<Message>> GetMessagesForConversationAsync(int conversationId);
     Task<Message> AddMessageAsync(Message message);
 
+    // Admin deletion methods
+    Task<(bool Success, string? ErrorMessage)> DeleteConversationAsync(int conversationId, int changedBy);
+
     // Audit related
     Task<IEnumerable<ConversationAudit>> GetConversationAuditsAsync();
 }

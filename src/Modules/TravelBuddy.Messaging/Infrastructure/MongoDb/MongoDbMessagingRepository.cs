@@ -488,6 +488,28 @@ namespace TravelBuddy.Messaging
             return message;
         }
 
+        public async Task<(bool Success, string? ErrorMessage)> DeleteConversationAsync(int conversationId, int changedBy)
+        {
+            try
+            {
+                var conversation = await _conversationCollection
+                    .Find(c => c.ConversationId == conversationId)
+                    .FirstOrDefaultAsync();
+
+                if (conversation == null)
+                    return (false, "No conversation found with the given conversation_id");
+
+                // PERMANENTLY delete the conversation (cascade will handle messages, participants)
+                var deleteResult = await _conversationCollection.DeleteOneAsync(c => c.ConversationId == conversationId);
+                
+                return (deleteResult.DeletedCount > 0, null);
+            }
+            catch (Exception ex)
+            {
+                return (false, "Error: " + ex.Message);
+            }
+        }
+
         // ------------------------------- AUDIT TABLES -------------------------------
         public async Task<IEnumerable<ConversationAudit>> GetConversationAuditsAsync()
         {
