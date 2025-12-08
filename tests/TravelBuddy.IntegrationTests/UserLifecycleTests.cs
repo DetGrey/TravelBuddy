@@ -9,7 +9,6 @@ using TravelBuddy.Users.Models;
 using TravelBuddy.IntegrationTests.Helpers;
 using Xunit;
 
-[Collection("Integration Tests")]
 public class UserLifecycleTests : BaseIntegrationTest
 {
     public UserLifecycleTests(TravelBuddyApiFactory<Program> factory) : base(factory) { }

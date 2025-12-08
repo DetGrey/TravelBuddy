@@ -241,4 +241,47 @@ public class LoginTests : BaseIntegrationTest
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
     }
+    // ------------------------------------------------ Edge Cases ------------------------------------------------
+    [Fact]
+    public async Task Login_WithEmojiInEmailAndPassword_CreatesUser_And_ReturnsSuccess()
+    {
+        var email = "emojiuser🤣❤️@test.com";
+        var rawPassword = "Password✅123!";
+        // Manually Insert the User into the DB
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
+            
+            db.Users.Add(new User
+            { 
+                Email = email, 
+                Name = "Existing User",
+                PasswordHash = PasswordHasher.HashPassword(rawPassword), 
+                Birthdate = new DateOnly(1990,1,1),
+                Role = "user"
+            });
+            await db.SaveChangesAsync();
+        }
+
+        var loginDto = new LoginRequestDto
+        {
+            Email = email,
+            Password = rawPassword
+        };
+
+        var response = await _client.PostAsJsonAsync("/api/users/login", loginDto);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var authResponse = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
+        authResponse.Should().NotBeNull();
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
+            var userInDb = db.Users.FirstOrDefault(u => u.Email == loginDto.Email);
+            
+            userInDb.Should().NotBeNull();
+            userInDb.Name.Should().Be("Existing User");
+        }
+    }
 }
