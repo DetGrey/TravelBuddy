@@ -29,6 +29,15 @@ public interface ITripRepository
     Task<(bool Success, string? ErrorMessage)> InsertBuddyRequestAsync(BuddyDto buddyDto);
     Task<(bool Success, string? ErrorMessage)> UpdateBuddyRequestAsync(UpdateBuddyRequestDto updateBuddyRequestDto);
 
+    // Admin deletion methods
+    Task<(bool Success, string? ErrorMessage)> DeleteTripAsync(int tripId, int changedBy);
+    Task<(bool Success, string? ErrorMessage)> DeleteTripDestinationAsync(int tripDestinationId, int changedBy);
+    Task<(bool Success, string? ErrorMessage)> DeleteDestinationAsync(int destinationId, int changedBy);
+
+    // Owner update methods
+    Task<(bool Success, string? ErrorMessage)> UpdateTripInfoAsync(int tripId, int ownerId, string? tripName, string? description);
+    Task<(bool Success, string? ErrorMessage)> UpdateTripDestinationDescriptionAsync(int tripDestinationId, int ownerId, string? description);
+
     // Audit related
     Task<IEnumerable<TripAudit>> GetTripAuditsAsync();
     Task<IEnumerable<BuddyAudit>> GetBuddyAuditsAsync();

@@ -16,6 +16,7 @@ public class ChangePasswordTests : BaseIntegrationTest
     // Based on EP-CP2-New and EP-CP4-Old. DT-CP4
     [Theory]
     [InlineData("Password1234567!", "1234567Password!")] // new password length = 16, old password length = 16
+    [InlineData("Password1234😁567!", "1234567Pass😒word!")] // Edge case - With emojis
     public async Task ChangePassword_WithValidData_ReturnsSuccess(string newPass, string oldPass)
     {
         var email = "user@test.com";
@@ -262,6 +263,56 @@ public class ChangePasswordTests : BaseIntegrationTest
         // Create a string of 'A's with the exact length
         var validPassword = new string('A', 6);
         var newPassword = new string('B', length);
+        var email = "uniqueemail@test.com";
+
+        int userId  = 1;
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
+            var user = new User
+            { 
+                UserId = userId,
+                Email = email, 
+                Name = "Existing User", 
+                PasswordHash = PasswordHasher.HashPassword(validPassword), 
+                Birthdate = new DateOnly(1990,1,1),
+                Role = "user"
+            };
+            db.Users.Add(user);
+            await db.SaveChangesAsync();
+        }
+
+
+        await _client.AuthenticateAsync(email, validPassword);
+        
+        var ChangePasswordDto = new ChangePasswordRequestDto
+        { 
+            OldPassword = validPassword,
+            NewPassword = newPassword
+        };
+
+        var response = await _client.PatchAsJsonAsync($"/api/users/{userId}/change-password", ChangePasswordDto);
+
+        if (expectedSuccess)
+        {
+            response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        }
+        else
+        {
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        }
+    }
+    // ------------------------------------------------ Edge cases ------------------------------------------------
+    [Theory]
+    [InlineData(3, false)]
+    [InlineData(5, false)]
+    [InlineData(6, false)]
+    [InlineData(7, false)]
+    public async Task ChangePassword_WithWhitespacePassword_Fails(int length, bool expectedSuccess)
+    {
+        // Create a string of 'A's with the exact length
+        var validPassword = new string('A', 6);
+        var newPassword = new string(' ', length);
         var email = "uniqueemail@test.com";
 
         int userId  = 1;

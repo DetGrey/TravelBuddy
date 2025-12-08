@@ -200,6 +200,99 @@ namespace TravelBuddy.Users
             // docs is IEnumerable<UserDocument>, MapToEntity(UserDocument) fits perfectly
             return docs.Select(MapToEntity).ToList();
         }
+        public async Task<(bool Success, string? ErrorMessage)> AdminDeleteAsync(int userId, int changedBy)
+        {
+            try {
+                var filter = Builders<UserDocument>.Filter.Eq(u => u.UserId, userId);
+                var user = await _usersCollection.Find(filter).FirstOrDefaultAsync();
+                
+                if (user == null)
+                    return (false, "No user found with the given user_id");
+
+                var userName = user.Name;
+
+                // Create audit entry
+                var database = _usersCollection.Database;
+                var userAuditCollection = database.GetCollection<UserAuditDocument>("user_audits");
+                
+                var maxAuditId = await userAuditCollection
+                    .Find(FilterDefinition<UserAuditDocument>.Empty)
+                    .SortByDescending(a => a.AuditId)
+                    .Limit(1)
+                    .Project(a => a.AuditId)
+                    .FirstOrDefaultAsync();
+
+                var auditDoc = new UserAuditDocument
+                {
+                    AuditId = maxAuditId + 1,
+                    UserId = userId,
+                    Action = "deleted",
+                    FieldChanged = "user",
+                    OldValue = userName,
+                    NewValue = "PERMANENTLY DELETED",
+                    ChangedBy = changedBy,
+                    Timestamp = DateTime.UtcNow
+                };
+
+                await userAuditCollection.InsertOneAsync(auditDoc);
+
+                // PERMANENTLY delete the user
+                var result = await _usersCollection.DeleteOneAsync(filter);
+
+                return (result.IsAcknowledged && result.DeletedCount == 1, null);
+            }
+            catch (Exception ex) {
+                return (false, ex.Message ?? "An error occurred while deleting the user.");
+            }
+        }
+
+        public async Task<(bool Success, string? ErrorMessage)> UpdateUserRoleAsync(int userId, string newRole, int changedBy)
+        {
+            try {
+                var database = _usersCollection.Database;
+                var userAuditCollection = database.GetCollection<UserAuditDocument>("user_audits");
+
+                var filter = Builders<UserDocument>.Filter.Eq(u => u.UserId, userId);
+                var user = await _usersCollection.Find(filter).FirstOrDefaultAsync();
+
+                if (user == null) 
+                    return (false, "User not found.");
+
+                var oldRole = user.Role;
+
+                // Update role
+                var update = Builders<UserDocument>.Update.Set(u => u.Role, newRole);
+                await _usersCollection.UpdateOneAsync(filter, update);
+
+                // Create audit entry
+                var maxAuditId = await userAuditCollection
+                    .Find(FilterDefinition<UserAuditDocument>.Empty)
+                    .SortByDescending(a => a.AuditId)
+                    .Limit(1)
+                    .Project(a => a.AuditId)
+                    .FirstOrDefaultAsync();
+
+                var auditDoc = new UserAuditDocument
+                {
+                    AuditId = maxAuditId + 1,
+                    UserId = userId,
+                    Action = "updated",
+                    FieldChanged = "role",
+                    OldValue = oldRole,
+                    NewValue = newRole,
+                    ChangedBy = changedBy,
+                    Timestamp = DateTime.UtcNow
+                };
+
+                await userAuditCollection.InsertOneAsync(auditDoc);
+
+                return (true, null);
+            }
+            catch (Exception ex) {
+                return (false, ex.Message ?? "An error occurred while updating the user role.");
+            }
+        }
+
         // ------------------------------- AUDIT TABLES -------------------------------
         public async Task<IEnumerable<UserAudit>> GetUserAuditsAsync()
         {

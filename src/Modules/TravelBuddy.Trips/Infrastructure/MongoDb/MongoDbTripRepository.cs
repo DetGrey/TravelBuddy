@@ -937,6 +937,300 @@ namespace TravelBuddy.Trips
             return (replaceResult.IsAcknowledged && replaceResult.ModifiedCount > 0, null);
         }
 
+        // ------------------------------- ADMIN DELETION METHODS -------------------------------
+        public async Task<(bool Success, string? ErrorMessage)> DeleteTripAsync(int tripId, int changedBy)
+        {
+            try
+            {
+                var trip = await _tripsCollection
+                    .Find(t => t.TripId == tripId)
+                    .FirstOrDefaultAsync();
+
+                if (trip == null)
+                    return (false, "No trip found with the given trip_id");
+
+                // Create audit entry
+                var database = _tripsCollection.Database;
+                var tripAuditCollection = database.GetCollection<TripAuditDocument>("trip_audits");
+                
+                var maxAuditId = await tripAuditCollection
+                    .Find(FilterDefinition<TripAuditDocument>.Empty)
+                    .SortByDescending(a => a.AuditId)
+                    .Limit(1)
+                    .Project(a => a.AuditId)
+                    .FirstOrDefaultAsync();
+
+                var auditDoc = new TripAuditDocument
+                {
+                    AuditId = maxAuditId + 1,
+                    TripId = tripId,
+                    Action = "deleted",
+                    FieldChanged = "trip",
+                    OldValue = trip.TripName,
+                    NewValue = null,
+                    ChangedBy = changedBy,
+                    Timestamp = DateTime.UtcNow
+                };
+
+                await tripAuditCollection.InsertOneAsync(auditDoc);
+
+                // Delete the trip
+                var deleteResult = await _tripsCollection.DeleteOneAsync(t => t.TripId == tripId);
+                
+                return (deleteResult.DeletedCount > 0, null);
+            }
+            catch (Exception ex)
+            {
+                return (false, "Error: " + ex.Message);
+            }
+        }
+
+        public async Task<(bool Success, string? ErrorMessage)> DeleteTripDestinationAsync(int tripDestinationId, int changedBy)
+        {
+            try
+            {
+                // Find the trip containing this destination
+                var filter = Builders<TripDocument>.Filter
+                    .ElemMatch(t => t.Destinations, td => td.TripDestinationId == tripDestinationId);
+
+                var trip = await _tripsCollection.Find(filter).FirstOrDefaultAsync();
+                if (trip == null)
+                    return (false, "No trip destination found with the given trip_destination_id");
+
+                var destination = trip.Destinations.FirstOrDefault(td => td.TripDestinationId == tripDestinationId);
+                if (destination == null)
+                    return (false, "No trip destination found with the given trip_destination_id");
+
+                // Get destination name for audit
+                var destDoc = await _destinationsCollection
+                    .Find(d => d.DestinationId == destination.DestinationId)
+                    .FirstOrDefaultAsync();
+
+                var destinationName = destDoc?.Name ?? "Unknown";
+
+                // Create audit entry
+                var database = _tripsCollection.Database;
+                var tripAuditCollection = database.GetCollection<TripAuditDocument>("trip_audits");
+                
+                var maxAuditId = await tripAuditCollection
+                    .Find(FilterDefinition<TripAuditDocument>.Empty)
+                    .SortByDescending(a => a.AuditId)
+                    .Limit(1)
+                    .Project(a => a.AuditId)
+                    .FirstOrDefaultAsync();
+
+                var auditDoc = new TripAuditDocument
+                {
+                    AuditId = maxAuditId + 1,
+                    TripId = trip.TripId,
+                    Action = "deleted",
+                    FieldChanged = "trip_destination",
+                    OldValue = $"Destination: {destinationName}",
+                    NewValue = null,
+                    ChangedBy = changedBy,
+                    Timestamp = DateTime.UtcNow
+                };
+
+                await tripAuditCollection.InsertOneAsync(auditDoc);
+
+                // Remove the destination from the trip
+                trip.Destinations.RemoveAll(td => td.TripDestinationId == tripDestinationId);
+
+                // Update the trip document
+                var updateResult = await _tripsCollection.ReplaceOneAsync(
+                    t => t.TripId == trip.TripId,
+                    trip);
+                
+                return (updateResult.ModifiedCount > 0, null);
+            }
+            catch (Exception ex)
+            {
+                return (false, "Error: " + ex.Message);
+            }
+        }
+
+        public async Task<(bool Success, string? ErrorMessage)> DeleteDestinationAsync(int destinationId, int changedBy)
+        {
+            try
+            {
+                var destination = await _destinationsCollection
+                    .Find(d => d.DestinationId == destinationId)
+                    .FirstOrDefaultAsync();
+
+                if (destination == null)
+                    return (false, "No destination found with the given destination_id");
+
+                // PERMANENTLY delete the destination
+                var deleteResult = await _destinationsCollection.DeleteOneAsync(d => d.DestinationId == destinationId);
+                
+                return (deleteResult.DeletedCount > 0, null);
+            }
+            catch (Exception ex)
+            {
+                return (false, "Error: " + ex.Message);
+            }
+        }
+
+        public async Task<(bool Success, string? ErrorMessage)> UpdateTripInfoAsync(int tripId, int ownerId, string? tripName, string? description)
+        {
+            try
+            {
+                var database = _tripsCollection.Database;
+                var tripAuditCollection = database.GetCollection<TripAuditDocument>("trip_audits");
+
+                var filter = Builders<TripDocument>.Filter.Eq(t => t.TripId, tripId);
+                var trip = await _tripsCollection.Find(filter).FirstOrDefaultAsync();
+
+                if (trip == null)
+                    return (false, "Trip not found.");
+
+                if (trip.OwnerId != ownerId)
+                    return (false, "Only the trip owner can update trip information.");
+
+                var oldTripName = trip.TripName;
+                var oldDescription = trip.Description;
+                var updateBuilder = Builders<TripDocument>.Update;
+                var updates = new List<UpdateDefinition<TripDocument>>();
+
+                // Only update trip name if provided (not null or empty)
+                if (tripName != null && !string.IsNullOrEmpty(tripName))
+                {
+                    updates.Add(updateBuilder.Set(t => t.TripName, tripName));
+                }
+
+                // Only update description if provided (not null or empty)
+                if (description != null && !string.IsNullOrEmpty(description))
+                {
+                    updates.Add(updateBuilder.Set(t => t.Description, description));
+                }
+
+                // If nothing to update, return
+                if (updates.Count == 0)
+                    return (true, null);
+
+                // Combine updates
+                var combinedUpdate = updateBuilder.Combine(updates);
+                await _tripsCollection.UpdateOneAsync(filter, combinedUpdate);
+
+                // Get max audit ID
+                var maxAuditId = await tripAuditCollection
+                    .Find(FilterDefinition<TripAuditDocument>.Empty)
+                    .SortByDescending(a => a.AuditId)
+                    .Limit(1)
+                    .Project(a => a.AuditId)
+                    .FirstOrDefaultAsync();
+
+                // Create audit entry for trip name if it was updated
+                if (tripName != null && !string.IsNullOrEmpty(tripName) && oldTripName != tripName)
+                {
+                    var auditDoc = new TripAuditDocument
+                    {
+                        AuditId = maxAuditId + 1,
+                        TripId = tripId,
+                        Action = "updated",
+                        FieldChanged = "trip_name",
+                        OldValue = oldTripName,
+                        NewValue = tripName,
+                        ChangedBy = ownerId,
+                        Timestamp = DateTime.UtcNow
+                    };
+                    await tripAuditCollection.InsertOneAsync(auditDoc);
+                    maxAuditId++;
+                }
+
+                // Create audit entry for description if it was updated
+                if (description != null && !string.IsNullOrEmpty(description) && oldDescription != description)
+                {
+                    var auditDoc = new TripAuditDocument
+                    {
+                        AuditId = maxAuditId + 1,
+                        TripId = tripId,
+                        Action = "updated",
+                        FieldChanged = "description",
+                        OldValue = oldDescription,
+                        NewValue = description,
+                        ChangedBy = ownerId,
+                        Timestamp = DateTime.UtcNow
+                    };
+                    await tripAuditCollection.InsertOneAsync(auditDoc);
+                }
+
+                return (true, null);
+            }
+            catch (Exception ex)
+            {
+                return (false, "Error: " + ex.Message);
+            }
+        }
+
+        public async Task<(bool Success, string? ErrorMessage)> UpdateTripDestinationDescriptionAsync(int tripDestinationId, int ownerId, string? description)
+        {
+            try
+            {
+                // Description for trip destinations must not be null or empty/whitespace
+                if (string.IsNullOrWhiteSpace(description))
+                    return (false, "Trip destination description cannot be empty or whitespace.");
+
+                var database = _tripsCollection.Database;
+                var tripAuditCollection = database.GetCollection<TripAuditDocument>("trip_audits");
+
+                // Find the trip that contains this trip destination
+                var filter = Builders<TripDocument>.Filter
+                    .ElemMatch(t => t.Destinations, td => td.TripDestinationId == tripDestinationId);
+                
+                var trip = await _tripsCollection.Find(filter).FirstOrDefaultAsync();
+
+                if (trip == null)
+                    return (false, "Trip destination not found.");
+
+                if (trip.OwnerId != ownerId)
+                    return (false, "Only the trip owner can update trip destination information.");
+
+                // Find the specific trip destination
+                var tripDestination = trip.Destinations.FirstOrDefault(td => td.TripDestinationId == tripDestinationId);
+                if (tripDestination == null)
+                    return (false, "Trip destination not found.");
+
+                var oldDescription = tripDestination.Description;
+
+                // Update the trip destination description in the embedded document using the positional $ operator
+                var update = Builders<TripDocument>.Update
+                    .Set("Destinations.$.Description", description);
+
+                await _tripsCollection.UpdateOneAsync(filter, update);
+
+                // Create audit entry if value changed
+                if (oldDescription != description)
+                {
+                    var maxAuditId = await tripAuditCollection
+                        .Find(FilterDefinition<TripAuditDocument>.Empty)
+                        .SortByDescending(a => a.AuditId)
+                        .Limit(1)
+                        .Project(a => a.AuditId)
+                        .FirstOrDefaultAsync();
+
+                    var auditDoc = new TripAuditDocument
+                    {
+                        AuditId = maxAuditId + 1,
+                        TripId = trip.TripId,
+                        Action = "updated",
+                        FieldChanged = "trip_destination_description",
+                        OldValue = oldDescription,
+                        NewValue = description,
+                        ChangedBy = ownerId,
+                        Timestamp = DateTime.UtcNow
+                    };
+                    await tripAuditCollection.InsertOneAsync(auditDoc);
+                }
+
+                return (true, null);
+            }
+            catch (Exception ex)
+            {
+                return (false, "Error: " + ex.Message);
+            }
+        }
+
         // ------------------------------- AUDIT TABLES -------------------------------
         public async Task<IEnumerable<TripAudit>> GetTripAuditsAsync()
         {

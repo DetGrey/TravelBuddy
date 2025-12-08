@@ -29,6 +29,15 @@ namespace TravelBuddy.Trips
         Task<(bool Success, string? ErrorMessage)> InsertBuddyRequestAsync(BuddyDto buddyDto);
         Task<(bool Success, string? ErrorMessage)> UpdateBuddyRequestAsync(UpdateBuddyRequestDto updateBuddyRequestDto);
 
+        // Admin deletion methods
+        Task<(bool Success, string? ErrorMessage)> DeleteTripAsync(int tripId, int changedBy);
+        Task<(bool Success, string? ErrorMessage)> DeleteTripDestinationAsync(int tripDestinationId, int changedBy);
+        Task<(bool Success, string? ErrorMessage)> DeleteDestinationAsync(int destinationId, int changedBy);
+
+        // Owner update methods
+        Task<(bool Success, string? ErrorMessage)> UpdateTripInfoAsync(int tripId, int ownerId, string? tripName, string? description);
+        Task<(bool Success, string? ErrorMessage)> UpdateTripDestinationDescriptionAsync(int tripDestinationId, int ownerId, string? description);
+
         // Audit related
         Task<IEnumerable<TripAuditDto>> GetTripAuditsAsync();
         Task<IEnumerable<BuddyAuditDto>> GetBuddyAuditsAsync();
@@ -276,6 +285,41 @@ namespace TravelBuddy.Trips
         {
             var buddyRepository = GetRepo();
             return await buddyRepository.UpdateBuddyRequestAsync(updateBuddyRequestDto);
+        }
+
+        // ------------------------------- ADMIN DELETION METHODS -------------------------------
+        public async Task<(bool Success, string? ErrorMessage)> DeleteTripAsync(int tripId, int changedBy)
+        {
+            var tripRepository = GetRepo();
+            return await tripRepository.DeleteTripAsync(tripId, changedBy);
+        }
+
+        public async Task<(bool Success, string? ErrorMessage)> DeleteTripDestinationAsync(int tripDestinationId, int changedBy)
+        {
+            var tripRepository = GetRepo();
+            return await tripRepository.DeleteTripDestinationAsync(tripDestinationId, changedBy);
+        }
+
+        public async Task<(bool Success, string? ErrorMessage)> DeleteDestinationAsync(int destinationId, int changedBy)
+        {
+            var tripRepository = GetRepo();
+            return await tripRepository.DeleteDestinationAsync(destinationId, changedBy);
+        }
+
+        public async Task<(bool Success, string? ErrorMessage)> UpdateTripInfoAsync(int tripId, int ownerId, string? tripName, string? description)
+        {
+            if (string.IsNullOrWhiteSpace(tripName) && string.IsNullOrWhiteSpace(description))
+            {
+                return (false, "At least one field (trip name or description) must be provided for update.");
+            }
+            var tripRepository = GetRepo();
+            return await tripRepository.UpdateTripInfoAsync(tripId, ownerId, tripName, description);
+        }
+
+        public async Task<(bool Success, string? ErrorMessage)> UpdateTripDestinationDescriptionAsync(int tripDestinationId, int ownerId, string? description)
+        {
+            var tripRepository = GetRepo();
+            return await tripRepository.UpdateTripDestinationDescriptionAsync(tripDestinationId, ownerId, description);
         }
 
         // ------------------------------- AUDIT TABLES -------------------------------

@@ -100,8 +100,11 @@ public class RegistrationTests : BaseIntegrationTest
     }
     // Based on DT-R2
     [Theory]
-    [InlineData("", "Password123!", "ValidUser", "Email field is required")] 
+    [InlineData("", "Password123!", "ValidUser", "Email field is required")]
+    [InlineData("   ", "Password123!", "ValidUser", "Email field is required")] // Whitespace
+    [InlineData("unique2@test.com", "Password123!", "     ", "Name field is required")] // Whitespace
     [InlineData("unique2@test.com", "", "ValidUser", "Password field is required")] 
+    [InlineData("unique2@test.com", "     ", "ValidUser", "Password field is required")] // Whitespace
     public async Task Register_WithInvalidData_ReturnsBadRequest(
         string email, 
         string password, 
@@ -273,6 +276,116 @@ public class RegistrationTests : BaseIntegrationTest
         else
         {
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        }
+    }
+    // ------------------------------------------------ Edge cases ------------------------------------------------
+    // Case Insensitivity Collision
+    [Theory]
+    [InlineData("uniqueemail@test.com", "UniqueEmail@Test.com")]
+    public async Task Register_WithEmail_CaseInsensitivityCollision_ReturnsConflict(string lowercaseEmail, string uppercaseEmail)
+    {
+        var rawPassword = "Password123!";
+        var lowerRegisterDto = new RegisterRequestDto
+        { 
+            Email = lowercaseEmail, 
+            Password = rawPassword, 
+            Name = "lowercase user",
+            Birthdate = new DateOnly(1990, 1, 1)
+        };
+        var UpperRegisterDto = new RegisterRequestDto
+        { 
+            Email = uppercaseEmail, 
+            Password = rawPassword, 
+            Name = "uppercase user",
+            Birthdate = new DateOnly(1990, 1, 1)
+        };
+
+        var response = await _client.PostAsJsonAsync("/api/users/register", lowerRegisterDto);
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var authResponse = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
+        authResponse.Should().NotBeNull();
+
+        var conflictResponse = await _client.PostAsJsonAsync("/api/users/register", UpperRegisterDto);
+        conflictResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
+            var userInDb = db.Users.FirstOrDefault(u => u.Email == lowercaseEmail);
+           
+            userInDb.Should().NotBeNull();
+            userInDb.Name.Should().Be("lowercase user");
+
+             var uppercaseUserInDb = db.Users.FirstOrDefault(u => u.Email == uppercaseEmail);
+            // As it is case insensitivebut the FirstOrDefault() isn't it still finds the lowercase entry
+            // This is fine as we just want to ensure no second entry was created
+            uppercaseUserInDb.Should().NotBeNull(); 
+            uppercaseUserInDb.Name.Should().Be("lowercase user");
+        }
+    }
+    // Database can handle emojis in name
+    [Fact]
+    public async Task Register_WithEmojiInName_CreatesUser_And_ReturnsSuccess()
+    {
+        var registerDto = new RegisterRequestDto
+        {
+            Email = "emojiuser@test.com",
+            Password = "Password123!",
+            Name = "User😊🚀🌍👨‍",
+            Birthdate = new DateOnly(1990, 1, 1)
+        };
+
+        var response = await _client.PostAsJsonAsync("/api/users/register", registerDto);
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var authResponse = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
+        authResponse.Should().NotBeNull();
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
+            var userInDb = db.Users.FirstOrDefault(u => u.Email == registerDto.Email);
+            
+            userInDb.Should().NotBeNull();
+            userInDb.Name.Should().Be(registerDto.Name);
+        }
+    }
+    // Simulate Race Condition with Concurrent Requests
+    [Fact]
+    public async Task Register_ConcurrentRequests_PreventsDuplicateEmails()
+    {
+        for (int i = 0; i < 10; i++) // Run it 10 times to increase chance of collision
+        {
+            var email = $"stress-test-{i}-{Guid.NewGuid()}@test.com";
+            var dto = new RegisterRequestDto { 
+                Email = email, 
+                Password = "Passw0rd!", 
+                Name = "Test",
+                Birthdate = new DateOnly(1990, 1, 1)
+            };
+
+            // 1. Create the tasks but DO NOT await them yet. 
+            // This stages both requests to fire as close to simultaneously as possible.
+            var t1 = _client.PostAsJsonAsync("/api/users/register", dto);
+            var t2 = _client.PostAsJsonAsync("/api/users/register", dto);
+            
+            // 2. Await them together. This runs them in parallel.
+            var results = await Task.WhenAll(t1, t2);
+
+            // Assert inside the loop to fail immediately if any iteration breaks
+            results.Count(r => r.IsSuccessStatusCode).Should().Be(1, $"Failed at iteration {i}");
+            results.Count(r => !r.IsSuccessStatusCode).Should().Be(1, $"Failed at iteration {i}");
+
+            // Database Integrity Check
+            using (var scope = _factory.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
+                
+                // Even though we sent 2 requests, the DB should only contain 1 record
+                var count = db.Users.Count(u => u.Email == email);
+                count.Should().Be(1, "database unique constraints must prevent duplicate inserts");
+            }
         }
     }
 }

@@ -12,6 +12,7 @@ todo.md
 Factory_explanation.md
 .env 
 .vite/
+.idea/
 
 # Build results
 [Dd]ebug/

@@ -193,6 +193,71 @@ public class Neo4jUserRepository : IUserRepository
 
         return result.Result.Select(MapRecordToUser).ToList();
     }
+
+    public async Task<(bool Success, string? ErrorMessage)> AdminDeleteAsync(int userId, int changedBy)
+    {
+        await using var session = _driver.AsyncSession();
+        
+        try
+        {
+            return await session.ExecuteWriteAsync(async tx =>
+            {
+                // Get user name for audit
+                var checkCypher = @"
+                    MATCH (u:User {userId: $userId})
+                    RETURN u.name as UserName
+                ";
+                var checkCursor = await tx.RunAsync(checkCypher, new { userId });
+                var checkRecords = await checkCursor.ToListAsync();
+                
+                if (!checkRecords.Any())
+                    return (false, "No user found with the given user_id");
+
+                var userName = checkRecords.First()["UserName"].As<string?>();
+
+                // Get next audit ID
+                var auditIdCypher = @"
+                    MATCH (a:UserAudit)
+                    RETURN coalesce(max(a.auditId), 0) + 1 as NextId
+                ";
+                var auditIdCursor = await tx.RunAsync(auditIdCypher);
+                var auditIdRecord = await auditIdCursor.SingleAsync();
+                var nextAuditId = auditIdRecord["NextId"].As<int>();
+
+                // Create audit node (independent, not linked to user since user will be deleted)
+                var auditCypher = @"
+                    CREATE (a:UserAudit {
+                        auditId: $auditId,
+                        userId: $userId,
+                        action: 'deleted',
+                        fieldChanged: 'user',
+                        oldValue: $userName,
+                        newValue: 'PERMANENTLY DELETED',
+                        timestamp: datetime()
+                    })
+                    WITH a
+                    MATCH (cb:User {userId: $changedBy})
+                    CREATE (cb)-[:CHANGED]->(a)
+                ";
+                await tx.RunAsync(auditCypher, new { auditId = nextAuditId, userId, userName, changedBy });
+
+                // PERMANENTLY delete the user and all relationships
+                var deleteCypher = @"
+                    MATCH (u:User {userId: $userId})
+                    OPTIONAL MATCH (u)-[r]-()
+                    DELETE r, u
+                ";
+                await tx.RunAsync(deleteCypher, new { userId });
+
+                return (true, (string?)null);
+            });
+        }
+        catch (Exception ex)
+        {
+            return (false, "Error: " + ex.Message);
+        }
+    }
+
     // ------------------------------- AUDIT TABLES -------------------------------
     public async Task<IEnumerable<UserAudit>> GetUserAuditsAsync()
     {
@@ -221,6 +286,42 @@ public class Neo4jUserRepository : IUserRepository
             ChangedBy = r["ChangedBy"].As<int?>(),
             Timestamp = ParseDateTime(r["Timestamp"])
         }).ToList();
+    }
+
+    public async Task<(bool Success, string? ErrorMessage)> UpdateUserRoleAsync(int userId, string newRole, int changedBy)
+    {
+        try {
+            var result = await _driver.ExecutableQuery(@"
+                MATCH (u:User { userId: $userId })
+                WITH u, u.role AS oldRole
+                SET u.role = $newRole
+                WITH u, oldRole
+                OPTIONAL MATCH (maxAudit:UserAudit)
+                WITH u, oldRole, coalesce(max(maxAudit.AuditId), 0) AS maxId
+                CREATE (audit:UserAudit {
+                    AuditId: maxId + 1,
+                    UserId: $userId,
+                    Action: 'updated',
+                    FieldChanged: 'role',
+                    OldValue: oldRole,
+                    NewValue: $newRole,
+                    ChangedBy: $changedBy,
+                    Timestamp: datetime()
+                })
+                RETURN count(u) AS updatedCount
+            ")
+            .WithParameters(new { userId, newRole, changedBy })
+            .ExecuteAsync();
+
+            var records = result.Result;
+            if (!records.Any()) return (false, "User not found.");
+
+            var updatedCount = records[0]["updatedCount"].As<long>();
+            return updatedCount == 1 ? (true, null) : (false, "User not found.");
+        }
+        catch (Exception ex) {
+            return (false, ex.Message ?? "An error occurred while updating the user role.");
+        }
     }
     
     private static DateTime ParseDateTime(object? value)

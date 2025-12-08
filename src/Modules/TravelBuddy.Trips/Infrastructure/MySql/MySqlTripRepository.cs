@@ -445,6 +445,100 @@ public class MySqlTripRepository : ITripRepository
         }
     }
 
+    // ------------------------------- ADMIN DELETION METHODS -------------------------------
+    public async Task<(bool Success, string? ErrorMessage)> DeleteTripAsync(int tripId, int changedBy)
+    {
+        try
+        {
+            await _context.Database.ExecuteSqlInterpolatedAsync($@"
+                CALL delete_trip(
+                    {tripId},
+                    {changedBy}
+                )");
+
+            return (true, null);
+        }
+        catch (Exception ex)
+        {
+            return (false, "Error: " + ex.Message);
+        }
+    }
+
+    public async Task<(bool Success, string? ErrorMessage)> DeleteTripDestinationAsync(int tripDestinationId, int changedBy)
+    {
+        try
+        {
+            await _context.Database.ExecuteSqlInterpolatedAsync($@"
+                CALL delete_trip_destination(
+                    {tripDestinationId},
+                    {changedBy}
+                )");
+
+            return (true, null);
+        }
+        catch (Exception ex)
+        {
+            return (false, "Error: " + ex.Message);
+        }
+    }
+
+    public async Task<(bool Success, string? ErrorMessage)> DeleteDestinationAsync(int destinationId, int changedBy)
+    {
+        try
+        {
+            await _context.Database.ExecuteSqlInterpolatedAsync($@"
+                CALL admin_delete_destination(
+                    {destinationId},
+                    {changedBy}
+                )");
+
+            return (true, null);
+        }
+        catch (Exception ex)
+        {
+            return (false, "Error: " + ex.Message);
+        }
+    }
+
+    public async Task<(bool Success, string? ErrorMessage)> UpdateTripInfoAsync(int tripId, int ownerId, string? tripName, string? description)
+    {
+        try
+        {
+            await _context.Database.ExecuteSqlInterpolatedAsync($@"
+                CALL update_trip_info(
+                    {tripId},
+                    {ownerId},
+                    {tripName},
+                    {description}
+                )");
+
+            return (true, null);
+        }
+        catch (Exception ex)
+        {
+            return (false, "Error: " + ex.Message);
+        }
+    }
+
+    public async Task<(bool Success, string? ErrorMessage)> UpdateTripDestinationDescriptionAsync(int tripDestinationId, int ownerId, string? description)
+    {
+        try
+        {
+            await _context.Database.ExecuteSqlInterpolatedAsync($@"
+                CALL update_trip_destination_description(
+                    {tripDestinationId},
+                    {ownerId},
+                    {description}
+                )");
+
+            return (true, null);
+        }
+        catch (Exception ex)
+        {
+            return (false, "Error: " + ex.Message);
+        }
+    }
+
     // ------------------------------- AUDIT TABLES -------------------------------
     public async Task<IEnumerable<TripAudit>> GetTripAuditsAsync()
     {

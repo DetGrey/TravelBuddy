@@ -273,10 +273,261 @@ BEGIN
 END $$
 DELIMITER ;
 -- =====================================
--- Update email
+-- Admin delete user (PERMANENT deletion - admin only)
+-- =====================================
+DROP PROCEDURE IF EXISTS admin_delete_user;
+DELIMITER $$
+CREATE PROCEDURE admin_delete_user(
+    IN p_user_id INT,
+    IN p_changed_by INT
+)
+BEGIN
+    DECLARE v_user_name VARCHAR(100);
+    
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    IF p_user_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'user_id cannot be NULL';
+    END IF;
+
+    IF p_changed_by IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'changed_by cannot be NULL';
+    END IF;
+
+    START TRANSACTION;
+
+    -- Get user name for audit
+    SELECT name INTO v_user_name
+    FROM users
+    WHERE user_id = p_user_id
+    LIMIT 1;
+
+    IF v_user_name IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'No user found with the given user_id';
+    END IF;
+
+    -- Insert audit log BEFORE deletion (since user_audits has FK to users)
+    INSERT INTO user_audits (user_id, action, field_changed, old_value, new_value, changed_by)
+    VALUES (p_user_id, 'deleted', 'user', v_user_name, 'PERMANENTLY DELETED', p_changed_by);
+
+    -- PERMANENTLY delete the user (CASCADE will handle related records)
+    DELETE FROM users WHERE user_id = p_user_id;
+
+    COMMIT;
+END $$
+DELIMITER ;
+-- =====================================
+-- Delete trip (admin only)
+-- =====================================
+DROP PROCEDURE IF EXISTS delete_trip;
+DELIMITER $$
+CREATE PROCEDURE delete_trip(
+    IN p_trip_id INT,
+    IN p_changed_by INT
+)
+BEGIN
+    DECLARE v_trip_name VARCHAR(100);
+    
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    IF p_trip_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'trip_id cannot be NULL';
+    END IF;
+
+    IF p_changed_by IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'changed_by cannot be NULL';
+    END IF;
+
+    START TRANSACTION;
+
+    -- Get trip name for audit
+    SELECT trip_name INTO v_trip_name
+    FROM trips
+    WHERE trip_id = p_trip_id
+    LIMIT 1;
+
+    IF v_trip_name IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'No trip found with the given trip_id';
+    END IF;
+
+    -- Insert audit log before deletion
+    INSERT INTO trip_audits (trip_id, action, field_changed, old_value, new_value, changed_by)
+    VALUES (p_trip_id, 'deleted', 'trip', v_trip_name, NULL, p_changed_by);
+
+    -- Delete trip (cascade will handle trip_destinations, buddies, conversations, etc.)
+    DELETE FROM trips WHERE trip_id = p_trip_id;
+
+    COMMIT;
+END $$
+DELIMITER ;
+-- =====================================
+-- Delete trip destination (admin only)
+-- =====================================
+DROP PROCEDURE IF EXISTS delete_trip_destination;
+DELIMITER $$
+CREATE PROCEDURE delete_trip_destination(
+    IN p_trip_destination_id INT,
+    IN p_changed_by INT
+)
+BEGIN
+    DECLARE v_trip_id INT;
+    DECLARE v_destination_name VARCHAR(255);
+    
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    IF p_trip_destination_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'trip_destination_id cannot be NULL';
+    END IF;
+
+    IF p_changed_by IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'changed_by cannot be NULL';
+    END IF;
+
+    START TRANSACTION;
+
+    -- Get trip_id and destination name for audit
+    SELECT td.trip_id, d.name
+    INTO v_trip_id, v_destination_name
+    FROM trip_destinations td
+    JOIN destinations d ON td.destination_id = d.destination_id
+    WHERE td.trip_destination_id = p_trip_destination_id
+    LIMIT 1;
+
+    IF v_trip_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'No trip destination found with the given trip_destination_id';
+    END IF;
+
+    -- Insert audit log before deletion
+    INSERT INTO trip_audits (trip_id, action, field_changed, old_value, new_value, changed_by)
+    VALUES (v_trip_id, 'deleted', 'trip_destination', CONCAT('Destination: ', v_destination_name), NULL, p_changed_by);
+
+    -- Delete trip destination (cascade will handle buddies, conversations, etc.)
+    DELETE FROM trip_destinations WHERE trip_destination_id = p_trip_destination_id;
+
+    COMMIT;
+END $$
+DELIMITER ;
+-- =====================================
+-- Admin delete destination (permanent)
+-- =====================================
+DROP PROCEDURE IF EXISTS admin_delete_destination;
+DELIMITER $$
+CREATE PROCEDURE admin_delete_destination(
+    IN p_destination_id INT,
+    IN p_changed_by INT
+)
+BEGIN
+    DECLARE v_destination_name VARCHAR(255);
+    
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    IF p_destination_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'destination_id cannot be NULL';
+    END IF;
+
+    IF p_changed_by IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'changed_by cannot be NULL';
+    END IF;
+
+    START TRANSACTION;
+
+    -- Get destination name for reference
+    SELECT name INTO v_destination_name
+    FROM destinations
+    WHERE destination_id = p_destination_id
+    LIMIT 1;
+
+    IF v_destination_name IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'No destination found with the given destination_id';
+    END IF;
+
+    -- PERMANENTLY delete the destination (cascade will handle trip_destinations, buddies, conversations, etc.)
+    DELETE FROM destinations WHERE destination_id = p_destination_id;
+
+    COMMIT;
+END $$
+DELIMITER ;
+-- =====================================
+-- Admin delete conversation (permanent)
+-- =====================================
+DROP PROCEDURE IF EXISTS admin_delete_conversation;
+DELIMITER $$
+CREATE PROCEDURE admin_delete_conversation(
+    IN p_conversation_id INT,
+    IN p_changed_by INT
+)
+BEGIN
+    DECLARE v_trip_destination_id INT;
+    DECLARE v_conversation_exists INT;
+    
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    IF p_conversation_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'conversation_id cannot be NULL';
+    END IF;
+
+    IF p_changed_by IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'changed_by cannot be NULL';
+    END IF;
+
+    START TRANSACTION;
+
+    -- Check if conversation exists and get trip_destination_id for audit
+    SELECT COUNT(*), trip_destination_id INTO v_conversation_exists, v_trip_destination_id
+    FROM conversations
+    WHERE conversation_id = p_conversation_id
+    GROUP BY trip_destination_id
+    LIMIT 1;
+
+    IF v_conversation_exists = 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'No conversation found with the given conversation_id';
+    END IF;
+
+    -- PERMANENTLY delete the conversation (cascade will handle messages, participants, conversation_audits)
+    DELETE FROM conversations WHERE conversation_id = p_conversation_id;
+
+    COMMIT;
+END $$
+DELIMITER ;
+-- =====================================
+-- Update user role
 -- =====================================
 DROP PROCEDURE IF EXISTS update_user_role;
-DELIMITER $$
 DELIMITER $$
 CREATE PROCEDURE update_user_role (
     IN target_user_id INT,
@@ -309,6 +560,16 @@ BEGIN
         SET MESSAGE_TEXT = 'Permission denied: Only admin users can update user roles.';
     END IF;
 
+    -- Get the current role before updating
+    SELECT role INTO v_old_role
+    FROM users
+    WHERE user_id = target_user_id;
+
+    IF v_old_role IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Target user not found.';
+    END IF;
+
     SET @SESSION_TRIGGER_AUDIT_SKIP = TRUE;
 
     UPDATE users
@@ -320,6 +581,140 @@ BEGIN
     INSERT INTO user_audits (user_id, action, field_changed, old_value, new_value, changed_by)
     VALUES (target_user_id, 'updated', 'role', v_old_role, new_role, changed_by_user_id);
 
+    COMMIT;
+END $$
+DELIMITER ;
+-- =====================================
+DROP PROCEDURE IF EXISTS update_trip_info;
+DELIMITER $$
+CREATE PROCEDURE update_trip_info (
+    IN p_trip_id INT,
+    IN p_owner_id INT,
+    IN p_trip_name VARCHAR(100),
+    IN p_description VARCHAR(255)
+)
+BEGIN
+    DECLARE v_current_owner_id INT;
+    DECLARE v_old_trip_name VARCHAR(100);
+    DECLARE v_old_description VARCHAR(255);
+    
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+    
+    START TRANSACTION;
+    
+    -- Verify ownership
+    SELECT owner_id, trip_name, description INTO v_current_owner_id, v_old_trip_name, v_old_description
+    FROM trips
+    WHERE trip_id = p_trip_id;
+    
+    IF v_current_owner_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Trip not found.';
+    END IF;
+    
+    IF v_current_owner_id != p_owner_id THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Only the trip owner can update trip information.';
+    END IF;
+    
+    SET @SESSION_TRIGGER_AUDIT_SKIP = TRUE;
+    
+    -- Only update trip_name if provided (not null or empty)
+    IF p_trip_name IS NOT NULL AND p_trip_name != '' THEN
+        UPDATE trips
+        SET trip_name = p_trip_name
+        WHERE trip_id = p_trip_id;
+        
+        -- Create audit entry if trip_name changed
+        IF v_old_trip_name != p_trip_name THEN
+            INSERT INTO trip_audits (trip_id, action, field_changed, old_value, new_value, changed_by)
+            VALUES (p_trip_id, 'updated', 'trip_name', v_old_trip_name, p_trip_name, p_owner_id);
+        END IF;
+    END IF;
+    
+    -- Only update description if provided (not null or empty)
+    IF p_description IS NOT NULL AND p_description != '' THEN
+        UPDATE trips
+        SET description = p_description
+        WHERE trip_id = p_trip_id;
+        
+        -- Create audit entry if description changed
+        IF v_old_description != p_description THEN
+            INSERT INTO trip_audits (trip_id, action, field_changed, old_value, new_value, changed_by)
+            VALUES (p_trip_id, 'updated', 'description', v_old_description, p_description, p_owner_id);
+        END IF;
+    END IF;
+    
+    SET @SESSION_TRIGGER_AUDIT_SKIP = NULL;
+    COMMIT;
+END $$
+DELIMITER ;
+-- =====================================
+DROP PROCEDURE IF EXISTS update_trip_destination_description;
+DELIMITER $$
+CREATE PROCEDURE update_trip_destination_description (
+    IN p_trip_destination_id INT,
+    IN p_owner_id INT,
+    IN p_description VARCHAR(255)
+)
+BEGIN
+    DECLARE v_current_owner_id INT;
+    DECLARE v_old_description VARCHAR(255);
+    DECLARE v_trip_id INT;
+    
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+    
+    START TRANSACTION;
+    
+    -- Trip destination description must not be null or empty/whitespace
+    IF p_description IS NULL OR TRIM(p_description) = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Trip destination description cannot be empty or whitespace.';
+    END IF;
+    
+    -- Get trip_id and old description
+    SELECT trip_id, description INTO v_trip_id, v_old_description
+    FROM trip_destinations
+    WHERE trip_destination_id = p_trip_destination_id;
+    
+    IF v_trip_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Trip destination not found.';
+    END IF;
+    
+    -- Verify ownership
+    SELECT owner_id INTO v_current_owner_id
+    FROM trips
+    WHERE trip_id = v_trip_id;
+    
+    IF v_current_owner_id != p_owner_id THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Only the trip owner can update trip destination information.';
+    END IF;
+    
+    SET @SESSION_TRIGGER_AUDIT_SKIP = TRUE;
+    
+    -- Update trip destination
+    UPDATE trip_destinations
+    SET description = p_description
+    WHERE trip_destination_id = p_trip_destination_id;
+    
+    SET @SESSION_TRIGGER_AUDIT_SKIP = NULL;
+    
+    -- Create audit entry if value changed
+    IF v_old_description != p_description OR (v_old_description IS NULL AND p_description IS NOT NULL) OR (v_old_description IS NOT NULL AND p_description IS NULL) THEN
+        INSERT INTO trip_audits (trip_id, action, field_changed, old_value, new_value, changed_by)
+        VALUES (v_trip_id, 'updated', 'trip_destination_description', v_old_description, p_description, p_owner_id);
+    END IF;
+    
     COMMIT;
 END $$
 DELIMITER ;

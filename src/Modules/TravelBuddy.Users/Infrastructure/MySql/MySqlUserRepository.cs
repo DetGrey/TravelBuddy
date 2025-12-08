@@ -61,6 +61,26 @@ public class MySqlUserRepository : IUserRepository
             .AsNoTracking()
             .ToListAsync(); // Execute the query and return a list of User entities.'
     }
+    public async Task<(bool Success, string? ErrorMessage)> AdminDeleteAsync(int userId, int changedBy)
+    {
+        try {
+            var result = await _context.Database.ExecuteSqlInterpolatedAsync($@"CALL admin_delete_user({userId}, {changedBy})");
+            return (true, null);
+        } catch (Exception ex) {
+            return (false, ex.Message ?? "An error occurred while deleting the user.");
+        }
+    }
+
+    public async Task<(bool Success, string? ErrorMessage)> UpdateUserRoleAsync(int userId, string newRole, int changedBy)
+    {
+        try {
+            var result = await _context.Database.ExecuteSqlInterpolatedAsync($@"CALL update_user_role({userId}, {newRole}, {changedBy})");
+            return (true, null);
+        } catch (Exception ex) {
+            return (false, ex.Message ?? "An error occurred while updating the user role.");
+        }
+    }
+
     // ------------------------------- AUDIT TABLES -------------------------------
     public async Task<IEnumerable<UserAudit>> GetUserAuditsAsync()
     {

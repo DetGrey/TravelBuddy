@@ -10,7 +10,9 @@ public interface IUserRepository
     Task<User?> GetByEmailAsync(string email);
     Task AddAsync(User user);
     Task<(bool Success, string? ErrorMessage)> DeleteAsync(int userId, string passwordHash);
+    Task<(bool Success, string? ErrorMessage)> AdminDeleteAsync(int userId, int changedBy);
     Task<(bool Success, string? ErrorMessage)> UpdatePasswordAsync(int userId, string passwordHash);
+    Task<(bool Success, string? ErrorMessage)> UpdateUserRoleAsync(int userId, string newRole, int changedBy);
     Task<User?> GetUserByIdAsync(int userId);
     Task<IEnumerable<User>> GetAllAsync();
     Task<IEnumerable<UserAudit>> GetUserAuditsAsync();

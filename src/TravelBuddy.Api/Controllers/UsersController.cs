@@ -53,7 +53,8 @@ namespace TravelBuddy.Api.Controllers
                 user.UserId,
                 user.Name,
                 user.Email,
-                user.Birthdate
+                user.Birthdate,
+                user.Role
             );
 
             Response.Cookies.Append("access_token", token, new CookieOptions
@@ -88,7 +89,8 @@ namespace TravelBuddy.Api.Controllers
                 user.UserId,
                 user.Name,
                 user.Email,
-                user.Birthdate
+                user.Birthdate,
+                user.Role
             );
 
             Response.Cookies.Append("access_token", token, new CookieOptions

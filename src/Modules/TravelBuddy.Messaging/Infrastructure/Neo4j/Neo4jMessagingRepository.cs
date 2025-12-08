@@ -543,6 +543,43 @@ namespace TravelBuddy.Messaging
             return message;
         }
 
+        public async Task<(bool Success, string? ErrorMessage)> DeleteConversationAsync(int conversationId, int changedBy)
+        {
+            await using var session = _driver.AsyncSession();
+            
+            try
+            {
+                return await session.ExecuteWriteAsync(async tx =>
+                {
+                    // Check if conversation exists
+                    var checkCypher = @"
+                        MATCH (c:Conversation {conversationId: $conversationId})
+                        RETURN c.conversationId as ConversationId
+                    ";
+                    var checkCursor = await tx.RunAsync(checkCypher, new { conversationId });
+                    var checkRecords = await checkCursor.ToListAsync();
+                    
+                    if (!checkRecords.Any())
+                        return (false, "No conversation found with the given conversation_id");
+
+                    // PERMANENTLY delete the conversation and all relationships
+                    var deleteCypher = @"
+                        MATCH (c:Conversation {conversationId: $conversationId})
+                        OPTIONAL MATCH (c)-[r]-()
+                        OPTIONAL MATCH (m:Message)-[mr]-(c)
+                        DELETE mr, m, r, c
+                    ";
+                    await tx.RunAsync(deleteCypher, new { conversationId });
+
+                    return (true, (string?)null);
+                });
+            }
+            catch (Exception ex)
+            {
+                return (false, "Error: " + ex.Message);
+            }
+        }
+
         // ------------------------------- AUDIT TABLES -------------------------------
         public async Task<IEnumerable<ConversationAudit>> GetConversationAuditsAsync()
         {

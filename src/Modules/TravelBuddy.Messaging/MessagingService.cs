@@ -12,6 +12,10 @@ namespace TravelBuddy.Messaging
         Task<IReadOnlyList<MessageDto>> GetMessagesForConversationAsync(int userId, int conversationId);
 
         Task<MessageDto?> SendMessageAsync(int userId, int conversationId, string content);
+        
+        // Admin deletion methods
+        Task<(bool Success, string? ErrorMessage)> DeleteConversationAsync(int conversationId, int changedBy);
+
         // Audit related
         Task<IEnumerable<ConversationAuditDto>> GetConversationAuditsAsync();
     }
@@ -169,6 +173,12 @@ namespace TravelBuddy.Messaging
         }
 
         // ------------------------------- AUDIT TABLES -------------------------------
+        public async Task<(bool Success, string? ErrorMessage)> DeleteConversationAsync(int conversationId, int changedBy)
+        {
+            var messagingRepository = GetRepo();
+            return await messagingRepository.DeleteConversationAsync(conversationId, changedBy);
+        }
+
         public async Task<IEnumerable<ConversationAuditDto>> GetConversationAuditsAsync()
         {
             var messagingRepository = GetRepo();

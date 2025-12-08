@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.OpenApi.Models;
+using System.Text.Json;
 using MongoDB.Driver;
 using Neo4j.Driver;
 // Uses the main module namespace for User, IUserRepository, IUserService, etc.
@@ -17,7 +18,7 @@ using TravelBuddy.Messaging;
 using TravelBuddy.Messaging.Infrastructure;
 using TravelBuddy.SharedKernel; 
 using TravelBuddy.SharedKernel.Infrastructure;
-using System.Text.Json;
+using TravelBuddy.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -153,6 +154,9 @@ builder.Services.AddTransient<Neo4jMessagingRepository>();
 builder.Services.AddTransient<MySqlSharedKernelRepository>();
 builder.Services.AddTransient<MongoDbSharedKernelRepository>();
 builder.Services.AddTransient<Neo4jSharedKernelRepository>();
+
+// Weather Service
+builder.Services.AddHttpClient<IWeatherService, VisualCrossingWeatherService>();
 
 // Register HTTP Context Accessor
 // The factories need this to read the request header.

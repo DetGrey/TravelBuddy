@@ -22,7 +22,7 @@ public class Neo4jSharedKernelRepository : ISharedKernelRepository
             "       l.affectedId AS affectedId, " +
             "       l.triggeredAt AS triggeredAt, " +
             "       l.details AS details " +
-            "ORDER BY l.eventId DESC");
+            "ORDER BY l.triggeredAt DESC");
 
         var logs = new List<SystemEventLog>();
         

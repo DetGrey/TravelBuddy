@@ -9,21 +9,14 @@ namespace TravelBuddy.SharedKernel;
 public class SystemEventLogDocument
 {
     [BsonId]
-    public MongoDB.Bson.ObjectId Id { get; set; }
-
-    [BsonElement("event_id")]
     public int EventId { get; set; }
 
-    [BsonElement("event_type")]
     public string EventType { get; set; } = null!;
 
-    [BsonElement("affected_id")]
     public int? AffectedId { get; set; }
 
-    [BsonElement("triggered_at")]
     public DateTime? TriggeredAt { get; set; }
 
-    [BsonElement("details")]
     public string? Details { get; set; }
 }
 
