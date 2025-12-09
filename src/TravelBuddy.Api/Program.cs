@@ -188,16 +188,13 @@ builder.Services.AddControllers()
 // so cookies / auth flows can work when needed.
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("LocalDev", policy =>
+    options.AddPolicy("AllowedOrigins", policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "http://127.0.0.1:5173")
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
-    });
-    options.AddPolicy("AllowMyFrontend", policy =>
-    {
-        policy.WithOrigins("https://detgrey.github.io")
+        policy.WithOrigins(
+                "http://localhost:5173",
+                "http://127.0.0.1:5173",
+                "https://detgrey.github.io"
+              )
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -214,7 +211,7 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 // enable CORS for the dev frontend before authentication
-app.UseCors("LocalDev");
+app.UseCors("AllowedOrigins");
 
 app.UseExceptionHandler("/error");
 app.UseHttpsRedirection();
