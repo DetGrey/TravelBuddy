@@ -64,19 +64,26 @@ Your project components should be organized as follows. This structure assumes y
 | :--- | :--- | :--- |
 | **API** (C\#) | `src/TravelBuddy.Api` | Main C\# application layer. |
 | **Migrator** (C\#) | `src/TravelBuddy.Migrator` | C\# tool for MySQL to MongoDB data transfer. |
-| **SQL Scripts** | `mysql/` | Setup files for the MySQL database. |
+| **SQL Scripts** | `mysql/db_init` | Setup files for the MySQL database. |
 
 #### Prerequisites (Updated for Local Test Environment)
 
-  * **.NET SDK** (e.g., .NET 8 or later)
-  * **Bash terminal**
-  * **Database Credentials**: Connection strings must be updated in the C\# project configuration files to point to the **local** instances (e.g., `localhost` or `127.0.0.1`).
+- **.NET SDK** (e.g., .NET 9 or later)
+- **Cloned TravelBuddy repository**
+- **Bash terminal**
 
 -----
 
-#### Add the env variables
+#### Environment configuration
 
-1.  **Create .env file:** Inside `src/TravelBuddy.Migrator` create a .env file with following variables and update values to your local information:
+To access the external weather API (Visual Crossing) either add your own API key or find ours in the report. Change `API_KEY` before running the code below if you want to access it:
+```bash
+dotnet user-secrets set "VisualCrossing:ApiKey" "API_KEY"
+```
+
+Both the migrator and API have defaults in their `appsettings.json` files that match the local test environment so that you can run them without any additional setup.
+
+**Migrator:** The migrator reads defaults from `appsettings.json` and allows `.env` to override them. Optionally create `src/TravelBuddy.Migrator/.env` to override:
 ```bash
 MYSQL_HOST=localhost
 MYSQL_PORT=3307
@@ -92,9 +99,7 @@ NEO4J_USER=neo4j
 NEO4J_PASSWORD=password
 ```
 
-2. **Add connection strings:** Inside `src/TravelBuddy.Api` run following in a bash terminal
-
-Setup env ConnectionStrings, but remember to update password (and the other values if you are not using the default ones):
+**API:** The API reads defaults from `appsettings.json` and allows user-secrets to override them. Optionally set secrets inside `src/TravelBuddy.Api`:
 ```bash
 dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;Port=3307;Database=travel_buddy;User=backend_api;Pwd=backend_api_password;"
 
@@ -103,10 +108,6 @@ dotnet user-secrets set "ConnectionStrings:MongoDbConnection" "mongodb://root:pa
 dotnet user-secrets set "ConnectionStrings:Neo4jUri" "bolt://localhost:7687"
 dotnet user-secrets set "ConnectionStrings:Neo4jUser" "neo4j"
 dotnet user-secrets set "ConnectionStrings:Neo4jPassword" "password"
-```
-3. To access our endpoint with external API for weather (Visual Crossing) either add your own api key or find ours in the report. Change `API_KEY` before running the code below:
-```bash
-dotnet user-secrets set "VisualCrossing:ApiKey" "API_KEY"
 ```
 
 -----
@@ -127,7 +128,7 @@ dotnet user-secrets set "VisualCrossing:ApiKey" "API_KEY"
 
 ### 3. Run the API
 
-1.  **Navigate** to the API project folder:
+1.  **Navigate** to the API project folder (code snippet works from project root):
     ```bash
     cd src/TravelBuddy.Api
     ```
@@ -142,6 +143,4 @@ dotnet user-secrets set "VisualCrossing:ApiKey" "API_KEY"
 ### 5. Final Verification
 
   * Check the console output for `TravelBuddy.Api` to confirm it is running.
-  * Verify the data copied by the migrator is present in the target collections on the **local MongoDB** instance.
   * Test the API endpoints to ensure full operational capabilities using your isolated environment.
-

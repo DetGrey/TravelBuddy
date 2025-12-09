@@ -19,8 +19,15 @@ using TravelBuddy.Messaging.Infrastructure;
 using TravelBuddy.SharedKernel.Infrastructure;
 
 
-// Load .env from solution root
-Env.Load();
+// Load .env from solution root if present; continue silently when missing
+try
+{
+    Env.Load();
+}
+catch (FileNotFoundException)
+{
+    Console.WriteLine(".env not found; using environment variables/defaults.");
+}
 
 // ------------- CONFIG -------------
 var configuration = new ConfigurationBuilder()
@@ -29,50 +36,43 @@ var configuration = new ConfigurationBuilder()
     .AddEnvironmentVariables()
     .Build();
 
-// ---- Read variable *names* from appsettings.json ----
-var mysqlSection = configuration.GetSection("MySql");
-// These are names like "MYSQL_HOST", "MYSQL_PORT", ...
-var hostVar = mysqlSection["Host"] ?? throw new InvalidOperationException("MySql:Host not set in appsettings.json");
-var portVar = mysqlSection["Port"] ?? "MYSQL_PORT";
-var userVar = mysqlSection["User"] ?? throw new InvalidOperationException("MySql:User not set in appsettings.json");
-var passVar = mysqlSection["Password"] ?? throw new InvalidOperationException("MySql:Password not set in appsettings.json");
-var dbVar   = mysqlSection["Database"] ?? throw new InvalidOperationException("MySql:Database not set in appsettings.json");
+// Helper: reads config key, allows .env to override via env var name
+string GetConfigValue(string configKey, string envVarName)
+{
+    // Check appsettings.json / config first
+    var configValue = configuration[configKey];
+    if (!string.IsNullOrWhiteSpace(configValue))
+    {
+        // If .env variable exists, it overrides config value
+        var envOverride = Env.GetString(envVarName) ?? Environment.GetEnvironmentVariable(envVarName);
+        if (!string.IsNullOrWhiteSpace(envOverride))
+            return envOverride;
+        return configValue;
+    }
 
-// ---- Look up actual values in .env using those names ----
-var mysqlHost = Env.GetString(hostVar) ?? throw new InvalidOperationException($"Env var {hostVar} not set");
-var mysqlPort = Env.GetString(portVar) ?? "3306";
-var mysqlUser = Env.GetString(userVar) ?? throw new InvalidOperationException($"Env var {userVar} not set");
-var mysqlPass = Env.GetString(passVar) ?? throw new InvalidOperationException($"Env var {passVar} not set");
-var mysqlDb   = Env.GetString(dbVar)   ?? throw new InvalidOperationException($"Env var {dbVar} not set");
+    // Fallback to environment variable alone
+    return Env.GetString(envVarName) ?? Environment.GetEnvironmentVariable(envVarName) ?? "";
+}
+
+// ---- Read values from appsettings.json (can be overridden by .env) ----
+var mysqlHost = GetConfigValue("MySql:Host", "MYSQL_HOST");
+var mysqlPort = GetConfigValue("MySql:Port", "MYSQL_PORT");
+var mysqlUser = GetConfigValue("MySql:User", "MYSQL_USER");
+var mysqlPass = GetConfigValue("MySql:Password", "MYSQL_PASSWORD");
+var mysqlDb   = GetConfigValue("MySql:Database", "MYSQL_DATABASE");
 
 // Final MySQL connection string
 var mySqlConnectionString =
     $"Server={mysqlHost};Port={mysqlPort};Database={mysqlDb};User={mysqlUser};Password={mysqlPass};";
 
-// ---- Mongo: same pattern ----
-var mongoSection = configuration.GetSection("Mongo");
-var mongoConnVar = mongoSection["Connection"] ?? throw new InvalidOperationException("Mongo:Connection not set in appsettings.json");
-var mongoDbVar   = mongoSection["Database"]   ?? "MONGO_DATABASE";
+// Mongo configuration
+var mongoConnectionString = GetConfigValue("Mongo:Connection", "MONGO_CONNECTION");
+var mongoDatabaseName = GetConfigValue("Mongo:Database", "MONGO_DATABASE");
 
-var mongoConnectionString = Env.GetString(mongoConnVar)
-    ?? throw new InvalidOperationException($"Env var {mongoConnVar} not set");
-
-var mongoDatabaseName = Env.GetString(mongoDbVar) 
-    ?? "travel_buddy_mongo";
-
-// ---- Neo4j settings via appsettings + .env ----
-var neo4jSection = configuration.GetSection("Neo4j");
-
-var neo4jUriVar  = neo4jSection["Uri"]      ?? "NEO4J_URI";
-var neo4jUserVar = neo4jSection["User"]     ?? "NEO4J_USER";
-var neo4jPassVar = neo4jSection["Password"] ?? "NEO4J_PASSWORD";
-
-var neo4jUri  = Env.GetString(neo4jUriVar) 
-    ?? throw new InvalidOperationException($"Env var {neo4jUriVar} not set");
-var neo4jUser = Env.GetString(neo4jUserVar) 
-    ?? throw new InvalidOperationException($"Env var {neo4jUserVar} not set");
-var neo4jPass = Env.GetString(neo4jPassVar) 
-    ?? throw new InvalidOperationException($"Env var {neo4jPassVar} not set");
+// Neo4j configuration
+var neo4jUri  = GetConfigValue("Neo4j:Uri", "NEO4J_URI");
+var neo4jUser = GetConfigValue("Neo4j:User", "NEO4J_USER");
+var neo4jPass = GetConfigValue("Neo4j:Password", "NEO4J_PASSWORD");
 
 Console.WriteLine("Configuration:");
 Console.WriteLine($"MySQL connection string: {mySqlConnectionString}");
