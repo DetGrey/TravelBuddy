@@ -10,10 +10,13 @@ namespace TravelBuddy.Api.Controllers
         [Route("/")]
         public IActionResult Root()
         {
+            var request = HttpContext.Request;
+            var swaggerLink = $"{request.Scheme}://{request.Host}/swagger";
+            
             return Ok(new
             {
                 message = "Welcome to TravelBuddy",
-                swaggerUrl = "/swagger",
+                swaggerUrl = swaggerLink,
                 timestamp = DateTime.UtcNow
             });
         }

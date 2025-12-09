@@ -202,11 +202,10 @@ var app = builder.Build();
 // --- HTTP REQUEST PIPELINE CONFIGURATION ---
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// Enable Swagger in all environments (can be disabled via configuration if needed)
+app.UseSwagger();
+app.UseSwaggerUI();
+
 // enable CORS for the dev frontend before authentication
 app.UseCors("LocalDev");
 
