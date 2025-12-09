@@ -35,13 +35,10 @@ namespace TravelBuddy.Api.Controllers
 
             dto.UserId = userId;
 
-            // TODO Ideally, the Service should return the created object (with its new ID)
-            // assuming InsertBuddyRequestAsync returns (bool success, string error, BuddyDto createdBuddy)
             var (success, errorMessage) = await _tripService.InsertBuddyRequestAsync(dto);
             
             if (!success) return BadRequest(errorMessage ?? "Buddy request failed");
 
-            // Standard: Return the created resource.
             return Created();
         }
 

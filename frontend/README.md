@@ -145,6 +145,6 @@ If your backend changes or has additional routes, I can adapt the helper functio
 
 ---
 
-## Missing endpoints (TODOs for the backend)
+## Missing endpoints
 
 - POST /api/conversations  — create a new direct conversation with a user (used by `src/pages/NewConversationPage.jsx` / `src/services/messagesService.js`)
