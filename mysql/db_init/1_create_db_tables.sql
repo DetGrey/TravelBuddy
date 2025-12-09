@@ -1,6 +1,7 @@
 -- =====================================
 -- Create Database (emoji-safe defaults)
 -- =====================================
+DROP DATABASE IF EXISTS travel_buddy;
 CREATE DATABASE IF NOT EXISTS travel_buddy
   CHARACTER SET utf8mb4          -- Use utf8mb4 to support emojis and multilingual text
   COLLATE utf8mb4_unicode_ci;    -- Unicode collation for consistent sorting/comparison
