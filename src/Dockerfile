@@ -4,15 +4,15 @@ WORKDIR /source
 
 # 1. Copy the project file first to cache the "restore" step
 # This makes future builds much faster if you haven't changed dependencies
-COPY src/TravelBuddy.Api/TravelBuddy.Api.csproj src/TravelBuddy.Api/
-RUN dotnet restore src/TravelBuddy.Api/TravelBuddy.Api.csproj
+COPY TravelBuddy.Api/TravelBuddy.Api.csproj TravelBuddy.Api/
+RUN dotnet restore TravelBuddy.Api/TravelBuddy.Api.csproj
 
 # 2. Copy the rest of the source code
 COPY . .
 
 # 3. Build and Publish the application
 # We publish to a folder named /app inside the container
-WORKDIR /source/src/TravelBuddy.Api
+WORKDIR /source/TravelBuddy.Api
 RUN dotnet publish -c Release -o /app
 
 # STAGE 2: Run the application
