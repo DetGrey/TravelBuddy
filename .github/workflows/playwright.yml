@@ -101,7 +101,7 @@ jobs:
         env:
           ASPNETCORE_ENVIRONMENT: Development
           ASPNETCORE_URLS: https://localhost:7164
-          ConnectionStrings__DefaultConnection: "Server=localhost;Port=3306;Database=travel_buddy;User=root;Pwd=rootpassword;"
+          ConnectionStrings__DefaultConnection: "Server=localhost;Port=3307;Database=travel_buddy;User=backend_api;Pwd=backend_api_password;"
 
       - name: Print backend process status
         run: |
