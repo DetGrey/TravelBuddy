@@ -1,0 +1,37 @@
+name: CI/CD Pipeline - TravelBuddy
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+        cache: true
+        
+    - name: Run All Tests (both Unit and Integration)
+      run: |
+        dotnet test ./TravelBuddy.sln \
+          --configuration Release \
+          --logger "trx;LogFileName=test-results.trx" \
+          --collect:"XPlat Code Coverage" 
+          
+    - name: Publish Test Results
+      uses: EnricoMi/publish-unit-test-result-action@v2
+      if: always()
+      with:
+        files: "**/*.trx"
