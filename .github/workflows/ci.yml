@@ -41,14 +41,25 @@ jobs:
       run: |
         dotnet test ${{ matrix.project-path }} \
           --configuration Release \
-          --verbosity normal \
+          --verbosity detailed \
           --logger "trx;LogFileName=${{ matrix.test-type }}.trx" \
+          --logger "console;verbosity=detailed" \
           --collect:"XPlat Code Coverage" \
-          --results-directory ./TestResults
+          --results-directory ./tests/TestResults
 
     - name: Publish Test Results
       uses: EnricoMi/publish-unit-test-result-action@v2
       if: always() # Run even if tests fail
       with:
-        files: ./TestResults/**/*.trx
+        files: ./tests/TestResults/**/*.trx
         check_name: "${{ matrix.test-type }} Results"
+
+    - name: Upload Test Results and Coverage
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: ${{ matrix.test-type }}-Results
+        path: |
+          ./tests/TestResults/**/*.trx
+          ./tests/TestResults/**/*.coverage
+        retention-days: 30
