@@ -9,28 +9,46 @@ on:
 
 env:
   DOTNET_VERSION: '9.0.x'
-  
+
+permissions:
+  checks: write
+  pull-requests: write
+  contents: read
+
 jobs:
-  build-and-test:
-    name: Build and Test
+  tests:
+    name: Run ${{ matrix.test-type }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - test-type: UnitTests
+            project-path: tests/TravelBuddy.UnitTests/TravelBuddy.Tests.csproj
+          - test-type: IntegrationTests
+            project-path: tests/TravelBuddy.IntegrationTests/TravelBuddy.IntegrationTests.csproj
+
     steps:
-    - name: Checkout
+    - name: Checkout code
       uses: actions/checkout@v4
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
-        
-    - name: Run All Tests (both Unit and Integration)
+
+    - name: Run ${{ matrix.test-type }}
       run: |
-        dotnet test ./travel_buddy.sln \
+        dotnet test ${{ matrix.project-path }} \
           --configuration Release \
-          --logger "trx;LogFileName=test-results.trx" \
-          --collect:"XPlat Code Coverage" 
-          
+          --verbosity normal \
+          --logger "trx;LogFileName=${{ matrix.test-type }}.trx" \
+          --collect:"XPlat Code Coverage" \
+          --results-directory ./TestResults
+
     - name: Publish Test Results
       uses: EnricoMi/publish-unit-test-result-action@v2
-      if: always()
+      if: always() # Run even if tests fail
       with:
-        files: "**/*.trx"
+        files: ./TestResults/**/*.trx
+        check_name: "${{ matrix.test-type }} Results"
