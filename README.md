@@ -3,52 +3,44 @@ Final project for Databases for Developers
 
 ## Project structure
 ```
-/travel_buddy/
-├── src/
-│   ├── TravelBuddy.Api/                        <-- ASP.NET Core Web API Host (Monolith Entry)
-│   │   ├── Auth/                                # JWT tokens etc.
-│   │   ├── Controllers/                         # API endpoints (e.g., UsersController)
-│   │   └── Program.cs                           # Startup and DI configuration
+/TravelBuddy/
+├── src/                                        <-- Backend (.NET 9)
+│   ├── TravelBuddy.Api/                        # ASP.NET Core Web API (Host)
+│   │   ├── Auth/                               # JWT authentication
+│   │   ├── Controllers/                        # API endpoints
+│   │   └── Program.cs                          # Startup & DI
 │   │
-│   ├── TravelBuddy.Migrator/                   <-- Migrator script from MySQL to MongoDB
-│   │   ├── Models/                              # Document models for MongoDB
-│   │   └── Program.cs                           # Migrating script
+│   ├── TravelBuddy.Migrator/                   # Data migration (MySQL → MongoDB/Neo4j)
+│   │   ├── Models/                             # Document models
+│   │   └── Program.cs                          # Migration script
 │   │
-│   ├── Modules/
-│   │   ├── TravelBuddy.Users/                  <-- Class Library (.NET 8)
-│   │   │   ├── Models/                          # User entity
-│   │   │   ├── Infrastructure/
-│   │   │   │   └── UsersDbContext.cs
-│   │   │   ├── DTOs/
-│   │   │   ├── IUserRepository.cs
-│   │   │   └── UserService.cs
-│   │   │
-│   │   ├── TravelBuddy.Trips/                  <-- Class Library
-│   │   │   ├── Models/                          # Trip, TripAudit, Buddy, etc.
-│   │   │   ├── Infrastructure/
-│   │   │   │   └── TripsDbContext.cs
-│   │   │   ├── DTOs/
-│   │   │   └── TripService.cs, etc.
-│   │   │
-│   │   └── TravelBuddy.Messaging/              <-- Class Library
-│   │       ├── Models/                          # Message, Conversation, etc.
-│   │       ├── Infrastructure/
-│   │       │   └── MessagingDbContext.cs
-│   │       ├── DTOs/
-│   │       └── MessagingService.cs, etc.
+│   ├── Modules/                                # Domain modules
+│   │   ├── TravelBuddy.Users/                  # User management
+│   │   ├── TravelBuddy.Trips/                  # Trip management
+│   │   └── TravelBuddy.Messaging/              # Messaging & conversations
 │   │
-│   └── Shared/
-│       └── TravelBuddy.SharedKernel/           <-- Class Library (Common types)
-│           ├── Models/                          # SystemEventLog
-│           └── Infrastructure/
-│               └── SharedKernelDbContext.cs
+│   ├── Shared/
+│   │   └── TravelBuddy.SharedKernel/           # Common types & infrastructure
+│   │
+│   └── src.sln                                 # Backend solution file
 │
-├── mysql/
-│   ├── 1_create_db_tables.sql                  <-- SQL script to initialize the database
-│   ├── 2_stored_objects.sql                    <-- SQL script to create our stored objects
-│   └── 3_seed_data.sql                         <-- SQL script to insert our generated data
+├── frontend/                                   <-- React + Vite
 │
-└── *.md                                        <-- Markdown files for our notes
+├── tests/                                      <-- Test suites
+│   ├── TravelBuddy.IntegrationTests/           # Integration tests
+│   └── TravelBuddy.UnitTests/                  # Unit tests
+│
+├── mysql/                                      <-- MySQL initialization
+│   ├── db_init/
+│   │   ├── 1_create_db_tables.sql              # Schema
+│   │   ├── 2_stored_objects.sql                # Procedures & views
+│   │   ├── 3_seed_data.sql                     # Sample data
+│   │   └── 4_db_user_privileges.sql            # User permissions
+│   │
+│   └── docker-compose.yml                      # MySQL Docker setup
+│
+├── docker-compose.yml                          <-- Multi-service Docker setup
+└── *.md                                        <-- Documentation
 ```
 
 
