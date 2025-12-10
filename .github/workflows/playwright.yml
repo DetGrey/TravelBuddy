@@ -113,6 +113,7 @@ jobs:
         run: |
           cat backend-output.log || echo "No backend stdout/stderr logs found"
 
+
       - name: Wait for backend to be ready
         run: |
           for i in {1..30}; do
@@ -125,6 +126,11 @@ jobs:
           done
           echo "Backend did not start in time"
           exit 1
+
+      - name: Curl API base URL for debug
+        run: |
+          echo "Curling https://localhost:7164/api/users (or health endpoint if available)"
+          curl -k -v https://localhost:7164/api/users || echo "API /users endpoint not reachable"
 
       - name: Run Playwright tests
         working-directory: frontend
