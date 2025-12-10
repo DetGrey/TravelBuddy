@@ -103,6 +103,16 @@ jobs:
           ASPNETCORE_URLS: https://localhost:7164
           ConnectionStrings__DefaultConnection: "Server=localhost;Port=3306;Database=travel_buddy;User=root;Pwd=rootpassword;"
 
+      - name: Print backend process status
+        run: |
+          ps aux | grep dotnet || true
+          lsof -i :7164 || true
+          netstat -tuln || true
+
+      - name: Print backend stdout/stderr
+        run: |
+          cat src/TravelBuddy.Api/bin/Release/net8.0/*.log || echo "No backend stdout/stderr logs found"
+
       - name: Wait for backend to be ready
         run: |
           for i in {1..30}; do
