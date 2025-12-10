@@ -74,7 +74,11 @@ jobs:
         run: dotnet run --configuration Release
         env:
           ASPNETCORE_ENVIRONMENT: Development
-          ConnectionStrings__DefaultConnection: "Server=localhost;Port=3306;Database=travel_buddy;User=root;Pwd=rootpassword;"
+          MySql__Host: localhost
+          MySql__Port: "3306"
+          MySql__User: root
+          MySql__Password: rootpassword
+          MySql__Database: travel_buddy
 
       - name: Start backend server
         working-directory: src/TravelBuddy.Api
