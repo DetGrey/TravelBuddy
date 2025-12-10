@@ -222,7 +222,6 @@ Console.WriteLine($"Migrated {userDocs.Count} users to MongoDB.");
 // ===== 2) DESTINATIONS (flat collection) =====
 Console.WriteLine("Migrating destinations...");
 
-// TODO: DbSet name probably "Destinations"
 var destinations = await tripsDbContext.Destinations
     .AsNoTracking()
     .ToListAsync();
@@ -333,7 +332,6 @@ Console.WriteLine($"Trips migrated (with embedded destinations & buddies): {trip
 // ===== 4) CONVERSATIONS with embedded PARTICIPANTS =====
 Console.WriteLine("Migrating conversations with embedded participants...");
 
-// TODO: adjust DbSet names & property names to your Messaging module
 var conversations = await messagingDbContext.Conversations
     .AsNoTracking()
     .ToListAsync();
