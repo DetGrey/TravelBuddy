@@ -96,9 +96,9 @@ jobs:
         env:
           ASPNETCORE_ENVIRONMENT: Development
           MySql__Host: localhost
-          MySql__Port: "3306"
-          MySql__User: root
-          MySql__Password: rootpassword
+          MySql__Port: "3307"
+          MySql__User: backend_api
+          MySql__Password: backend_api_password
           MySql__Database: travel_buddy
 
       - name: Start backend server
