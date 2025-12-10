@@ -3,8 +3,14 @@ name: CI/CD Pipeline - TravelBuddy
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'tests/**'
+      - 'src/**'
   pull_request:
     branches: [ main ]
+    paths:
+      - 'tests/**'
+      - 'src/**'
   workflow_dispatch:
 
 env:
