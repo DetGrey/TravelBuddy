@@ -82,13 +82,6 @@ jobs:
           echo "MySQL did not start in time"
           exit 1
 
-      - name: Create backend_api user and grant privileges
-        run: |
-          mysql --protocol=TCP -h localhost -P 3307 -u root -prootpassword -e "\
-            CREATE USER IF NOT EXISTS 'backend_api'@'%' IDENTIFIED BY 'backend_api_password';\
-            GRANT ALL PRIVILEGES ON travel_buddy.* TO 'backend_api'@'%';\
-            FLUSH PRIVILEGES;\
-          "
 
       - name: Run database migrations
         working-directory: src/TravelBuddy.Migrator
@@ -97,8 +90,8 @@ jobs:
           ASPNETCORE_ENVIRONMENT: Development
           MySql__Host: localhost
           MySql__Port: "3307"
-          MySql__User: backend_api
-          MySql__Password: backend_api_password
+          MySql__User: root
+          MySql__Password: rootpassword
           MySql__Database: travel_buddy
 
       - name: Start backend server
@@ -109,7 +102,7 @@ jobs:
         env:
           ASPNETCORE_ENVIRONMENT: Development
           ASPNETCORE_URLS: https://localhost:7164
-          ConnectionStrings__DefaultConnection: "Server=localhost;Port=3307;Database=travel_buddy;User=backend_api;Pwd=backend_api_password;"
+          ConnectionStrings__DefaultConnection: "Server=localhost;Port=3307;Database=travel_buddy;User=root;Pwd=rootpassword;"
 
       - name: Print backend process status
         run: |
