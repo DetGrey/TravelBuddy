@@ -62,6 +62,13 @@ jobs:
         working-directory: src/TravelBuddy.Api
         run: dotnet build --configuration Release --no-restore
 
+      - name: Run database migrations
+        working-directory: src/TravelBuddy.Migrator
+        run: dotnet run --configuration Release
+        env:
+          ASPNETCORE_ENVIRONMENT: Development
+          ConnectionStrings__DefaultConnection: "Server=localhost;Port=3306;Database=travel_buddy;User=root;Pwd=rootpassword;"
+
       - name: Start backend server
         working-directory: src/TravelBuddy.Api
         run: |
@@ -70,6 +77,7 @@ jobs:
         env:
           ASPNETCORE_ENVIRONMENT: Development
           ASPNETCORE_URLS: https://localhost:7164
+          ConnectionStrings__DefaultConnection: "Server=localhost;Port=3306;Database=travel_buddy;User=root;Pwd=rootpassword;"
 
       - name: Wait for backend to be ready
         run: |
