@@ -72,7 +72,7 @@ jobs:
       - name: Wait for MySQL to be ready
         run: |
           for i in {1..30}; do
-            if mysql -h localhost -P 3306 -u root -prootpassword -e "SELECT 1" travel_buddy; then
+            if mysql --protocol=TCP -h localhost -P 3306 -u root -prootpassword -e "SELECT 1" travel_buddy; then
               echo "MySQL is ready"
               exit 0
             fi
