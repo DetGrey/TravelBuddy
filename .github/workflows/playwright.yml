@@ -69,6 +69,19 @@ jobs:
         working-directory: src/TravelBuddy.Api
         run: dotnet build --configuration Release --no-restore
 
+      - name: Wait for MySQL to be ready
+        run: |
+          for i in {1..30}; do
+            if mysql -h localhost -P 3306 -u root -prootpassword -e "SELECT 1" travel_buddy; then
+              echo "MySQL is ready"
+              exit 0
+            fi
+            echo "Waiting for MySQL... ($i/30)"
+            sleep 2
+          done
+          echo "MySQL did not start in time"
+          exit 1
+
       - name: Run database migrations
         working-directory: src/TravelBuddy.Migrator
         run: dotnet run --configuration Release
@@ -108,6 +121,11 @@ jobs:
         run: npx playwright test
         env:
           VITE_API_BASE_URL: https://localhost:7164/api
+
+      - name: Print backend logs
+        if: failure()
+        run: |
+          cat src/TravelBuddy.Api/logs/*.log || echo "No backend logs found"
 
       - name: Upload Playwright Report
         uses: actions/upload-artifact@v4
