@@ -84,12 +84,6 @@ jobs:
           echo "Backend did not start in time"
           exit 1
 
-      - name: Start frontend dev server
-        working-directory: frontend
-        run: |
-          npm run dev &
-          sleep 5
-
       - name: Run Playwright tests
         working-directory: frontend
         run: npx playwright test
