@@ -24,7 +24,7 @@ jobs:
         
     - name: Run All Tests (both Unit and Integration)
       run: |
-        dotnet test ./TravelBuddy.sln \
+        dotnet test ./travel_buddy.sln \
           --configuration Release \
           --logger "trx;LogFileName=test-results.trx" \
           --collect:"XPlat Code Coverage" 
