@@ -488,7 +488,7 @@ namespace TravelBuddy.Messaging
             return messages;
         }
 
-        public async Task<Message> AddMessageAsync(Message message)
+        public async Task<Message?> AddMessageAsync(Message message)
         {
             if (message is null)
                 throw new ArgumentNullException(nameof(message));
@@ -536,6 +536,14 @@ namespace TravelBuddy.Messaging
             };
 
             await session.RunAsync(createCypher, parameters);
+
+            // Unarchive the conversation if it's archived
+            const string unarchiveCypher = @"
+                MATCH (c:Conversation { conversationId: $conversationId, isArchived: true })
+                SET c.isArchived = false
+            ";
+
+            await session.RunAsync(unarchiveCypher, new { conversationId = message.ConversationId });
 
             message.MessageId = messageId;
             message.SentAt    = sentAt;

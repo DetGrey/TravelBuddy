@@ -772,6 +772,7 @@ BEGIN
             OR (in_req_start IS NOT NULL AND in_req_end IS NOT NULL
                 AND td.end_date <= in_req_end)
         )
+        AND (t.is_archived = FALSE)
         AND (in_name IS NULL OR in_name = '' OR d.name = in_name)
         AND (in_country IS NULL OR in_country = '' OR d.country = in_country)
         AND (in_state IS NULL OR in_state = '' OR d.state = in_state)

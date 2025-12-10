@@ -162,7 +162,7 @@ namespace TravelBuddy.Messaging
             var senderName = senderUser?.Name;
 
             // 6. Map to DTO with SenderName filled in
-            return new MessageDto(
+            return saved is null ? null : new MessageDto(
                 Id:            saved.MessageId,
                 ConversationId: saved.ConversationId,
                 SenderId:      saved.SenderId,

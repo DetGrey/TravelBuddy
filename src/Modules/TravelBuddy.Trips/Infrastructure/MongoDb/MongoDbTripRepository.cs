@@ -131,7 +131,7 @@ namespace TravelBuddy.Trips
             LoadTripsAndDestinationsAsync()
         {
             var tripsTask = _tripsCollection
-                .Find(FilterDefinition<TripDocument>.Empty)
+                .Find(t => t.IsArchived != true)
                 .ToListAsync();
 
             var destsTask = _destinationsCollection
@@ -192,6 +192,10 @@ namespace TravelBuddy.Trips
             {
                 foreach (var td in trip.Destinations)
                 {
+                    // Skip archived trip destinations
+                    if (td.IsArchived == true)
+                        continue;
+
                     if (!destMap.TryGetValue(td.DestinationId, out var destDoc))
                         continue;
 

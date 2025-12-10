@@ -67,11 +67,22 @@ public class MySqlMessagingRepository : IMessagingRepository
             .ToListAsync();
     }
 
-    public async Task<Message> AddMessageAsync(Message message)
+    public async Task<Message?> AddMessageAsync(Message message)
     {
-        await _context.Messages.AddAsync(message);
-        await _context.SaveChangesAsync();
-        return message;
+        try
+        {
+            await _context.Database.ExecuteSqlInterpolatedAsync($@"
+                CALL insert_new_message(
+                    {message.SenderId},
+                    {message.ConversationId},
+                    {message.Content}
+                )");
+            return message;
+        }
+        catch (Exception)
+        {
+            return null;
+        }
     }
 
         public async Task<(bool Success, string? ErrorMessage)> DeleteConversationAsync(int conversationId, int changedBy)

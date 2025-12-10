@@ -86,6 +86,8 @@ public class Neo4jTripRepository : ITripRepository
                 ELSE t.maxBuddies - acceptedPersons
                 END AS remaining
             WHERE
+            (t.isArchived IS NULL OR t.isArchived = false) AND
+            (hs.isArchived IS NULL OR hs.isArchived = false) AND
             ($reqStart IS NULL OR date(hs.endDate) >= date($reqStart)) AND
             ($reqEnd   IS NULL OR date(hs.startDate) <= date($reqEnd)) AND
             ($country  IS NULL OR toLower(d.country) = toLower($country)) AND

@@ -466,7 +466,7 @@ namespace TravelBuddy.Messaging
             return messages;
         }
 
-        public async Task<Message> AddMessageAsync(Message message)
+        public async Task<Message?> AddMessageAsync(Message message)
         {
             if (message.MessageId == 0)
             {
@@ -485,6 +485,13 @@ namespace TravelBuddy.Messaging
             };
 
             await _messageCollection.InsertOneAsync(doc);
+
+            // Unarchive the conversation if it's archived
+            await _conversationCollection.UpdateOneAsync(
+                c => c.ConversationId == message.ConversationId && c.IsArchived == true,
+                Builders<ConversationDocument>.Update.Set(c => c.IsArchived, false)
+            );
+
             return message;
         }
 
