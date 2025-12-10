@@ -30,6 +30,17 @@ jobs:
           --health-retries=3
         ports:
           - 3307:3306
+      mongodb:
+        image: mongo:6.0
+        ports:
+          - 27017:27017
+      neo4j:
+        image: neo4j:5.16
+        env:
+          NEO4J_AUTH: neo4j/test
+        ports:
+          - 7687:7687
+          - 7474:7474
 
     steps:
       - uses: actions/checkout@v4
