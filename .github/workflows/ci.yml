@@ -22,6 +22,7 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
         cache: true
+        cache-dependency-path: '**/*.csproj'
         
     - name: Run All Tests (both Unit and Integration)
       run: |
