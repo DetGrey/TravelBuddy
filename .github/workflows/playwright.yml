@@ -127,10 +127,15 @@ jobs:
           echo "Backend did not start in time"
           exit 1
 
-      - name: Curl API base URL for debug
+      - name: Curl API /auth/register for debug
         run: |
-          echo "Curling https://localhost:7164/api/users (or health endpoint if available)"
-          curl -k -v https://localhost:7164/api/users || echo "API /users endpoint not reachable"
+          echo "Curling https://localhost:7164/api/auth/register (should be POST, but GET will show if route exists)"
+          curl -k -v https://localhost:7164/api/auth/register || echo "/api/auth/register endpoint not reachable"
+
+      - name: Curl API /auth/login for debug
+        run: |
+          echo "Curling https://localhost:7164/api/auth/login (should be POST, but GET will show if route exists)"
+          curl -k -v https://localhost:7164/api/auth/login || echo "/api/auth/login endpoint not reachable"
 
       - name: Run Playwright tests
         working-directory: frontend
