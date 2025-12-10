@@ -69,12 +69,20 @@ jobs:
           sleep 10
         env:
           ASPNETCORE_ENVIRONMENT: Development
+<<<<<<< HEAD
           ASPNETCORE_URLS: http://localhost:5000
+=======
+          ASPNETCORE_URLS: https://localhost:7164
+>>>>>>> 307d6b1f8efd1ce827be454dba87f81d27d165c4
 
       - name: Wait for backend to be ready
         run: |
           for i in {1..30}; do
+<<<<<<< HEAD
             if curl -s http://localhost:5000/health > /dev/null 2>&1; then
+=======
+            if curl -k -s https://localhost:7164/swagger > /dev/null 2>&1; then
+>>>>>>> 307d6b1f8efd1ce827be454dba87f81d27d165c4
               echo "Backend is ready"
               exit 0
             fi
@@ -84,11 +92,24 @@ jobs:
           echo "Backend did not start in time"
           exit 1
 
+<<<<<<< HEAD
+=======
+      - name: Start frontend dev server
+        working-directory: frontend
+        run: |
+          npm run dev &
+          sleep 5
+
+>>>>>>> 307d6b1f8efd1ce827be454dba87f81d27d165c4
       - name: Run Playwright tests
         working-directory: frontend
         run: npx playwright test
         env:
+<<<<<<< HEAD
           PLAYWRIGHT_TEST_BASE_URL: http://localhost:5173
+=======
+          VITE_API_BASE_URL: https://localhost:7164/api
+>>>>>>> 307d6b1f8efd1ce827be454dba87f81d27d165c4
 
       - name: Upload Playwright Report
         uses: actions/upload-artifact@v4
