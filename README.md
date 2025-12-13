@@ -1,5 +1,5 @@
 # TravelBuddy
-Final project for Databases for Developers
+Final project for Databases for Developers and Testing
 
 ## Project structure
 ```
@@ -136,3 +136,13 @@ dotnet user-secrets set "ConnectionStrings:Neo4jPassword" "password"
 
   * Check the console output for `TravelBuddy.Api` to confirm it is running.
   * Test the API endpoints to ensure full operational capabilities using your isolated environment.
+
+## How to run Unit and Integration tests
+
+### Unit tests
+1. `cd tests/TravelBuddy.UnitTests`
+2. `dotnet test`
+
+### Integration tests
+1. `cd tests/TravelBuddy.IntegrationTests`
+2. `dotnet test`
