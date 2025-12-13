@@ -146,3 +146,7 @@ dotnet user-secrets set "ConnectionStrings:Neo4jPassword" "password"
 ### Integration tests
 1. `cd tests/TravelBuddy.IntegrationTests`
 2. `dotnet test`
+
+## E2E testing
+
+Our E2E tests can be found inside `/frontend/tests/e2e`
