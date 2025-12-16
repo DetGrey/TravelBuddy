@@ -136,6 +136,7 @@ dotnet user-secrets set "ConnectionStrings:Neo4jPassword" "password"
 
   * Check the console output for `TravelBuddy.Api` to confirm it is running.
   * Test the API endpoints to ensure full operational capabilities using your isolated environment.
+    * If you use the postman collection we have made, you might have to update the collection variable for baseUrl to `https://localhost:7164`
 
 ## How to run Unit and Integration tests
 
