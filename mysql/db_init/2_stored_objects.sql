@@ -1077,10 +1077,11 @@ BEGIN
     JOIN destinations d ON td.destination_id = d.destination_id
     JOIN conversation_participants p ON c.conversation_id = p.conversation_id
     JOIN users u ON p.user_id = u.user_id
-    WHERE c.conversation_id = 9
+    WHERE c.conversation_id = p_conversation_id
     GROUP BY c.conversation_id, c.trip_destination_id;
 END $$
 DELIMITER ;
+
 -- =====================================
 -- 5. User should see all messages in each conversation even
 -- those before being added to the conversation.
