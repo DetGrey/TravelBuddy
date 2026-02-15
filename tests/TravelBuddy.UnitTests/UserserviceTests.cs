@@ -35,8 +35,11 @@ public class UserServiceTests
         _userService = new UserService(factoryMock.Object);
     }
 
-    // ----------------- AuthenticateAsync (Login) -----------------
+    // =====================================================
+    // Decision Tables – AuthenticateAsync (Login)
+    // =====================================================
 
+    // DT-L1: Email does not exist -> Fail
     [Fact]
     public async Task Authenticate_ShouldReturnNull_WhenUserNotFound()
     {
@@ -54,6 +57,8 @@ public class UserServiceTests
         _userRepoMock.Verify(r => r.GetByEmailAsync(email), Times.Once);
     }
 
+    // DT-L2: Email exists, user deleted -> Fail
+    // STD-DEL-AUTH: Deleted -> Authenticate -> Fail
     [Fact]
     public async Task Authenticate_ShouldReturnNull_WhenUserIsDeleted()
     {
@@ -81,6 +86,7 @@ public class UserServiceTests
         _userRepoMock.Verify(r => r.GetByEmailAsync(DefaultUserEmail), Times.Once);
     }
 
+    // DT-L3: Email exists, not deleted, password incorrect -> Fail
     [Fact]
     public async Task Authenticate_ShouldReturnNull_WhenPasswordIsIncorrect()
     {
@@ -109,6 +115,7 @@ public class UserServiceTests
         _userRepoMock.Verify(r => r.GetByEmailAsync(DefaultUserEmail), Times.Once);
     }
 
+    // DT-L4: Email exists, not deleted, password correct -> Success
     [Fact]
     public async Task Authenticate_ShouldReturnUser_WhenCredentialsAreValid()
     {
@@ -139,8 +146,13 @@ public class UserServiceTests
         _userRepoMock.Verify(r => r.GetByEmailAsync(DefaultUserEmail), Times.Once);
     }
 
-    // ----------------- RegisterAsync -----------------
+    // =====================================================
+    // Decision Tables – RegisterAsync
+    // =====================================================
 
+
+    // DT-R2: Email unique = Yes, missing required fields -> Fail (validation error)
+    // Missing field: Email too short (< 6)
     [Fact]
     public async Task Register_ShouldReturnNull_WhenEmailTooShort()
     {
@@ -162,6 +174,9 @@ public class UserServiceTests
         _userRepoMock.Verify(r => r.AddAsync(It.IsAny<User>()), Times.Never);
     }
 
+
+    // DT-R2: Email unique = Yes, missing required fields -> Fail (validation error)
+    // Missing field: Password too short (< 6)
     [Fact]
     public async Task Register_ShouldReturnNull_WhenPasswordTooShort()
     {
@@ -183,6 +198,8 @@ public class UserServiceTests
         _userRepoMock.Verify(r => r.AddAsync(It.IsAny<User>()), Times.Never);
     }
 
+    // DT-R2: Email unique = Yes, missing required fields -> Fail (validation error)
+    // Missing field: Birthdate missing (null)
     [Fact]
     public async Task Register_ShouldReturnNull_WhenBirthdateMissing()
     {
@@ -204,6 +221,7 @@ public class UserServiceTests
         _userRepoMock.Verify(r => r.AddAsync(It.IsAny<User>()), Times.Never);
     }
 
+    // DT-R1: Email unique = No, required fields present -> Fail (email already in use)
     [Fact]
     public async Task Register_ShouldReturnNull_WhenEmailAlreadyInUse()
     {
@@ -240,6 +258,8 @@ public class UserServiceTests
         _userRepoMock.Verify(r => r.AddAsync(It.IsAny<User>()), Times.Never);
     }
 
+    // DT-R3: Email unique = Yes, all required fields valid -> Success (user created)
+    // STD-REG-ACT: Nonexistent -> Active (Register success)
     [Fact]
     public async Task Register_ShouldCreateUser_WhenAllFieldsValidAndEmailUnique()
     {
@@ -280,8 +300,13 @@ public class UserServiceTests
         _userRepoMock.Verify(r => r.GetByEmailAsync(request.Email), Times.Once);
         _userRepoMock.Verify(r => r.AddAsync(It.IsAny<User>()), Times.Once);
     }
-        
-        [Fact]
+
+    // =====================================================
+    // Edge Cases
+    // =====================================================
+    
+    // Edge-DB1: Case-insensitive email collision    
+    [Fact]
     public async Task Register_ShouldFail_WhenEmailDiffersOnlyByCase()
     {
         // Arrange
@@ -320,7 +345,8 @@ public class UserServiceTests
         _userRepoMock.Verify(r => r.AddAsync(It.IsAny<User>()), Times.Never);
     }
 
-        [Fact]
+    // Edge-CON1: Concurrent registration with same email
+    [Fact]
     public async Task Register_TwoRequestsSameEmail_OneSucceedsOneFails()
     {
         // Arrange
@@ -366,8 +392,12 @@ public class UserServiceTests
     }
 
 
-    // ----------------- ChangePasswordAsync -----------------
+    // =====================================================
+    // Decision Tables – ChangePasswordAsync
+    // =====================================================
 
+    // DT-CP1: User exists = No -> Fail
+    // STD-NON-CP: Nonexistent -> ChangePassword -> Fail (state unchanged)
     [Fact]
     public async Task ChangePassword_ShouldFail_WhenUserNotFound()
     {
@@ -391,6 +421,8 @@ public class UserServiceTests
         _userRepoMock.Verify(r => r.UpdatePasswordAsync(It.IsAny<int>(), It.IsAny<string>()), Times.Never);
     }
 
+    // DT-CP2: User exists = Yes, IsDeleted = Yes -> Fail
+    // STD-DEL-CP: Deleted -> ChangePassword -> Fail (state unchanged)
     [Fact]
     public async Task ChangePassword_ShouldFail_WhenUserIsDeleted()
     {
@@ -425,6 +457,8 @@ public class UserServiceTests
         _userRepoMock.Verify(r => r.UpdatePasswordAsync(It.IsAny<int>(), It.IsAny<string>()), Times.Never);
     }
 
+    // DT-CP3: User exists = Yes, IsDeleted = No, Old password correct = No -> Fail
+    // STD-ACT-CP-FAIL: Active -> ChangePassword(fail) -> Active (no change)
     [Fact]
     public async Task ChangePassword_ShouldFail_WhenOldPasswordIncorrect()
     {
@@ -459,6 +493,8 @@ public class UserServiceTests
         _userRepoMock.Verify(r => r.UpdatePasswordAsync(It.IsAny<int>(), It.IsAny<string>()), Times.Never);
     }
 
+    // DT-CP4: User exists = Yes, IsDeleted = No, Old password correct = Yes -> Success
+    // STD-ACT-CP-SUCCESS: Active -> ChangePassword(success) -> Active (password updated)
     [Fact]
     public async Task ChangePassword_ShouldSucceed_WhenUserAndOldPasswordValid()
     {
@@ -497,33 +533,47 @@ public class UserServiceTests
         _userRepoMock.Verify(r => r.UpdatePasswordAsync(1, It.IsAny<string>()), Times.Once);
     }
 
-    // ----------------- DeleteUser -----------------
+    // =====================================================
+    // Decision Tables – DeleteUser
+    // =====================================================
 
+    // DT-DU1: User does not exist -> Fail - no user to delete
     [Fact]
-    public async Task DeleteUser_ShouldReturnResultFromRepository_WhenDeleteSucceeds()
+    public async Task DeleteUser_DT_DU1_ShouldFail_WhenUserDoesNotExist()
     {
         // Arrange
         const int userId = 42;
+
+        string? capturedHash = null;
         _userRepoMock
             .Setup(r => r.DeleteAsync(userId, It.IsAny<string>()))
-            .ReturnsAsync((true, (string?)null));
+            .Callback<int, string>((_, hash) => capturedHash = hash)
+            .ReturnsAsync((false, "no user to delete"));
 
         // Act
         var (success, error) = await _userService.DeleteUser(userId);
 
         // Assert
-        Assert.True(success);
-        Assert.Null(error);
+        Assert.False(success);
+        Assert.Equal("no user to delete", error);
+
+        Assert.False(string.IsNullOrWhiteSpace(capturedHash)); // proves service passed something
         _userRepoMock.Verify(r => r.DeleteAsync(userId, It.IsAny<string>()), Times.Once);
     }
 
+    // DT-DU2 (design intent): If repository reports "already deleted", service returns failure.
+    // Note: MySQL delete_user procedure currently does not distinguish already-deleted users.
+
     [Fact]
-    public async Task DeleteUser_ShouldReturnFailure_WhenRepositoryFails()
+    public async Task DeleteUser_DT_DU2_ShouldFail_WhenUserAlreadyDeleted()
     {
         // Arrange
         const int userId = 42;
+
+        string? capturedHash = null;
         _userRepoMock
             .Setup(r => r.DeleteAsync(userId, It.IsAny<string>()))
+            .Callback<int, string>((_, hash) => capturedHash = hash)
             .ReturnsAsync((false, "already deleted"));
 
         // Act
@@ -532,11 +582,40 @@ public class UserServiceTests
         // Assert
         Assert.False(success);
         Assert.Equal("already deleted", error);
+
+        Assert.False(string.IsNullOrWhiteSpace(capturedHash));
         _userRepoMock.Verify(r => r.DeleteAsync(userId, It.IsAny<string>()), Times.Once);
     }
 
+    // DT-DU3: User exists and not deleted -> Success - user marked deleted
+    // STD-ACT-DEL: Active -> Deleted via DeleteUser
+    [Fact]
+    public async Task DeleteUser_DT_DU3_ShouldSucceed_WhenUserExistsAndNotDeleted()
+    {
+        // Arrange
+        const int userId = 42;
+
+        string? capturedHash = null;
+        _userRepoMock
+            .Setup(r => r.DeleteAsync(userId, It.IsAny<string>()))
+            .Callback<int, string>((_, hash) => capturedHash = hash)
+            .ReturnsAsync((true, (string?)null));
+
+        // Act
+        var (success, error) = await _userService.DeleteUser(userId);
+
+        // Assert
+        Assert.True(success);
+        Assert.Null(error);
+
+        Assert.False(string.IsNullOrWhiteSpace(capturedHash));
+        _userRepoMock.Verify(r => r.DeleteAsync(userId, It.IsAny<string>()), Times.Once);
+    }
+
+
     // ----------------- GetUserByIdAsync -----------------
 
+    // DT-GET-1: User does not exist → null
     [Fact]
     public async Task GetUserById_ShouldReturnNull_WhenUserNotFound()
     {
@@ -553,6 +632,7 @@ public class UserServiceTests
         _userRepoMock.Verify(r => r.GetUserByIdAsync(1), Times.Once);
     }
 
+    // DT-GET-2: User exists → mapped DTO returned
     [Fact]
     public async Task GetUserById_ShouldMapUserToDto_WhenUserExists()
     {
@@ -585,7 +665,7 @@ public class UserServiceTests
     }
 
     // ----------------- GetAllUsersAsync -----------------
-
+    // FR-GETALL-1: All users returned and mapped correctly
     [Fact]
     public async Task GetAllUsers_ShouldMapAllUsersToDtos()
     {
@@ -630,7 +710,7 @@ public class UserServiceTests
     }
 
     // ----------------- GetUserAuditsAsync -----------------
-
+    // FR-AUDIT-1: User audits returned and mapped correctly
     [Fact]
     public async Task GetUserAudits_ShouldMapAuditsToDtos()
     {
@@ -677,15 +757,17 @@ public class UserServiceTests
     }
 }
 
+
 // --------------------------------------------------------------------
 // DTO Validation Tests (Equivalence & Boundary Values)
 // --------------------------------------------------------------------
 
 public class UserDtoValidationTests
 {
-    private const string ValidPassword = "validPwd"; 
-    private const string TooShortPassword = "12345";
-    private const string MinLengthPassword = "123456";
+    private const string ValidPassword = "aaaaaaaaaaaaaaaa"; // length 16 (EP valid)
+    private const string TooShortPassword = "aaa";           // length 3 (EP invalid)
+    private const string MinLengthPassword = "aaaaaaaaaaaaaaaa"; // also 16 (EP valid)
+
     private static IList<ValidationResult> Validate(object dto)
     {
         var ctx = new ValidationContext(dto);
@@ -707,12 +789,13 @@ public class UserDtoValidationTests
 
     // ----- LoginRequestDto -----
 
+    // EP-L1: Email invalid length (0–5), representative = 3
     [Fact]
     public void Login_EmailTooShort_FailsValidation()
     {
         var dto = new LoginRequestDto
         {
-            Email = MakeEmailOfLength(5),
+            Email = MakeEmailOfLength(3),
             Password = ValidPassword
         };
 
@@ -722,12 +805,13 @@ public class UserDtoValidationTests
         Assert.Contains(results, r => r.MemberNames.Contains(nameof(LoginRequestDto.Email)));
     }
 
+    // EP-L2: Email valid length (6–150), representative = 70
     [Fact]
     public void Login_EmailWithinValidRange_PassesValidation()
     {
         var dto = new LoginRequestDto
         {
-            Email = MakeEmailOfLength(6),
+            Email = MakeEmailOfLength(70),
             Password = ValidPassword
         };
 
@@ -736,12 +820,13 @@ public class UserDtoValidationTests
         Assert.Empty(results);
     }
 
+    // EP-L3: Email invalid length (151+), representative = 200
     [Fact]
     public void Login_EmailTooLong_FailsValidation()
     {
         var dto = new LoginRequestDto
         {
-            Email = MakeEmailOfLength(151),
+            Email = MakeEmailOfLength(200),
             Password = ValidPassword
         };
 
@@ -751,12 +836,14 @@ public class UserDtoValidationTests
         Assert.Contains(results, r => r.MemberNames.Contains(nameof(LoginRequestDto.Email)));
     }
 
+
+    // EP-L4: Password invalid length (0–5), representative = 3
     [Fact]
     public void Login_PasswordTooShort_FailsValidation()
     {
         var dto = new LoginRequestDto
         {
-            Email = MakeEmailOfLength(10),
+            Email = MakeEmailOfLength(70),
             Password = TooShortPassword
         };
 
@@ -766,12 +853,13 @@ public class UserDtoValidationTests
         Assert.Contains(results, r => r.MemberNames.Contains(nameof(LoginRequestDto.Password)));
     }
 
+    // EP-L5: Password valid length (6+), representative = 16
     [Fact]
     public void Login_PasswordValid_PassesValidation()
     {
         var dto = new LoginRequestDto
         {
-            Email = MakeEmailOfLength(10),
+            Email = MakeEmailOfLength(70),
             Password = MinLengthPassword
         };
 
@@ -782,13 +870,14 @@ public class UserDtoValidationTests
 
     // ----- RegisterRequestDto -----
 
+    // EP-R1: Email invalid length (0–5), representative = 3
     [Fact]
     public void Register_EmailTooShort_FailsValidation()
     {
         var dto = new RegisterRequestDto
         {
             Name = "User",
-            Email = MakeEmailOfLength(5),
+            Email = MakeEmailOfLength(3),
             Password = ValidPassword,
             Birthdate = new DateOnly(1990, 1, 1)
         };
@@ -799,6 +888,7 @@ public class UserDtoValidationTests
         Assert.Contains(results, r => r.MemberNames.Contains(nameof(RegisterRequestDto.Email)));
     }
 
+    // EP-R2: Email valid length (6–150), representative = 70
     [Fact]
     public void Register_EmailValidLength_PassesValidation()
     {
@@ -815,13 +905,14 @@ public class UserDtoValidationTests
         Assert.Empty(results);
     }
 
+    // EP-R3: Email invalid length (151+), representative = 200
     [Fact]
     public void Register_EmailTooLong_FailsValidation()
     {
         var dto = new RegisterRequestDto
         {
             Name = "User",
-            Email = MakeEmailOfLength(151),
+            Email = MakeEmailOfLength(200),
             Password = ValidPassword,
             Birthdate = new DateOnly(1990, 1, 1)
         };
@@ -832,13 +923,14 @@ public class UserDtoValidationTests
         Assert.Contains(results, r => r.MemberNames.Contains(nameof(RegisterRequestDto.Email)));
     }
 
+    // EP-R4: Name empty (length = 0)
     [Fact]
     public void Register_NameEmpty_FailsValidation()
     {
         var dto = new RegisterRequestDto
         {
             Name = "",
-            Email = MakeEmailOfLength(10),
+            Email = MakeEmailOfLength(70),
             Password = ValidPassword,
             Birthdate = new DateOnly(1990, 1, 1)
         };
@@ -849,13 +941,14 @@ public class UserDtoValidationTests
         Assert.Contains(results, r => r.MemberNames.Contains(nameof(RegisterRequestDto.Name)));
     }
 
+    // EP-R5: Name valid length (1–100), representative = 50
     [Fact]
     public void Register_NameValidLength_PassesValidation()
     {
         var dto = new RegisterRequestDto
         {
-            Name = new string('a', 100),
-            Email = MakeEmailOfLength(10),
+            Name = new string('a', 50),
+            Email = MakeEmailOfLength(70),
             Password = ValidPassword,
             Birthdate = new DateOnly(1990, 1, 1)
         };
@@ -865,13 +958,14 @@ public class UserDtoValidationTests
         Assert.Empty(results);
     }
 
+    // EP-R6: Name invalid length (101+), representative = 150
     [Fact]
     public void Register_NameTooLong_FailsValidation()
     {
         var dto = new RegisterRequestDto
         {
-            Name = new string('a', 101),
-            Email = MakeEmailOfLength(10),
+            Name = new string('a', 150),
+            Email = MakeEmailOfLength(70),
             Password = ValidPassword,
             Birthdate = new DateOnly(1990, 1, 1)
         };
@@ -882,13 +976,14 @@ public class UserDtoValidationTests
         Assert.Contains(results, r => r.MemberNames.Contains(nameof(RegisterRequestDto.Name)));
     }
 
+    // EP-R7: Password invalid length (0–5), representative = 3
     [Fact]
     public void Register_PasswordTooShort_FailsValidation()
     {
         var dto = new RegisterRequestDto
         {
             Name = "User",
-            Email = MakeEmailOfLength(10),
+            Email = MakeEmailOfLength(70),
             Password = TooShortPassword,
             Birthdate = new DateOnly(1990, 1, 1)
         };
@@ -899,13 +994,14 @@ public class UserDtoValidationTests
         Assert.Contains(results, r => r.MemberNames.Contains(nameof(RegisterRequestDto.Password)));
     }
 
+    // EP-R8: Password valid length (6+), representative = 16
     [Fact]
     public void Register_PasswordValid_PassesValidation()
     {
         var dto = new RegisterRequestDto
         {
             Name = "User",
-            Email = MakeEmailOfLength(10),
+            Email = MakeEmailOfLength(70),
             Password = MinLengthPassword,
             Birthdate = new DateOnly(1990, 1, 1)
         };
@@ -915,13 +1011,14 @@ public class UserDtoValidationTests
         Assert.Empty(results);
     }
 
-        [Fact]
+    // EP-R9: Name invalid – whitespace only
+    [Fact]
     public void Register_NameWhitespaceOnly_FailsValidation()
     {
         var dto = new RegisterRequestDto
         {
             Name = "   ", // only spaces
-            Email = MakeEmailOfLength(10),
+            Email = MakeEmailOfLength(70),
             Password = ValidPassword,
             Birthdate = new DateOnly(1990, 1, 1)
         };
@@ -932,13 +1029,14 @@ public class UserDtoValidationTests
         Assert.Contains(results, r => r.MemberNames.Contains(nameof(RegisterRequestDto.Name)));
     }
 
-        [Fact]
+    // EP-R10: Name valid – non-alphanumeric characters allowed (emoji)
+    [Fact]
     public void Register_NameWithEmoji_PassesValidation()
     {
         var dto = new RegisterRequestDto
         {
             Name = "User 🤡",
-            Email = MakeEmailOfLength(10),
+            Email = MakeEmailOfLength(70),
             Password = ValidPassword,
             Birthdate = new DateOnly(1990, 1, 1)
         };
@@ -951,6 +1049,7 @@ public class UserDtoValidationTests
 
     // ----- ChangePasswordRequestDto -----
 
+    // EP-CP3-Old: OldPassword invalid length (0–5), rep = 3
     [Fact]
     public void ChangePassword_OldPasswordTooShort_FailsValidation()
     {
@@ -966,6 +1065,7 @@ public class UserDtoValidationTests
         Assert.Contains(results, r => r.MemberNames.Contains(nameof(ChangePasswordRequestDto.OldPassword)));
     }
 
+    // EP-CP1-New: NewPassword invalid length (0–5), rep = 3
     [Fact]
     public void ChangePassword_NewPasswordTooShort_FailsValidation()
     {
@@ -981,13 +1081,14 @@ public class UserDtoValidationTests
         Assert.Contains(results, r => r.MemberNames.Contains(nameof(ChangePasswordRequestDto.NewPassword)));
     }
 
+    // EP-CP2-New + EP-CP4-Old: both passwords valid length (6+), rep = 16
     [Fact]
     public void ChangePassword_BothPasswordsValid_PassesValidation()
     {
         var dto = new ChangePasswordRequestDto
         {
             OldPassword = MinLengthPassword,
-            NewPassword = "abcdef"
+            NewPassword = MinLengthPassword
         };
 
         var results = Validate(dto);
@@ -995,58 +1096,106 @@ public class UserDtoValidationTests
         Assert.Empty(results);
     }
 
+    // ----- Boundary Value Analysis (BVA) -----
+
     // ----- Boundary values for email length -----
 
     [Theory]
-    [InlineData(5, true)]   // too short
-    [InlineData(6, false)]  // min ok
-    [InlineData(150, false)]// max ok
-    [InlineData(151, true)] // too long
-    public void Register_EmailBoundaryValues_AreValidated(int length, bool expectError)
+    [InlineData("BV-E1", 5, true)]
+    [InlineData("BV-E2", 6, false)]
+    [InlineData("BV-E3", 7, false)]
+    [InlineData("BV-E4", 149, false)]
+    [InlineData("BV-E5", 150, false)]
+    [InlineData("BV-E6", 151, true)]
+    public void Register_EmailBoundaryValues_AreValidated(
+        string bvaId,
+        int length, 
+        bool expectError)
     {
+        _ = bvaId;
+
         var dto = new RegisterRequestDto
         {
-            Name = "User",
+            Name = new string('a', 50),         // valid representative (matches your EP)
             Email = MakeEmailOfLength(length),
-            Password = ValidPassword,
+            Password = MinLengthPassword,       // valid (16)
             Birthdate = new DateOnly(1990, 1, 1)
         };
 
         var results = Validate(dto);
 
-        if (expectError)
-        {
-            Assert.NotEmpty(results);
-        }
-        else
-        {
+        var hasEmailError = results.Any(r =>
+            r.MemberNames.Contains(nameof(RegisterRequestDto.Email)));
+
+        Assert.Equal(expectError, hasEmailError);
+
+        // if email is expected to be OK, nothing else should fail either
+        if (!expectError)
             Assert.Empty(results);
-        }
     }
 
     // ----- Boundary values for password length -----
 
     [Theory]
-    [InlineData(5, true)]  // too short
-    [InlineData(6, false)] // minimum
-    [InlineData(7, false)] // above minimum
-    public void PasswordBoundaryValues_AreValidated(int length, bool expectError)
+    [InlineData("BV-P1", 5, true)]
+    [InlineData("BV-P2", 6, false)]
+    [InlineData("BV-P3", 7, false)]
+    public void ChangePassword_OldPasswordBoundaryValues_AreValidated(
+        string bvaId, 
+        int length, 
+        bool expectError)
     {
+        _ = bvaId;
+
         var dto = new ChangePasswordRequestDto
         {
             OldPassword = new string('a', length),
-            NewPassword = ValidPassword
+            NewPassword = MinLengthPassword // valid
         };
 
         var results = Validate(dto);
+        var hasOldPwdError = results.Any(r => 
+            r.MemberNames.Contains(nameof(ChangePasswordRequestDto.OldPassword)));
 
-        if (expectError)
-        {
-            Assert.NotEmpty(results);
-        }
-        else
-        {
+        Assert.Equal(expectError, hasOldPwdError);
+
+        // if old password is expected OK, nothing should fail
+        if (!expectError)
             Assert.Empty(results);
-        }
     }
+
+
+    // ----- Boundary values for name length -----
+
+    [Theory]
+    [InlineData("BV-N1", 99, false)]
+    [InlineData("BV-N2", 100, false)]
+    [InlineData("BV-N3", 101, true)]
+    public void Register_NameBoundaryValues_AreValidated(
+        string bvaId, 
+        int length, 
+        bool expectError)
+    {
+        _ = bvaId;
+
+        var dto = new RegisterRequestDto
+        {
+            Name = new string('a', length),
+            Email = MakeEmailOfLength(70),
+            Password = MinLengthPassword,
+            Birthdate = new DateOnly(1990, 1, 1)
+        };
+
+        var results = Validate(dto);
+        var hasNameError = results.Any(r => 
+            r.MemberNames.Contains(nameof(RegisterRequestDto.Name)));
+
+        Assert.Equal(expectError, hasNameError);
+
+        // if name is expected OK, nothing else should fail
+        if (!expectError)
+            Assert.Empty(results);
+    }
+
+
 }

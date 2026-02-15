@@ -1,6 +1,28 @@
 USE travel_buddy;
 show tables;
 
+SELECT
+  t.trip_id,
+  t.trip_name,
+  u.name AS owner_name,
+  td.sequence_number,
+  d.name AS destination_name,
+  d.country,
+  td.start_date,
+  td.end_date
+FROM trips t
+JOIN users u
+  ON t.owner_id = u.user_id
+JOIN trip_destinations td
+  ON td.trip_id = t.trip_id
+JOIN destinations d
+  ON d.destination_id = td.destination_id
+WHERE t.trip_id = 1
+ORDER BY td.sequence_number;
+
+
+
+
 SELECT *
 FROM trip_destination
 JOIN travel_buddy.buddy b on trip_destination.trip_destination_id = b.trip_destination_id
