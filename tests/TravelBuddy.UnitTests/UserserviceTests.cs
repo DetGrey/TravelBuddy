@@ -765,8 +765,8 @@ public class UserServiceTests
 public class UserDtoValidationTests
 {
     private const string ValidPassword = "aaaaaaaaaaaaaaaa"; // length 16 (EP valid)
-    private const string TooShortPassword = "aaa";           // length 3 (EP invalid)
-    private const string MinLengthPassword = "aaaaaaaaaaaaaaaa"; // also 16 (EP valid)
+    private const string TooShortPassword = "aaaaa";           // length 5 (EP invalid)
+    private const string MinLengthPassword = "aaaaaa"; // also 6 (EP valid)
 
     private static IList<ValidationResult> Validate(object dto)
     {
@@ -853,7 +853,7 @@ public class UserDtoValidationTests
         Assert.Contains(results, r => r.MemberNames.Contains(nameof(LoginRequestDto.Password)));
     }
 
-    // EP-L5: Password valid length (6+), representative = 16
+    // EP-L5: Password valid length (6+), representative = 6
     [Fact]
     public void Login_PasswordValid_PassesValidation()
     {
@@ -994,7 +994,7 @@ public class UserDtoValidationTests
         Assert.Contains(results, r => r.MemberNames.Contains(nameof(RegisterRequestDto.Password)));
     }
 
-    // EP-R8: Password valid length (6+), representative = 16
+    // EP-R8: Password valid length (6+), representative = 6
     [Fact]
     public void Register_PasswordValid_PassesValidation()
     {
@@ -1081,7 +1081,7 @@ public class UserDtoValidationTests
         Assert.Contains(results, r => r.MemberNames.Contains(nameof(ChangePasswordRequestDto.NewPassword)));
     }
 
-    // EP-CP2-New + EP-CP4-Old: both passwords valid length (6+), rep = 16
+    // EP-CP2-New + EP-CP4-Old: both passwords valid length (6+), rep = 6
     [Fact]
     public void ChangePassword_BothPasswordsValid_PassesValidation()
     {
