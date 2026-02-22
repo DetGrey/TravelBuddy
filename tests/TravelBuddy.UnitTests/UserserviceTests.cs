@@ -860,7 +860,7 @@ public class UserDtoValidationTests
         var dto = new LoginRequestDto
         {
             Email = MakeEmailOfLength(70),
-            Password = ValidPassword
+            Password = MinLengthPassword
         };
 
         var results = Validate(dto);
@@ -994,7 +994,7 @@ public class UserDtoValidationTests
         Assert.Contains(results, r => r.MemberNames.Contains(nameof(RegisterRequestDto.Password)));
     }
 
-    // EP-R8: Password valid length (6+), representative = 6
+    // EP-R8: Password valid length (6+), representative = 16
     [Fact]
     public void Register_PasswordValid_PassesValidation()
     {
@@ -1002,7 +1002,7 @@ public class UserDtoValidationTests
         {
             Name = "User",
             Email = MakeEmailOfLength(70),
-            Password = MinLengthPassword,
+            Password = ValidPassword,
             Birthdate = new DateOnly(1990, 1, 1)
         };
 
@@ -1081,14 +1081,14 @@ public class UserDtoValidationTests
         Assert.Contains(results, r => r.MemberNames.Contains(nameof(ChangePasswordRequestDto.NewPassword)));
     }
 
-    // EP-CP2-New + EP-CP4-Old: both passwords valid length (6+), rep = 6
+    // EP-CP2-New + EP-CP4-Old: both passwords valid length (6+), rep = 16
     [Fact]
     public void ChangePassword_BothPasswordsValid_PassesValidation()
     {
         var dto = new ChangePasswordRequestDto
         {
-            OldPassword = MinLengthPassword,
-            NewPassword = MinLengthPassword
+            OldPassword = ValidPassword,
+            NewPassword = ValidPassword
         };
 
         var results = Validate(dto);
@@ -1118,7 +1118,7 @@ public class UserDtoValidationTests
         {
             Name = new string('a', 50),         // valid representative (matches your EP)
             Email = MakeEmailOfLength(length),
-            Password = MinLengthPassword,       // valid (16)
+            Password = MinLengthPassword,       // valid (6) (BV-p2)
             Birthdate = new DateOnly(1990, 1, 1)
         };
 
