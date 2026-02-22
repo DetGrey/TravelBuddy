@@ -765,7 +765,7 @@ public class UserServiceTests
 public class UserDtoValidationTests
 {
     private const string ValidPassword = "aaaaaaaaaaaaaaaa"; // length 16 (EP valid)
-    private const string TooShortPassword = "aaaaa";           // length 5 (EP invalid)
+    private const string TooShortPassword = "aaa";           // length 3 (EP invalid)
     private const string MinLengthPassword = "aaaaaa"; // also 6 (EP valid)
 
     private static IList<ValidationResult> Validate(object dto)
@@ -860,7 +860,7 @@ public class UserDtoValidationTests
         var dto = new LoginRequestDto
         {
             Email = MakeEmailOfLength(70),
-            Password = MinLengthPassword
+            Password = ValidPassword
         };
 
         var results = Validate(dto);
